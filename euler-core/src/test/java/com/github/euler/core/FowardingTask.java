@@ -27,4 +27,9 @@ public class FowardingTask implements Task {
         }).build();
     }
 
+    @Override
+    public boolean accept(EvidenceItemToProcess msg) {
+        return true;
+    }
+
 }

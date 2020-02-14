@@ -10,4 +10,6 @@ public interface Task {
 
     Behavior<EvidenceItemToProcess> behavior();
 
+    boolean accept(EvidenceItemToProcess msg);
+
 }

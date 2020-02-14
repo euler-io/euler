@@ -1,5 +1,8 @@
 package com.github.euler.core;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.github.euler.message.EvidenceItemToProcess;
 
 import akka.actor.typed.ActorRef;
@@ -12,15 +15,17 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class EulerProcessor extends AbstractBehavior<EvidenceItemToProcess> {
 
-    public static Behavior<EvidenceItemToProcess> create(Task task) {
-        return Behaviors.setup(ctx -> new EulerProcessor(ctx, task));
+    public static Behavior<EvidenceItemToProcess> create(Task... tasks) {
+        return Behaviors.setup(ctx -> new EulerProcessor(ctx, tasks));
     }
 
-    private Task task;
+    private Task[] tasks;
+    private Map<String, ActorRef<EvidenceItemToProcess>> mapping;
 
-    public EulerProcessor(ActorContext<EvidenceItemToProcess> ctx, Task task) {
+    public EulerProcessor(ActorContext<EvidenceItemToProcess> ctx, Task... tasks) {
         super(ctx);
-        this.task = task;
+        this.tasks = tasks;
+        this.mapping = new HashMap<>();
     }
 
     @Override
@@ -31,13 +36,23 @@ public class EulerProcessor extends AbstractBehavior<EvidenceItemToProcess> {
     }
 
     public Behavior<EvidenceItemToProcess> onEvidenceItemToProcess(EvidenceItemToProcess msg) {
-        ActorRef<EvidenceItemToProcess> taskRef = getTaskRef();
-        taskRef.tell(msg);
+        distributeToTasks(msg);
         return Behaviors.same();
     }
 
-    private ActorRef<EvidenceItemToProcess> getTaskRef() {
-        return getContext().spawn(task.behavior(), task.name());
+    private void distributeToTasks(EvidenceItemToProcess msg) {
+        for (Task task : tasks) {
+            if (task.accept(msg)) {
+                ActorRef<EvidenceItemToProcess> taskRef = getTaskRef(task);
+                taskRef.tell(msg);
+            }
+        }
+    }
+
+    private ActorRef<EvidenceItemToProcess> getTaskRef(Task task) {
+        return mapping.computeIfAbsent(task.name(), (key) -> {
+            return getContext().spawn(task.behavior(), key);
+        });
     }
 
 }
