@@ -1,12 +1,13 @@
 package com.github.euler.core;
 
+import com.github.euler.command.DiscovererCommand;
+import com.github.euler.command.EulerCommand;
+import com.github.euler.command.JobItemFound;
+import com.github.euler.command.JobItemToProcess;
+import com.github.euler.command.JobToDiscover;
+import com.github.euler.command.JobToProcess;
+import com.github.euler.command.ProcessorCommand;
 import com.github.euler.exception.ProcessingAlreadyStarted;
-import com.github.euler.message.EvidenceDiscovery;
-import com.github.euler.message.EvidenceItemFound;
-import com.github.euler.message.EvidenceItemToProcess;
-import com.github.euler.message.EvidenceMessage;
-import com.github.euler.message.EvidenceToDiscover;
-import com.github.euler.message.EvidenceToProcess;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -16,25 +17,25 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
-public class Euler extends AbstractBehavior<EvidenceMessage> {
+public class Euler extends AbstractBehavior<EulerCommand> {
 
-    public static Behavior<EvidenceMessage> create(Behavior<EvidenceDiscovery> discovererBehaviour, Behavior<EvidenceItemToProcess> processorBehavior) {
+    public static Behavior<EulerCommand> create(Behavior<DiscovererCommand> discovererBehaviour, Behavior<ProcessorCommand> processorBehavior) {
         return Behaviors.setup(ctx -> new Euler(ctx, discovererBehaviour, processorBehavior));
     }
 
-    private Behavior<EvidenceDiscovery> discovererBehaviour;
-    private ActorRef<EvidenceDiscovery> discovererRef;
+    private Behavior<DiscovererCommand> discovererBehaviour;
+    private ActorRef<DiscovererCommand> discovererRef;
 
-    private Behavior<EvidenceItemToProcess> processorBehavior;
-    private ActorRef<EvidenceItemToProcess> processorRef;
+    private Behavior<ProcessorCommand> processorBehavior;
+    private ActorRef<ProcessorCommand> processorRef;
 
-    private final EulerState state;
+//    private final EulerState state;
 
-    public Euler(ActorContext<EvidenceMessage> ctx, Behavior<EvidenceDiscovery> discovererBehaviour, Behavior<EvidenceItemToProcess> processorBehavior) {
+    public Euler(ActorContext<EulerCommand> ctx, Behavior<DiscovererCommand> discovererBehaviour, Behavior<ProcessorCommand> processorBehavior) {
         super(ctx);
         this.discovererBehaviour = discovererBehaviour;
         this.processorBehavior = processorBehavior;
-        this.state = new EulerState();
+//        this.state = new EulerState();
         start();
     }
 
@@ -44,22 +45,22 @@ public class Euler extends AbstractBehavior<EvidenceMessage> {
     }
 
     @Override
-    public Receive<EvidenceMessage> createReceive() {
-        ReceiveBuilder<EvidenceMessage> builder = newReceiveBuilder();
-        builder.onMessage(EvidenceToProcess.class, this::onEvidenceToProcess);
-        builder.onMessage(EvidenceItemFound.class, this::onEvidenceItemFound);
+    public Receive<EulerCommand> createReceive() {
+        ReceiveBuilder<EulerCommand> builder = newReceiveBuilder();
+        builder.onMessage(JobToProcess.class, this::onJobToProcess);
+        builder.onMessage(JobItemFound.class, this::onJobItemFound);
         return builder.build();
     }
 
-    private Behavior<EvidenceMessage> onEvidenceToProcess(EvidenceToProcess etp) throws ProcessingAlreadyStarted {
-        getContext().getLog().info("{} received to be processed.", etp.evidenceURI);
-        state.onMessage(etp);
-        discovererRef.tell(new EvidenceToDiscover(etp, getContext().getSelf()));
+    private Behavior<EulerCommand> onJobToProcess(JobToProcess msg) throws ProcessingAlreadyStarted {
+        getContext().getLog().info("{} received to be processed.", msg.uri);
+//        state.onMessage(etp);
+        discovererRef.tell(new JobToDiscover(msg, getContext().getSelf()));
         return Behaviors.same();
     }
 
-    private Behavior<EvidenceMessage> onEvidenceItemFound(EvidenceItemFound eif) {
-        processorRef.tell(new EvidenceItemToProcess(eif, getContext().getSelf()));
+    private Behavior<EulerCommand> onJobItemFound(JobItemFound msg) {
+        processorRef.tell(new JobItemToProcess(msg, getContext().getSelf()));
         return Behaviors.same();
     }
 

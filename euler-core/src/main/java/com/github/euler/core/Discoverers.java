@@ -4,9 +4,7 @@ import java.net.URI;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.github.euler.message.EvidenceDiscoveryFinished;
-import com.github.euler.message.EvidenceItemFound;
-import com.github.euler.message.EvidenceToDiscover;
+import com.github.euler.command.DiscovererCommand;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -18,7 +16,7 @@ public final class Discoverers {
         super();
     }
 
-    public static Discoverer setup(final String name, final Predicate<URI> accept, final Supplier<Behavior<EvidenceToDiscover>> behavior) {
+    public static Discoverer setup(final String name, final Predicate<URI> accept, final Supplier<Behavior<DiscovererCommand>> behavior) {
         return new Discoverer() {
 
             @Override
@@ -27,7 +25,7 @@ public final class Discoverers {
             }
 
             @Override
-            public Behavior<EvidenceToDiscover> behavior() {
+            public Behavior<DiscovererCommand> behavior() {
                 return behavior.get();
             }
 
@@ -39,7 +37,7 @@ public final class Discoverers {
         };
     }
 
-    public static Discoverer acceptAll(final Supplier<Behavior<EvidenceToDiscover>> behavior) {
+    public static Discoverer acceptAll(final Supplier<Behavior<DiscovererCommand>> behavior) {
         return setup("accept-all", (uri) -> true, behavior);
     }
 
@@ -47,7 +45,7 @@ public final class Discoverers {
         return acceptAll(() -> emptyBehavior());
     }
 
-    public static Discoverer acceptNone(final Supplier<Behavior<EvidenceToDiscover>> behavior) {
+    public static Discoverer acceptNone(final Supplier<Behavior<DiscovererCommand>> behavior) {
         return setup("accept-all", (uri) -> false, behavior);
     }
 
@@ -59,10 +57,10 @@ public final class Discoverers {
         return setup("empty", (u) -> true, () -> emptyBehavior());
     }
 
-    public static Behavior<EvidenceToDiscover> emptyBehavior() {
-        return Behaviors.receive(EvidenceToDiscover.class)
-                .onMessage(EvidenceToDiscover.class, (msg) -> {
-                    msg.sender.tell(new EvidenceDiscoveryFinished(msg));
+    public static Behavior<DiscovererCommand> emptyBehavior() {
+        return Behaviors.receive(DiscovererCommand.class)
+                .onMessage(DiscovererCommand.class, (msg) -> {
+//                    msg.sender.tell(new EvidenceDiscoveryFinished(msg));
                     return Behaviors.same();
                 })
                 .build();
@@ -72,23 +70,23 @@ public final class Discoverers {
         return setup("fixed", (u) -> true, () -> fixedItemBehavior(itemURI));
     }
 
-    public static Behavior<EvidenceToDiscover> fixedItemBehavior(URI itemURI) {
-        return Behaviors.receive(EvidenceToDiscover.class)
-                .onMessage(EvidenceToDiscover.class, (msg) -> {
-                    msg.sender.tell(new EvidenceItemFound(msg, itemURI));
-                    msg.sender.tell(new EvidenceDiscoveryFinished(msg));
+    public static Behavior<DiscovererCommand> fixedItemBehavior(URI itemURI) {
+        return Behaviors.receive(DiscovererCommand.class)
+                .onMessage(DiscovererCommand.class, (msg) -> {
+//                    msg.sender.tell(new EvidenceItemFound(msg, itemURI));
+//                    msg.sender.tell(new EvidenceDiscoveryFinished(msg));
                     return Behaviors.same();
                 })
                 .build();
     }
 
-    public static Discoverer foward(ActorRef<EvidenceToDiscover> ref) {
+    public static Discoverer foward(ActorRef<DiscovererCommand> ref) {
         return acceptAll(() -> fowardBehavior(ref));
     }
 
-    public static Behavior<EvidenceToDiscover> fowardBehavior(ActorRef<EvidenceToDiscover> ref) {
-        return Behaviors.receive(EvidenceToDiscover.class)
-                .onMessage(EvidenceToDiscover.class, (msg) -> {
+    public static Behavior<DiscovererCommand> fowardBehavior(ActorRef<DiscovererCommand> ref) {
+        return Behaviors.receive(DiscovererCommand.class)
+                .onAnyMessage((msg) -> {
                     ref.tell(msg);
                     return Behaviors.same();
                 })

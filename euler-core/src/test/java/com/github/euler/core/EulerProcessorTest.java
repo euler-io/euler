@@ -5,8 +5,12 @@ import java.net.URI;
 import org.junit.Test;
 
 import com.github.euler.AkkaTest;
-import com.github.euler.message.EvidenceItemToProcess;
-import com.github.euler.message.EvidenceMessage;
+import com.github.euler.command.EulerCommand;
+import com.github.euler.command.JobItemProcessed;
+import com.github.euler.command.JobItemToProcess;
+import com.github.euler.command.JobTaskToProcess;
+import com.github.euler.command.ProcessorCommand;
+import com.github.euler.command.TaskCommand;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -14,56 +18,84 @@ import akka.actor.typed.ActorRef;
 public class EulerProcessorTest extends AkkaTest {
 
     @Test
-    public void testWhenEvidenceItemToProcessItWillBeFowardedToTask() throws Exception {
-        TestProbe<EvidenceItemToProcess> probe = testKit.createTestProbe();
+    public void testWhenJobItemToProcessItWillBeFowardedToTask() throws Exception {
+        TestProbe<TaskCommand> probe = testKit.createTestProbe();
         Task task = new FowardingTask(probe.ref());
 
-        ActorRef<EvidenceItemToProcess> ref = testKit.spawn(EulerProcessor.create(task));
+        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task));
 
-        TestProbe<EvidenceMessage> starterProbe = testKit.createTestProbe();
-        EvidenceItemToProcess eitf = new EvidenceItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), starterProbe.ref());
-        ref.tell(eitf);
+        TestProbe<EulerCommand> starterProbe = testKit.createTestProbe();
+        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), starterProbe.ref());
+        ref.tell(msg);
 
-        probe.expectMessage(eitf);
+        probe.expectMessageClass(JobTaskToProcess.class);
         starterProbe.expectNoMessage();
     }
 
     @Test
-    public void testWhenEvidenceItemToProcessFowardToMultipleTasks() throws Exception {
-        TestProbe<EvidenceItemToProcess> probe1 = testKit.createTestProbe();
+    public void testWhenJobItemToProcessFowardToMultipleTasks() throws Exception {
+        TestProbe<TaskCommand> probe1 = testKit.createTestProbe();
         Task task1 = Tasks.foward("task-1", probe1.ref());
 
-        TestProbe<EvidenceItemToProcess> probe2 = testKit.createTestProbe();
+        TestProbe<TaskCommand> probe2 = testKit.createTestProbe();
         Task task2 = Tasks.foward("task-2", probe2.ref());
 
-        ActorRef<EvidenceItemToProcess> ref = testKit.spawn(EulerProcessor.create(task1, task2));
+        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task1, task2));
 
-        TestProbe<EvidenceMessage> starterProbe = testKit.createTestProbe();
-        EvidenceItemToProcess eitf = new EvidenceItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), starterProbe.ref());
-        ref.tell(eitf);
+        TestProbe<EulerCommand> starterProbe = testKit.createTestProbe();
+        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), starterProbe.ref());
+        ref.tell(msg);
 
-        probe1.expectMessage(eitf);
-        probe2.expectMessage(eitf);
+        probe1.expectMessageClass(JobTaskToProcess.class);
+        probe2.expectMessageClass(JobTaskToProcess.class);
         starterProbe.expectNoMessage();
     }
 
     @Test
-    public void testWhenEvidenceItemToProcessFowardOnlyToTasksThatAcceptIt() throws Exception {
-        TestProbe<EvidenceItemToProcess> probe1 = testKit.createTestProbe();
+    public void testWhenJobItemToProcessFowardOnlyToTasksThatAcceptIt() throws Exception {
+        TestProbe<TaskCommand> probe1 = testKit.createTestProbe();
         Task task1 = Tasks.foward("task-1", probe1.ref());
 
-        TestProbe<EvidenceItemToProcess> probe2 = testKit.createTestProbe();
+        TestProbe<TaskCommand> probe2 = testKit.createTestProbe();
         Task task2 = Tasks.notAccept("task-2", () -> Tasks.fowardBehavior(probe2.ref()));
 
-        ActorRef<EvidenceItemToProcess> ref = testKit.spawn(EulerProcessor.create(task1, task2));
+        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task1, task2));
 
-        TestProbe<EvidenceMessage> starterProbe = testKit.createTestProbe();
-        EvidenceItemToProcess eitf = new EvidenceItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), starterProbe.ref());
-        ref.tell(eitf);
+        TestProbe<EulerCommand> starterProbe = testKit.createTestProbe();
+        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), starterProbe.ref());
+        ref.tell(msg);
 
-        probe1.expectMessage(eitf);
+        probe1.expectMessageClass(JobTaskToProcess.class);
         probe2.expectNoMessage();
         starterProbe.expectNoMessage();
+    }
+
+    @Test
+    public void testWhenTaskSendJobTaskFinishedSendJobItemProcessed() throws Exception {
+        Task task = Tasks.empty("task-1");
+
+        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task));
+
+        TestProbe<EulerCommand> probe = testKit.createTestProbe();
+        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), probe.ref());
+        ref.tell(msg);
+
+        probe.expectMessageClass(JobItemProcessed.class);
+    }
+
+    @Test
+    public void testWhenAllTaskSendJobTaskFinishedSendJobItemProcessed() throws Exception {
+        Task task1 = Tasks.empty("task-1");
+        Task task2 = Tasks.empty("task-2");
+
+        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task1, task2));
+
+        TestProbe<EulerCommand> probe = testKit.createTestProbe();
+        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), probe.ref());
+        ref.tell(msg);
+
+        probe.expectMessageClass(JobItemProcessed.class);
+        probe.expectNoMessage();
     }
 
 }

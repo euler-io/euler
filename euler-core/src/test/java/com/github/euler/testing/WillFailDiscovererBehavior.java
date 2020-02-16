@@ -1,6 +1,7 @@
 package com.github.euler.testing;
 
-import com.github.euler.message.EvidenceToDiscover;
+import com.github.euler.command.DiscovererCommand;
+import com.github.euler.command.JobToDiscover;
 
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
@@ -9,24 +10,24 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
-public class WillFailDiscovererBehavior extends AbstractBehavior<EvidenceToDiscover> {
+public class WillFailDiscovererBehavior extends AbstractBehavior<DiscovererCommand> {
 
-    public static Behavior<EvidenceToDiscover> create() {
+    public static Behavior<DiscovererCommand> create() {
         return Behaviors.setup(ctx -> new WillFailDiscovererBehavior(ctx));
     }
 
-    public WillFailDiscovererBehavior(ActorContext<EvidenceToDiscover> context) {
+    public WillFailDiscovererBehavior(ActorContext<DiscovererCommand> context) {
         super(context);
     }
 
     @Override
-    public Receive<EvidenceToDiscover> createReceive() {
-        ReceiveBuilder<EvidenceToDiscover> builder = newReceiveBuilder();
-        builder.onMessage(EvidenceToDiscover.class, this::onEvidenceToDiscover);
+    public Receive<DiscovererCommand> createReceive() {
+        ReceiveBuilder<DiscovererCommand> builder = newReceiveBuilder();
+        builder.onMessage(JobToDiscover.class, this::onJobToDiscover);
         return builder.build();
     }
 
-    private Behavior<EvidenceToDiscover> onEvidenceToDiscover(EvidenceToDiscover etd) {
+    private Behavior<DiscovererCommand> onJobToDiscover(JobToDiscover msg) {
         throw new RuntimeException("I am expected to fail.");
     }
 

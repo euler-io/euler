@@ -1,6 +1,7 @@
 package com.github.euler.core;
 
-import com.github.euler.message.EvidenceItemToProcess;
+import com.github.euler.command.JobItemToProcess;
+import com.github.euler.command.TaskCommand;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -8,9 +9,9 @@ import akka.actor.typed.javadsl.Behaviors;
 
 public class FowardingTask implements Task {
 
-    private ActorRef<EvidenceItemToProcess> ref;
+    private ActorRef<TaskCommand> ref;
 
-    public FowardingTask(ActorRef<EvidenceItemToProcess> ref) {
+    public FowardingTask(ActorRef<TaskCommand> ref) {
         this.ref = ref;
     }
 
@@ -20,15 +21,15 @@ public class FowardingTask implements Task {
     }
 
     @Override
-    public Behavior<EvidenceItemToProcess> behavior() {
-        return Behaviors.receive(EvidenceItemToProcess.class).onAnyMessage((msg) -> {
+    public Behavior<TaskCommand> behavior() {
+        return Behaviors.receive(TaskCommand.class).onAnyMessage((msg) -> {
             ref.tell(msg);
             return Behaviors.same();
         }).build();
     }
 
     @Override
-    public boolean accept(EvidenceItemToProcess msg) {
+    public boolean accept(JobItemToProcess msg) {
         return true;
     }
 

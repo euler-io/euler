@@ -1,18 +1,18 @@
 package com.github.euler.core;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.URI;
 
 import org.junit.Test;
 
 import com.github.euler.AkkaTest;
-import com.github.euler.message.EvidenceDiscovery;
-import com.github.euler.message.EvidenceItemFound;
-import com.github.euler.message.EvidenceItemToProcess;
-import com.github.euler.message.EvidenceMessage;
-import com.github.euler.message.EvidenceToDiscover;
-import com.github.euler.message.EvidenceToProcess;
+import com.github.euler.command.DiscovererCommand;
+import com.github.euler.command.EulerCommand;
+import com.github.euler.command.JobCommand;
+import com.github.euler.command.JobItemFound;
+import com.github.euler.command.JobItemToProcess;
+import com.github.euler.command.JobToDiscover;
+import com.github.euler.command.JobToProcess;
+import com.github.euler.command.ProcessorCommand;
 import com.github.euler.testing.FowardingBehavior;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
@@ -23,29 +23,29 @@ import akka.actor.typed.javadsl.Behaviors;
 public class EulerTest extends AkkaTest {
 
     @Test
-    public void testWhenEvidenceToProcessFowardToDiscoverer() throws Exception {
-        TestProbe<EvidenceDiscovery> probe = testKit.createTestProbe();
-        Behavior<EvidenceDiscovery> discovererBehavior = FowardingBehavior.create(probe.ref());
-        ActorRef<EvidenceMessage> ref = testKit.spawn(Euler.create(discovererBehavior, Behaviors.empty()));
+    public void testWhenJobToProcessFowardToDiscoverer() throws Exception {
+        TestProbe<DiscovererCommand> probe = testKit.createTestProbe();
+        Behavior<DiscovererCommand> discovererBehavior = FowardingBehavior.create(probe.ref());
+        ActorRef<EulerCommand> ref = testKit.spawn(Euler.create(discovererBehavior, Behaviors.empty()));
 
-        TestProbe<EvidenceMessage> starterProbe = testKit.createTestProbe();
-        EvidenceToProcess etp = new EvidenceToProcess(new URI("file:///some/path"), starterProbe.ref());
-        ref.tell(etp);
-        probe.expectMessageClass(EvidenceToDiscover.class);
+        TestProbe<JobCommand> starterProbe = testKit.createTestProbe();
+        JobToProcess msg = new JobToProcess(new URI("file:///some/path"), starterProbe.ref());
+        ref.tell(msg);
+        probe.expectMessageClass(JobToDiscover.class);
         starterProbe.expectNoMessage();
     }
 
     @Test
-    public void testWhenEvidenceItemFoundFowardToProcessor() throws Exception {
-        TestProbe<EvidenceItemToProcess> probe = testKit.createTestProbe();
-        Behavior<EvidenceItemToProcess> processorBehavior = FowardingBehavior.create(probe.ref());
+    public void testWhenJobItemFoundFowardToProcessor() throws Exception {
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        Behavior<ProcessorCommand> processorBehavior = FowardingBehavior.create(probe.ref());
 
-        ActorRef<EvidenceMessage> ref = testKit.spawn(Euler.create(Behaviors.empty(), processorBehavior));
-        EvidenceItemFound eif = new EvidenceItemFound(new URI("file:///some/path"), new URI("file:///some/path/item"));
+        TestProbe<EulerCommand> starterProbe = testKit.createTestProbe();
+        ActorRef<EulerCommand> ref = testKit.spawn(Euler.create(Behaviors.empty(), processorBehavior));
+        JobItemFound eif = new JobItemFound(new URI("file:///some/path"), new URI("file:///some/path/item"), starterProbe.ref());
         ref.tell(eif);
 
-        EvidenceItemToProcess eitp = probe.expectMessageClass(EvidenceItemToProcess.class);
-        assertEquals(ref, eitp.sender);
+        probe.expectMessageClass(JobItemToProcess.class);
     }
 
 }
