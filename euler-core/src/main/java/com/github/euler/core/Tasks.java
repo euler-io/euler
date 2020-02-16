@@ -3,11 +3,6 @@ package com.github.euler.core;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.github.euler.command.JobItemToProcess;
-import com.github.euler.command.JobTaskFinished;
-import com.github.euler.command.JobTaskToProcess;
-import com.github.euler.command.TaskCommand;
-
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.Behaviors;

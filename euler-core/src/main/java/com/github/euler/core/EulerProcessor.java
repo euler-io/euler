@@ -4,14 +4,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.euler.command.EulerCommand;
-import com.github.euler.command.JobItemProcessed;
-import com.github.euler.command.JobItemToProcess;
-import com.github.euler.command.JobTaskFinished;
-import com.github.euler.command.JobTaskToProcess;
-import com.github.euler.command.ProcessorCommand;
-import com.github.euler.command.TaskCommand;
-
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.SupervisorStrategy;

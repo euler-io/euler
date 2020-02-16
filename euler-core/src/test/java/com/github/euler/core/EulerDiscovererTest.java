@@ -5,11 +5,6 @@ import java.net.URI;
 import org.junit.Test;
 
 import com.github.euler.AkkaTest;
-import com.github.euler.command.DiscovererCommand;
-import com.github.euler.command.DiscoveryFailed;
-import com.github.euler.command.EulerCommand;
-import com.github.euler.command.JobToDiscover;
-import com.github.euler.command.NoSuitableDiscoverer;
 import com.github.euler.testing.FowardingBehavior;
 import com.github.euler.testing.WillFailBehavior;
 

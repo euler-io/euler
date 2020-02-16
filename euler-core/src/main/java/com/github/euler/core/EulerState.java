@@ -1,12 +1,5 @@
 package com.github.euler.core;
 
-import com.github.euler.command.DiscoveryFailed;
-import com.github.euler.command.DiscoveryFinished;
-import com.github.euler.command.JobCommand;
-import com.github.euler.command.JobItemFound;
-import com.github.euler.command.JobItemProcessed;
-import com.github.euler.command.JobToProcess;
-
 import akka.actor.typed.ActorRef;
 
 public class EulerState {

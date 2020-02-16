@@ -4,9 +4,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.github.euler.command.EulerCommand;
-import com.github.euler.command.JobItemToProcess;
-import com.github.euler.command.JobTaskFinished;
 import com.github.euler.core.EulerProcessor.JobTaskFailed;
 
 import akka.actor.typed.ActorRef;

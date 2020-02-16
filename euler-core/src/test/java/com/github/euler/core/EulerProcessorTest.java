@@ -5,12 +5,6 @@ import java.net.URI;
 import org.junit.Test;
 
 import com.github.euler.AkkaTest;
-import com.github.euler.command.EulerCommand;
-import com.github.euler.command.JobItemProcessed;
-import com.github.euler.command.JobItemToProcess;
-import com.github.euler.command.JobTaskToProcess;
-import com.github.euler.command.ProcessorCommand;
-import com.github.euler.command.TaskCommand;
 import com.github.euler.testing.WillFailBehavior;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
@@ -21,7 +15,7 @@ public class EulerProcessorTest extends AkkaTest {
     @Test
     public void testWhenJobItemToProcessItWillBeFowardedToTask() throws Exception {
         TestProbe<TaskCommand> probe = testKit.createTestProbe();
-        Task task = new FowardingTask(probe.ref());
+        Task task = Tasks.foward("task", probe.ref());
 
         ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task));
 

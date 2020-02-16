@@ -2,11 +2,6 @@ package com.github.euler.core;
 
 import java.net.URI;
 
-import com.github.euler.command.DiscovererCommand;
-import com.github.euler.command.EulerCommand;
-import com.github.euler.command.JobToDiscover;
-import com.github.euler.command.NoSuitableDiscoverer;
-
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.SupervisorStrategy;
@@ -38,7 +33,7 @@ public class EulerDiscoverer extends AbstractBehavior<DiscovererCommand> {
     }
 
     private Behavior<DiscovererCommand> onDiscoveryFailed(DiscoveryFailed msg) {
-        msg.replyTo.tell(new com.github.euler.command.DiscoveryFailed(msg.uri));
+        msg.replyTo.tell(new com.github.euler.core.DiscoveryFailed(msg.uri));
         return Behaviors.same();
     }
 

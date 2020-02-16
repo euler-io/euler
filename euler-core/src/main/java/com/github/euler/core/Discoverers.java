@@ -4,11 +4,6 @@ import java.net.URI;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import com.github.euler.command.DiscovererCommand;
-import com.github.euler.command.DiscoveryFinished;
-import com.github.euler.command.JobItemFound;
-import com.github.euler.command.JobToDiscover;
-
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.Behaviors;

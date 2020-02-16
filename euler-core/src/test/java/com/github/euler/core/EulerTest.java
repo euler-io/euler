@@ -5,20 +5,6 @@ import java.net.URI;
 import org.junit.Test;
 
 import com.github.euler.AkkaTest;
-import com.github.euler.command.DiscovererCommand;
-import com.github.euler.command.DiscoveryFailed;
-import com.github.euler.command.DiscoveryFinished;
-import com.github.euler.command.EulerCommand;
-import com.github.euler.command.JobCommand;
-import com.github.euler.command.JobItemFound;
-import com.github.euler.command.JobItemProcessed;
-import com.github.euler.command.JobItemToProcess;
-import com.github.euler.command.JobProcessed;
-import com.github.euler.command.JobToDiscover;
-import com.github.euler.command.JobToProcess;
-import com.github.euler.command.NoSuitableDiscoverer;
-import com.github.euler.command.NoSuitableDiscovererForJob;
-import com.github.euler.command.ProcessorCommand;
 import com.github.euler.testing.FowardingBehavior;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;

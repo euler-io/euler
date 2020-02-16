@@ -2,22 +2,6 @@ package com.github.euler.core;
 
 import java.net.URI;
 
-import com.github.euler.command.DiscovererCommand;
-import com.github.euler.command.DiscoveryFailed;
-import com.github.euler.command.DiscoveryFinished;
-import com.github.euler.command.EulerCommand;
-import com.github.euler.command.JobCommand;
-import com.github.euler.command.JobItemFound;
-import com.github.euler.command.JobItemProcessed;
-import com.github.euler.command.JobItemToProcess;
-import com.github.euler.command.JobProcessed;
-import com.github.euler.command.JobToDiscover;
-import com.github.euler.command.JobToProcess;
-import com.github.euler.command.NoSuitableDiscoverer;
-import com.github.euler.command.NoSuitableDiscovererForJob;
-import com.github.euler.command.ProcessorCommand;
-import com.github.euler.exception.ProcessingAlreadyStarted;
-
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
@@ -65,7 +49,7 @@ public class Euler extends AbstractBehavior<EulerCommand> {
         return builder.build();
     }
 
-    private Behavior<EulerCommand> onJobToProcess(JobToProcess msg) throws ProcessingAlreadyStarted {
+    private Behavior<EulerCommand> onJobToProcess(JobToProcess msg) {
         getContext().getLog().info("{} received to be processed.", msg.uri);
         state.onMessage(msg);
         discovererRef.tell(new JobToDiscover(msg, getContext().getSelf()));

@@ -1,4 +1,4 @@
-package com.github.euler.command;
+package com.github.euler.core;
 
 import java.net.URI;
 
