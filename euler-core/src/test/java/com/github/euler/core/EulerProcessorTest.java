@@ -11,6 +11,7 @@ import com.github.euler.command.JobItemToProcess;
 import com.github.euler.command.JobTaskToProcess;
 import com.github.euler.command.ProcessorCommand;
 import com.github.euler.command.TaskCommand;
+import com.github.euler.testing.WillFailBehavior;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -96,6 +97,19 @@ public class EulerProcessorTest extends AkkaTest {
 
         probe.expectMessageClass(JobItemProcessed.class);
         probe.expectNoMessage();
+    }
+
+    @Test
+    public void testWhenTaskFailsReturnJobItemProcessed() throws Exception {
+        Task task = Tasks.accept("will-fail", () -> WillFailBehavior.create());
+
+        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task));
+
+        TestProbe<EulerCommand> probe = testKit.createTestProbe();
+        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), probe.ref());
+        ref.tell(msg);
+
+        probe.expectMessageClass(JobItemProcessed.class);
     }
 
 }

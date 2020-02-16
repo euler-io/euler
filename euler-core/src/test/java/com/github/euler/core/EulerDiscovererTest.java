@@ -11,7 +11,7 @@ import com.github.euler.command.EulerCommand;
 import com.github.euler.command.JobToDiscover;
 import com.github.euler.command.NoSuitableDiscoverer;
 import com.github.euler.testing.FowardingBehavior;
-import com.github.euler.testing.WillFailDiscovererBehavior;
+import com.github.euler.testing.WillFailBehavior;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -69,7 +69,7 @@ public class EulerDiscovererTest extends AkkaTest {
 
     @Test
     public void testWhenDiscovererFailsReturnDiscoveryFailedMessage() throws Exception {
-        Discoverer discoverer = Discoverers.acceptAll(() -> WillFailDiscovererBehavior.create());
+        Discoverer discoverer = Discoverers.acceptAll(() -> WillFailBehavior.create());
 
         ActorRef<DiscovererCommand> ref = testKit.spawn(EulerDiscoverer.create(discoverer));
 

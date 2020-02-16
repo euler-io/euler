@@ -1,5 +1,6 @@
 package com.github.euler.core;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import com.github.euler.command.TaskCommand;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
+import akka.actor.typed.SupervisorStrategy;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
@@ -42,6 +44,7 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         ReceiveBuilder<ProcessorCommand> builder = newReceiveBuilder();
         builder.onMessage(JobItemToProcess.class, this::onJobItemToProcess);
         builder.onMessage(JobTaskFinished.class, this::onJobTaskFinished);
+        builder.onMessage(JobTaskFailed.class, this::onJobTaskFailed);
         return builder.build();
     }
 
@@ -63,16 +66,49 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
     private void distributeToTasks(JobItemToProcess msg) {
         for (Task task : tasks) {
             if (task.accept(msg)) {
-                ActorRef<TaskCommand> taskRef = getTaskRef(task);
+                ActorRef<TaskCommand> taskRef = getTaskRef(task, msg);
                 taskRef.tell(new JobTaskToProcess(msg, getContext().getSelf()));
             }
         }
     }
 
-    private ActorRef<TaskCommand> getTaskRef(Task task) {
+    private ActorRef<TaskCommand> getTaskRef(Task task, JobItemToProcess msg) {
         return mapping.computeIfAbsent(task.name(), (key) -> {
-            return getContext().spawn(task.behavior(), key);
+            Behavior<TaskCommand> behavior = superviseTaskBehavior(task);
+            ActorRef<TaskCommand> ref = getContext().spawn(behavior, key);
+            getContext().watchWith(ref, new JobTaskFailed(msg, task.name()));
+            return ref;
         });
     }
 
+    private Behavior<TaskCommand> superviseTaskBehavior(Task t) {
+        Behavior<TaskCommand> behavior = Behaviors.supervise(t.behavior()).onFailure(SupervisorStrategy.stop());
+        return behavior;
+    }
+
+    public Behavior<ProcessorCommand> onJobTaskFailed(JobTaskFailed msg) {
+        state.onJobTaskFailed(msg);
+        mapping.remove(msg.taskName);
+        if (state.isProcessed(msg)) {
+            ActorRef<EulerCommand> replyTo = state.getReplyTo(msg);
+            replyTo.tell(new JobItemProcessed(msg.uri, msg.itemURI));
+        }
+        return Behaviors.same();
+    }
+
+    static class JobTaskFailed implements ProcessorCommand {
+
+        public final URI uri;
+        public final URI itemURI;
+        public final ActorRef<EulerCommand> replyTo;
+        public final String taskName;
+
+        public JobTaskFailed(JobItemToProcess msg, String taskName) {
+            this.uri = msg.uri;
+            this.itemURI = msg.itemURI;
+            this.replyTo = msg.replyTo;
+            this.taskName = taskName;
+        }
+
+    }
 }

@@ -2,12 +2,11 @@ package com.github.euler.command;
 
 import java.net.URI;
 
-public class JobProcessed implements JobCommand {
+public class NoSuitableDiscovererForJob implements JobCommand {
 
     public final URI uri;
 
-    public JobProcessed(URI uri) {
-        super();
+    public NoSuitableDiscovererForJob(URI uri) {
         this.uri = uri;
     }
 

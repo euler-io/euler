@@ -7,6 +7,7 @@ import java.util.Map;
 import com.github.euler.command.EulerCommand;
 import com.github.euler.command.JobItemToProcess;
 import com.github.euler.command.JobTaskFinished;
+import com.github.euler.core.EulerProcessor.JobTaskFailed;
 
 import akka.actor.typed.ActorRef;
 
@@ -37,15 +38,39 @@ public class EulerProcessorState {
     }
 
     public void onJobTaskFinished(JobTaskFinished msg) {
-        this.mapping.get(msg.itemURI).tasks--;
+        onJobTaskCommand(msg.itemURI);
+    }
+
+    public void onJobTaskFailed(JobTaskFailed msg) {
+        onJobTaskCommand(msg.itemURI);
+    }
+
+    private void onJobTaskCommand(URI itemURI) {
+        this.mapping.get(itemURI).tasks--;
     }
 
     public ActorRef<EulerCommand> getReplyTo(JobTaskFinished msg) {
-        return this.mapping.get(msg.itemURI).replyTo;
+        return getReplyTo(msg.itemURI);
+    }
+
+    public ActorRef<EulerCommand> getReplyTo(JobTaskFailed msg) {
+        return getReplyTo(msg.itemURI);
+    }
+
+    private ActorRef<EulerCommand> getReplyTo(URI itemURI) {
+        return this.mapping.get(itemURI).replyTo;
+    }
+
+    public boolean isProcessed(JobTaskFailed msg) {
+        return isProcessed(msg.itemURI);
     }
 
     public boolean isProcessed(JobTaskFinished msg) {
-        return this.mapping.get(msg.itemURI).tasks == 0;
+        return isProcessed(msg.itemURI);
+    }
+
+    private boolean isProcessed(URI itemURI) {
+        return this.mapping.get(itemURI).tasks == 0;
     }
 
 }

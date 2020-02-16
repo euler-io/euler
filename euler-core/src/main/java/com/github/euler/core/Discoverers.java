@@ -5,6 +5,9 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.github.euler.command.DiscovererCommand;
+import com.github.euler.command.DiscoveryFinished;
+import com.github.euler.command.JobItemFound;
+import com.github.euler.command.JobToDiscover;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -59,8 +62,8 @@ public final class Discoverers {
 
     public static Behavior<DiscovererCommand> emptyBehavior() {
         return Behaviors.receive(DiscovererCommand.class)
-                .onMessage(DiscovererCommand.class, (msg) -> {
-//                    msg.sender.tell(new EvidenceDiscoveryFinished(msg));
+                .onMessage(JobToDiscover.class, (msg) -> {
+                    msg.replyTo.tell(new DiscoveryFinished(msg));
                     return Behaviors.same();
                 })
                 .build();
@@ -72,9 +75,9 @@ public final class Discoverers {
 
     public static Behavior<DiscovererCommand> fixedItemBehavior(URI itemURI) {
         return Behaviors.receive(DiscovererCommand.class)
-                .onMessage(DiscovererCommand.class, (msg) -> {
-//                    msg.sender.tell(new EvidenceItemFound(msg, itemURI));
-//                    msg.sender.tell(new EvidenceDiscoveryFinished(msg));
+                .onMessage(JobToDiscover.class, (msg) -> {
+                    msg.replyTo.tell(new JobItemFound(msg.uri, itemURI));
+                    msg.replyTo.tell(new DiscoveryFinished(msg));
                     return Behaviors.same();
                 })
                 .build();

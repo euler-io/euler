@@ -10,4 +10,8 @@ public class NoSuitableDiscoverer implements EulerCommand {
         this.uri = msg.uri;
     }
 
+    public NoSuitableDiscoverer(URI uri) {
+        this.uri = uri;
+    }
+
 }
