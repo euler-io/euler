@@ -9,6 +9,7 @@ import com.github.euler.testing.WillFailBehavior;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.javadsl.Behaviors;
 
 public class EulerProcessorTest extends AkkaTest {
 
@@ -104,6 +105,16 @@ public class EulerProcessorTest extends AkkaTest {
         ref.tell(msg);
 
         probe.expectMessageClass(JobItemProcessed.class);
+    }
+
+    @Test
+    public void testWhenTasksReplyWithMetadataJobItemProcessedWillHaveIt() throws Exception {
+        Task task = Tasks.accept("task", () -> Behaviors.receive(TaskCommand.class)
+                .onMessage(JobTaskToProcess.class, (msg) -> {
+                    
+                    return Behaviors.same();
+                })
+                .build());
     }
 
 }
