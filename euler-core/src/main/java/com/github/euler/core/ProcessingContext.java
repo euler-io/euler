@@ -41,30 +41,34 @@ public class ProcessingContext {
     }
 
     public ProcessingContext merge(ProcessingContext o) {
-        Map<String, Object> newMetadata = merge(this.metadata, o.metadata, this.action);
-        Map<String, Object> newContext = new HashMap<>(this.context);
+        Map<String, Object> newMetadata = merge(this.metadata, o.metadata, o.action);
+        Map<String, Object> newContext = merge(this.context, o.context, o.action);
         return new ProcessingContext(newMetadata, newContext, this.action);
+    }
+
+    public ProcessingContext merge(ProcessingContext p1, ProcessingContext p2) {
+        return p1.merge(p2);
     }
 
     private Map<String, Object> merge(Map<String, Object> m1, Map<String, Object> m2, Action action) {
         Map<String, Object> merged = new HashMap<>(m1);
 
         switch (action) {
-            case OVERWRITE :
-                merged.putAll(m2);
-                break;
-            case MERGE :
-                m2.forEach((k, v) -> putIfAbsentOrMerge(merged, k, v));
-                break;
-            default :
-                m2.forEach(merged::putIfAbsent);
-                break;
+        case OVERWRITE:
+            merged.putAll(m2);
+            break;
+        case MERGE:
+            m2.forEach((k, v) -> putIfAbsentOrMerge(merged, k, v));
+            break;
+        default:
+            m2.forEach(merged::putIfAbsent);
+            break;
         }
 
         return merged;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void putIfAbsentOrMerge(Map<String, Object> payload, String key, Object value) {
         Object current = payload.get(key);
         if (current == null) {
