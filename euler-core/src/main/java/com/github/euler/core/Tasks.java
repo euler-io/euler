@@ -76,7 +76,7 @@ public final class Tasks {
     public static Behavior<TaskCommand> emptyBehavior() {
         return Behaviors.receive(TaskCommand.class)
                 .onMessage(JobTaskToProcess.class, (msg) -> {
-                    msg.replyTo.tell(new JobTaskFinished(msg));
+                    msg.replyTo.tell(new JobTaskFinished(msg, ProcessingContext.EMPTY));
                     return Behaviors.same();
                 })
                 .build();

@@ -1,5 +1,7 @@
 package com.github.euler.core;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URI;
 
 import org.junit.Test;
@@ -9,7 +11,6 @@ import com.github.euler.testing.WillFailBehavior;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
-import akka.actor.typed.javadsl.Behaviors;
 
 public class EulerProcessorTest extends AkkaTest {
 
@@ -108,13 +109,18 @@ public class EulerProcessorTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenTasksReplyWithMetadataJobItemProcessedWillHaveIt() throws Exception {
-        Task task = Tasks.accept("task", () -> Behaviors.receive(TaskCommand.class)
-                .onMessage(JobTaskToProcess.class, (msg) -> {
-                    
-                    return Behaviors.same();
-                })
-                .build());
+    public void testWhenItemToProcessHasContextTaskWillReceiveIt() throws Exception {
+        TestProbe<TaskCommand> probe = testKit.createTestProbe();
+        Task task = Tasks.foward("task", probe.ref());
+
+        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task));
+        TestProbe<EulerCommand> startedProbe = testKit.createTestProbe();
+        ProcessingContext ctx = ProcessingContext.builder().metadata("key", "value").build();
+        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ctx, startedProbe.ref());
+        ref.tell(msg);
+
+        JobTaskToProcess jttp = probe.expectMessageClass(JobTaskToProcess.class);
+        assertEquals(ctx, jttp.ctx);
     }
 
 }

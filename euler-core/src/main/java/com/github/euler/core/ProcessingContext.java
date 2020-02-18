@@ -10,6 +10,8 @@ import java.util.Set;
 
 public class ProcessingContext {
 
+    public static final ProcessingContext EMPTY = new ProcessingContext(Collections.emptyMap(), Collections.emptyMap(), Action.PUT_IF_ABSENT);
+
     private final Map<String, Object> metadata;
     private final Map<String, Object> context;
     private final Action action;
@@ -34,6 +36,40 @@ public class ProcessingContext {
 
     public Map<String, Object> context() {
         return context;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((action == null) ? 0 : action.hashCode());
+        result = prime * result + ((context == null) ? 0 : context.hashCode());
+        result = prime * result + ((metadata == null) ? 0 : metadata.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        ProcessingContext other = (ProcessingContext) obj;
+        if (action != other.action)
+            return false;
+        if (context == null) {
+            if (other.context != null)
+                return false;
+        } else if (!context.equals(other.context))
+            return false;
+        if (metadata == null) {
+            if (other.metadata != null)
+                return false;
+        } else if (!metadata.equals(other.metadata))
+            return false;
+        return true;
     }
 
     public static Builder builder() {
@@ -76,11 +112,11 @@ public class ProcessingContext {
         } else if (current instanceof List && value instanceof List) {
             List newList = new ArrayList((List) current);
             newList.addAll((List) value);
-            payload.put(key, newList);
+            payload.put(key, Collections.unmodifiableList(newList));
         } else if (current instanceof Set && value instanceof Set) {
             Set newSet = new HashSet((Set) current);
             newSet.addAll((Set) value);
-            payload.put(key, newSet);
+            payload.put(key, Collections.unmodifiableSet(newSet));
         }
     }
 
@@ -100,24 +136,27 @@ public class ProcessingContext {
             this.context = new HashMap<>();
         }
 
-        public void metadata(String key, Object value) {
-            this.metadata.put(key, value);
-        }
-
         public ProcessingContext build() {
             return new ProcessingContext(this.metadata, this.context, this.action);
         }
 
-        public void context(String key, Object value) {
+        public Builder metadata(String key, Object value) {
+            this.metadata.put(key, value);
+            return this;
+        }
+
+        public Builder context(String key, Object value) {
             this.context.put(key, value);
+            return this;
         }
 
         public Action getAction() {
             return action;
         }
 
-        public void setAction(Action action) {
+        public Builder setAction(Action action) {
             this.action = action;
+            return this;
         }
 
     }
