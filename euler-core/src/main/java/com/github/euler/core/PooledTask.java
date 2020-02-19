@@ -2,15 +2,15 @@ package com.github.euler.core;
 
 import akka.actor.typed.Behavior;
 
-public class SupervisedTask implements Task {
+public class PooledTask implements Task {
 
     private final String name;
-    private final int routees;
+    private final int size;
     private Task task;
 
-    public SupervisedTask(String name, int routees, Task task) {
+    public PooledTask(String name, int size, Task task) {
         this.name = name;
-        this.routees = routees;
+        this.size = size;
         this.task = task;
     }
 
@@ -21,7 +21,7 @@ public class SupervisedTask implements Task {
 
     @Override
     public Behavior<TaskCommand> behavior() {
-        return null;
+        return PooledExecution.create(size, task);
     }
 
     @Override

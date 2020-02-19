@@ -49,7 +49,7 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
 
     private ActorRef<TaskCommand> getTaskRef(Task task, JobTaskToProcess msg) {
         ActorRef<TaskCommand> ref = mapping.computeIfAbsent(task.name(), (k) -> getContext().spawn(superviseTaskBehavior(task), k));
-        getContext().watchWith(ref, new InternalJobTaskFailed(msg));
+        getContext().watchWith(ref, new InternalJobTaskFailed(msg, task.name()));
         return ref;
     }
 
@@ -59,6 +59,7 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
     }
 
     private Behavior<TaskCommand> onInternalJobTaskFailed(InternalJobTaskFailed msg) {
+        mapping.remove(msg.taskName);
         msg.replyTo.tell(new JobTaskFailed(msg.uri, msg.itemURI));
         return Behaviors.same();
     }
@@ -67,12 +68,14 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
 
         public final URI uri;
         public final URI itemURI;
+        public final String taskName;
         public final ActorRef<ProcessorCommand> replyTo;
 
-        public InternalJobTaskFailed(JobTaskToProcess msg) {
+        public InternalJobTaskFailed(JobTaskToProcess msg, String taskName) {
             this.uri = msg.uri;
             this.itemURI = msg.itemURI;
             this.replyTo = msg.replyTo;
+            this.taskName = taskName;
         }
 
     }
