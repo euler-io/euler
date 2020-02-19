@@ -13,7 +13,11 @@ public final class Tasks {
         super();
     }
 
-    public static Task setup(final String name, final Predicate<JobItemToProcess> accept, final Supplier<Behavior<TaskCommand>> behavior) {
+    public static Task concurrent(String name, Task... tasks) {
+        return new ConcurrentTask(name, tasks);
+    }
+
+    public static Task setup(final String name, final Predicate<JobTaskToProcess> accept, final Supplier<Behavior<TaskCommand>> behavior) {
         return new Task() {
 
             @Override
@@ -22,7 +26,7 @@ public final class Tasks {
             }
 
             @Override
-            public boolean accept(JobItemToProcess msg) {
+            public boolean accept(JobTaskToProcess msg) {
                 return accept.test(msg);
             }
 

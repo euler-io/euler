@@ -11,11 +11,11 @@ public class JobItemToProcess implements ProcessorCommand {
     public final ActorRef<EulerCommand> replyTo;
     public final ProcessingContext ctx;
 
-    public JobItemToProcess(JobItemFound msg, ActorRef<EulerCommand> replyTo) {
+    public JobItemToProcess(JobItemFound msg, ProcessingContext ctx, ActorRef<EulerCommand> replyTo) {
         this.uri = msg.uri;
         this.itemURI = msg.itemURI;
+        this.ctx = ctx;
         this.replyTo = replyTo;
-        this.ctx = ProcessingContext.EMPTY;
     }
 
     public JobItemToProcess(URI uri, URI itemURI, ActorRef<EulerCommand> replyTo) {

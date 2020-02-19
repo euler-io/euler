@@ -1,6 +1,5 @@
 package com.github.euler.core;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,6 +36,7 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         builder.onMessage(JobItemToProcess.class, this::onJobItemToProcess);
         builder.onMessage(JobTaskFinished.class, this::onJobTaskFinished);
         builder.onMessage(JobTaskFailed.class, this::onJobTaskFailed);
+        builder.onMessage(InternalJobTaskFailed.class, this::onInternalJobTaskFailed);
         return builder.build();
     }
 
@@ -57,9 +57,10 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
 
     private void distributeToTasks(JobItemToProcess msg) {
         for (Task task : tasks) {
-            if (task.accept(msg)) {
+            JobTaskToProcess jttp = new JobTaskToProcess(msg, getContext().getSelf());
+            if (task.accept(jttp)) {
                 ActorRef<TaskCommand> taskRef = getTaskRef(task, msg);
-                taskRef.tell(new JobTaskToProcess(msg, getContext().getSelf()));
+                taskRef.tell(jttp);
             }
         }
     }
@@ -68,7 +69,7 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         return mapping.computeIfAbsent(task.name(), (key) -> {
             Behavior<TaskCommand> behavior = superviseTaskBehavior(task);
             ActorRef<TaskCommand> ref = getContext().spawn(behavior, key);
-            getContext().watchWith(ref, new JobTaskFailed(msg, task.name()));
+            getContext().watchWith(ref, new InternalJobTaskFailed(msg, task.name()));
             return ref;
         });
     }
@@ -78,9 +79,14 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         return behavior;
     }
 
+    private Behavior<ProcessorCommand> onInternalJobTaskFailed(InternalJobTaskFailed msg) {
+        mapping.remove(msg.taskName);
+        onJobTaskFailed(msg);
+        return Behaviors.same();
+    }
+
     public Behavior<ProcessorCommand> onJobTaskFailed(JobTaskFailed msg) {
         state.onJobTaskFailed(msg);
-        mapping.remove(msg.taskName);
         if (state.isProcessed(msg)) {
             ActorRef<EulerCommand> replyTo = state.getReplyTo(msg);
             replyTo.tell(new JobItemProcessed(msg.uri, msg.itemURI));
@@ -88,17 +94,12 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         return Behaviors.same();
     }
 
-    static class JobTaskFailed implements ProcessorCommand {
+    private static class InternalJobTaskFailed extends JobTaskFailed {
 
-        public final URI uri;
-        public final URI itemURI;
-        public final ActorRef<EulerCommand> replyTo;
         public final String taskName;
 
-        public JobTaskFailed(JobItemToProcess msg, String taskName) {
-            this.uri = msg.uri;
-            this.itemURI = msg.itemURI;
-            this.replyTo = msg.replyTo;
+        public InternalJobTaskFailed(JobItemToProcess msg, String taskName) {
+            super(msg);
             this.taskName = taskName;
         }
 

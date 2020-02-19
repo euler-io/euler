@@ -1,5 +1,7 @@
 package com.github.euler.core;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URI;
 
 import org.junit.Test;
@@ -138,6 +140,23 @@ public class EulerTest extends AkkaTest {
         ref.tell(new NoSuitableDiscoverer(uri));
 
         probe.expectMessageClass(NoSuitableDiscovererForJob.class);
+    }
+
+    @Test
+    public void testWhenJobToProcessHasContextProcessorWillReceiveIt() throws Exception {
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+
+        URI uri = new URI("file:///some/path");
+        URI itemURI = new URI("file:///some/path/item");
+        ActorRef<EulerCommand> ref = testKit.spawn(Euler.create(Discoverers.fixedItemBehavior(itemURI), FowardingBehavior.create(probe.ref())));
+
+        TestProbe<JobCommand> starterProbe = testKit.createTestProbe();
+        ProcessingContext ctx = ProcessingContext.builder().metadata("key", "value").build();
+        ref.tell(new JobToProcess(uri, ctx, starterProbe.ref()));
+
+        JobItemToProcess jitp = probe.expectMessageClass(JobItemToProcess.class);
+        assertEquals(ctx, jitp.ctx);
+        starterProbe.expectNoMessage();
     }
 
 }

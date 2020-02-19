@@ -7,6 +7,12 @@ public class EulerState {
     private ActorRef<JobCommand> replyTo;
     private boolean discoveryFinishedOrFailed = false;
     private int items = 0;
+    private ProcessingContext ctx;
+
+    public void onMessage(JobToProcess msg) {
+        this.replyTo = msg.replyTo;
+        this.ctx = msg.ctx;
+    }
 
     public void onMessage(DiscoveryFinished msg) {
         this.discoveryFinishedOrFailed = true;
@@ -16,12 +22,12 @@ public class EulerState {
         this.items++;
     }
 
-    public void onMessage(JobItemProcessed msg) {
-        this.items--;
+    public void onMessage(DiscoveryFailed msg) {
+        this.discoveryFinishedOrFailed = true;
     }
 
-    public void onMessage(JobToProcess msg) {
-        this.replyTo = msg.replyTo;
+    public void onMessage(JobItemProcessed msg) {
+        this.items--;
     }
 
     public boolean isProcessed() {
@@ -32,8 +38,8 @@ public class EulerState {
         return replyTo;
     }
 
-    public void onMessage(DiscoveryFailed msg) {
-        this.discoveryFinishedOrFailed = true;
+    public ProcessingContext getCtx() {
+        return ctx;
     }
 
 }

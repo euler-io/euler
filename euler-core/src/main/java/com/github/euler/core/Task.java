@@ -8,6 +8,6 @@ public interface Task {
 
     Behavior<TaskCommand> behavior();
 
-    boolean accept(JobItemToProcess msg);
+    boolean accept(JobTaskToProcess msg);
 
 }
