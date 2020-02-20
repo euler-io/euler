@@ -26,4 +26,11 @@ public class JobTaskToProcess implements TaskCommand {
         this.ctx = msg.ctx;
     }
 
+    public JobTaskToProcess(JobTaskToProcess msg, ActorRef<ProcessorCommand> replyTo) {
+        this.uri = msg.uri;
+        this.itemURI = msg.itemURI;
+        this.replyTo = replyTo;
+        this.ctx = msg.ctx;
+    }
+
 }
