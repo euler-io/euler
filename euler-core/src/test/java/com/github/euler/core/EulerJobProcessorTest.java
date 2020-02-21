@@ -17,7 +17,7 @@ import akka.actor.typed.javadsl.Behaviors;
 public class EulerJobProcessorTest extends AkkaTest {
 
     @Test
-    public void testWhenJobToProcessFowardToDiscoverer() throws Exception {
+    public void testWhenJobToProcessFowardToSource() throws Exception {
         TestProbe<SourceCommand> probe = testKit.createTestProbe();
         Behavior<SourceCommand> discovererBehavior = FowardingBehavior.create(probe.ref());
         ActorRef<EulerCommand> ref = testKit.spawn(EulerJobProcessor.create(discovererBehavior, Behaviors.empty()));
@@ -42,7 +42,7 @@ public class EulerJobProcessorTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenJobToProcessJobItemFinishedJobItemProcessedAndDiscoveryFinishedReturnJobProcessed() throws Exception {
+    public void testWhenJobToProcessJobItemFinishedJobItemProcessedAndScanFinishedReturnJobProcessed() throws Exception {
         TestProbe<JobCommand> probe = testKit.createTestProbe();
 
         URI uri = new URI("file:///some/path");
@@ -64,7 +64,7 @@ public class EulerJobProcessorTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenJobToProcessJobItemFinishedDiscoveryFinishedAndJobItemProcessedReturnJobProcessed() throws Exception {
+    public void testWhenJobToProcessJobItemFinishedScanFinishedAndJobItemProcessedReturnJobProcessed() throws Exception {
         TestProbe<JobCommand> probe = testKit.createTestProbe();
 
         URI uri = new URI("file:///some/path");
@@ -86,7 +86,7 @@ public class EulerJobProcessorTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenJobToProcessJobItemFinishedJobItemProcessedAndDiscoveryFailedReturnJobProcessed() throws Exception {
+    public void testWhenJobToProcessJobItemFinishedJobItemProcessedAndScanFailedReturnJobProcessed() throws Exception {
         TestProbe<JobCommand> probe = testKit.createTestProbe();
 
         URI uri = new URI("file:///some/path");
@@ -108,7 +108,7 @@ public class EulerJobProcessorTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenJobToProcessJobItemFinishedDiscoveryFaileddAndJobItemProcessedReturnJobProcessed() throws Exception {
+    public void testWhenJobToProcessJobItemFinishedScanFaileddAndJobItemProcessedReturnJobProcessed() throws Exception {
         TestProbe<JobCommand> probe = testKit.createTestProbe();
 
         URI uri = new URI("file:///some/path");
@@ -130,7 +130,7 @@ public class EulerJobProcessorTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenNoSuitableDiscovererReturnNoSuitableDiscovererForJob() throws Exception {
+    public void testWhenNoSuitableSourceReturnNoSuitableSourceForJob() throws Exception {
         TestProbe<JobCommand> probe = testKit.createTestProbe();
 
         ActorRef<EulerCommand> ref = testKit.spawn(EulerJobProcessor.create(Behaviors.empty(), Behaviors.empty()));
