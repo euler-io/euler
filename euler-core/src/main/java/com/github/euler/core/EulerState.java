@@ -14,7 +14,7 @@ public class EulerState {
         this.ctx = msg.ctx;
     }
 
-    public void onMessage(DiscoveryFinished msg) {
+    public void onMessage(ScanFinished msg) {
         this.discoveryFinishedOrFailed = true;
     }
 
@@ -22,7 +22,7 @@ public class EulerState {
         this.items++;
     }
 
-    public void onMessage(DiscoveryFailed msg) {
+    public void onMessage(ScanFailed msg) {
         this.discoveryFinishedOrFailed = true;
     }
 

@@ -4,9 +4,9 @@ import java.net.URI;
 
 import akka.actor.typed.Behavior;
 
-public interface Discoverer {
+public interface Source {
 
-    Behavior<DiscovererCommand> behavior();
+    Behavior<SourceCommand> behavior();
 
     String name();
 

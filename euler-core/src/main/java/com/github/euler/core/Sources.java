@@ -8,14 +8,14 @@ import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.Behaviors;
 
-public final class Discoverers {
+public final class Sources {
 
-    private Discoverers() {
+    private Sources() {
         super();
     }
 
-    public static Discoverer setup(final String name, final Predicate<URI> accept, final Supplier<Behavior<DiscovererCommand>> behavior) {
-        return new Discoverer() {
+    public static Source setup(final String name, final Predicate<URI> accept, final Supplier<Behavior<SourceCommand>> behavior) {
+        return new Source() {
 
             @Override
             public String name() {
@@ -23,7 +23,7 @@ public final class Discoverers {
             }
 
             @Override
-            public Behavior<DiscovererCommand> behavior() {
+            public Behavior<SourceCommand> behavior() {
                 return behavior.get();
             }
 
@@ -35,55 +35,55 @@ public final class Discoverers {
         };
     }
 
-    public static Discoverer acceptAll(final Supplier<Behavior<DiscovererCommand>> behavior) {
+    public static Source acceptAll(final Supplier<Behavior<SourceCommand>> behavior) {
         return setup("accept-all", (uri) -> true, behavior);
     }
 
-    public static Discoverer acceptAll() {
+    public static Source acceptAll() {
         return acceptAll(() -> emptyBehavior());
     }
 
-    public static Discoverer acceptNone(final Supplier<Behavior<DiscovererCommand>> behavior) {
+    public static Source acceptNone(final Supplier<Behavior<SourceCommand>> behavior) {
         return setup("accept-all", (uri) -> false, behavior);
     }
 
-    public static Discoverer acceptNone() {
+    public static Source acceptNone() {
         return acceptNone(() -> emptyBehavior());
     }
 
-    public static Discoverer empty() {
+    public static Source empty() {
         return setup("empty", (u) -> true, () -> emptyBehavior());
     }
 
-    public static Behavior<DiscovererCommand> emptyBehavior() {
-        return Behaviors.receive(DiscovererCommand.class)
-                .onMessage(JobToDiscover.class, (msg) -> {
-                    msg.replyTo.tell(new DiscoveryFinished(msg));
+    public static Behavior<SourceCommand> emptyBehavior() {
+        return Behaviors.receive(SourceCommand.class)
+                .onMessage(JobToScan.class, (msg) -> {
+                    msg.replyTo.tell(new ScanFinished(msg));
                     return Behaviors.same();
                 })
                 .build();
     }
 
-    public static Discoverer fixed(URI itemURI) {
+    public static Source fixed(URI itemURI) {
         return setup("fixed", (u) -> true, () -> fixedItemBehavior(itemURI));
     }
 
-    public static Behavior<DiscovererCommand> fixedItemBehavior(URI itemURI) {
-        return Behaviors.receive(DiscovererCommand.class)
-                .onMessage(JobToDiscover.class, (msg) -> {
+    public static Behavior<SourceCommand> fixedItemBehavior(URI itemURI) {
+        return Behaviors.receive(SourceCommand.class)
+                .onMessage(JobToScan.class, (msg) -> {
                     msg.replyTo.tell(new JobItemFound(msg.uri, itemURI));
-                    msg.replyTo.tell(new DiscoveryFinished(msg));
+                    msg.replyTo.tell(new ScanFinished(msg));
                     return Behaviors.same();
                 })
                 .build();
     }
 
-    public static Discoverer foward(ActorRef<DiscovererCommand> ref) {
+    public static Source foward(ActorRef<SourceCommand> ref) {
         return acceptAll(() -> fowardBehavior(ref));
     }
 
-    public static Behavior<DiscovererCommand> fowardBehavior(ActorRef<DiscovererCommand> ref) {
-        return Behaviors.receive(DiscovererCommand.class)
+    public static Behavior<SourceCommand> fowardBehavior(ActorRef<SourceCommand> ref) {
+        return Behaviors.receive(SourceCommand.class)
                 .onAnyMessage((msg) -> {
                     ref.tell(msg);
                     return Behaviors.same();

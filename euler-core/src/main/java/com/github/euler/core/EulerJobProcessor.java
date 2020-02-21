@@ -10,30 +10,30 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
-public class Euler extends AbstractBehavior<EulerCommand> {
+public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
 
-    public static Behavior<EulerCommand> create(Behavior<DiscovererCommand> discovererBehaviour, Behavior<ProcessorCommand> processorBehavior) {
-        return Behaviors.setup(ctx -> new Euler(ctx, discovererBehaviour, processorBehavior));
+    public static Behavior<EulerCommand> create(Behavior<SourceCommand> sourceBehaviour, Behavior<ProcessorCommand> processorBehavior) {
+        return Behaviors.setup(ctx -> new EulerJobProcessor(ctx, sourceBehaviour, processorBehavior));
     }
 
-    private Behavior<DiscovererCommand> discovererBehaviour;
-    private ActorRef<DiscovererCommand> discovererRef;
+    private Behavior<SourceCommand> sourceBehaviour;
+    private ActorRef<SourceCommand> sourceRef;
 
     private Behavior<ProcessorCommand> processorBehavior;
     private ActorRef<ProcessorCommand> processorRef;
 
     private final EulerState state;
 
-    public Euler(ActorContext<EulerCommand> ctx, Behavior<DiscovererCommand> discovererBehaviour, Behavior<ProcessorCommand> processorBehavior) {
+    public EulerJobProcessor(ActorContext<EulerCommand> ctx, Behavior<SourceCommand> discovererBehaviour, Behavior<ProcessorCommand> processorBehavior) {
         super(ctx);
-        this.discovererBehaviour = discovererBehaviour;
+        this.sourceBehaviour = discovererBehaviour;
         this.processorBehavior = processorBehavior;
         this.state = new EulerState();
         start();
     }
 
     private void start() {
-        discovererRef = getContext().spawn(discovererBehaviour, "euler-discoverer");
+        sourceRef = getContext().spawn(sourceBehaviour, "euler-source");
         processorRef = getContext().spawn(processorBehavior, "euler-processor");
     }
 
@@ -43,16 +43,16 @@ public class Euler extends AbstractBehavior<EulerCommand> {
         builder.onMessage(JobToProcess.class, this::onJobToProcess);
         builder.onMessage(JobItemFound.class, this::onJobItemFound);
         builder.onMessage(JobItemProcessed.class, this::onJobItemProcessed);
-        builder.onMessage(DiscoveryFinished.class, this::onDiscoveryFinished);
-        builder.onMessage(DiscoveryFailed.class, this::onDiscoveryFailed);
-        builder.onMessage(NoSuitableDiscoverer.class, this::onNoSuitableDiscoverer);
+        builder.onMessage(ScanFinished.class, this::onScanFinished);
+        builder.onMessage(ScanFailed.class, this::onScanFailed);
+        builder.onMessage(NoSuitableSource.class, this::onNoSuitableSource);
         return builder.build();
     }
 
     private Behavior<EulerCommand> onJobToProcess(JobToProcess msg) {
         getContext().getLog().info("{} received to be processed.", msg.uri);
         state.onMessage(msg);
-        discovererRef.tell(new JobToDiscover(msg, getContext().getSelf()));
+        sourceRef.tell(new JobToScan(msg, getContext().getSelf()));
         return Behaviors.same();
     }
 
@@ -68,21 +68,21 @@ public class Euler extends AbstractBehavior<EulerCommand> {
         return Behaviors.same();
     }
 
-    private Behavior<EulerCommand> onDiscoveryFinished(DiscoveryFinished msg) {
+    private Behavior<EulerCommand> onScanFinished(ScanFinished msg) {
         state.onMessage(msg);
         checkFinished(msg.uri);
         return Behaviors.same();
     }
 
-    private Behavior<EulerCommand> onDiscoveryFailed(DiscoveryFailed msg) {
+    private Behavior<EulerCommand> onScanFailed(ScanFailed msg) {
         state.onMessage(msg);
         checkFinished(msg.uri);
         return Behaviors.same();
     }
 
-    private Behavior<EulerCommand> onNoSuitableDiscoverer(NoSuitableDiscoverer msg) {
+    private Behavior<EulerCommand> onNoSuitableSource(NoSuitableSource msg) {
         ActorRef<JobCommand> replyTo = state.getReplyTo();
-        replyTo.tell(new NoSuitableDiscovererForJob(msg.uri));
+        replyTo.tell(new NoSuitableSourceForJob(msg.uri));
         return Behaviors.same();
     }
 
