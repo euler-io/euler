@@ -14,7 +14,7 @@ import akka.actor.typed.ActorRef;
 public class EulerSourceTest extends AkkaTest {
 
     @Test
-    public void testWhenJobToScanMessageArrivesItWillBeFowardedToTheDiscoverer() throws Exception {
+    public void testWhenJobToScanMessageArrivesItWillBeFowardedToTheSource() throws Exception {
         TestProbe<SourceCommand> probe = testKit.createTestProbe();
         Source discoverer = Sources.foward(probe.ref());
 

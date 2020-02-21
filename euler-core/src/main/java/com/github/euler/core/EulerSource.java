@@ -13,32 +13,32 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class EulerSource extends AbstractBehavior<SourceCommand> {
 
-    public static Behavior<SourceCommand> create(Source... discoverers) {
-        return Behaviors.setup(ctx -> new EulerSource(ctx, discoverers));
+    public static Behavior<SourceCommand> create(Source... sources) {
+        return Behaviors.setup(ctx -> new EulerSource(ctx, sources));
     }
 
-    private final Source[] discoverers;
+    private final Source[] sources;
 
-    public EulerSource(ActorContext<SourceCommand> ctx, Source... discoverers) {
+    public EulerSource(ActorContext<SourceCommand> ctx, Source... sources) {
         super(ctx);
-        this.discoverers = discoverers;
+        this.sources = sources;
     }
 
     @Override
     public Receive<SourceCommand> createReceive() {
         ReceiveBuilder<SourceCommand> builder = newReceiveBuilder();
-        builder.onMessage(ScanFailed.class, this::onDiscoveryFailed);
-        builder.onMessage(JobToScan.class, this::onJobToDiscover);
+        builder.onMessage(InternalScanFailed.class, this::onScanFailed);
+        builder.onMessage(JobToScan.class, this::onJobToScan);
         return builder.build();
     }
 
-    private Behavior<SourceCommand> onDiscoveryFailed(ScanFailed msg) {
-        msg.replyTo.tell(new com.github.euler.core.ScanFailed(msg.uri));
+    private Behavior<SourceCommand> onScanFailed(InternalScanFailed msg) {
+        msg.replyTo.tell(new ScanFailed(msg.uri));
         return Behaviors.same();
     }
 
-    private Behavior<SourceCommand> onJobToDiscover(JobToScan msg) {
-        ActorRef<SourceCommand> ref = findSuitableDiscoverer(msg);
+    private Behavior<SourceCommand> onJobToScan(JobToScan msg) {
+        ActorRef<SourceCommand> ref = findSuitableSource(msg);
         if (ref != null) {
             ref.tell(msg);
         } else {
@@ -47,8 +47,8 @@ public class EulerSource extends AbstractBehavior<SourceCommand> {
         return Behaviors.same();
     }
 
-    private ActorRef<SourceCommand> findSuitableDiscoverer(JobToScan msg) {
-        for (Source d : this.discoverers) {
+    private ActorRef<SourceCommand> findSuitableSource(JobToScan msg) {
+        for (Source d : this.sources) {
             if (d.accepts(msg.uri)) {
                 return getActorRef(d, msg);
             }
@@ -59,7 +59,7 @@ public class EulerSource extends AbstractBehavior<SourceCommand> {
     private ActorRef<SourceCommand> getActorRef(Source d, JobToScan msg) {
         Behavior<SourceCommand> behavior = superviseDiscovererBehavior(d);
         ActorRef<SourceCommand> ref = getContext().spawn(behavior, d.name());
-        getContext().watchWith(ref, new ScanFailed(msg));
+        getContext().watchWith(ref, new InternalScanFailed(msg));
         return ref;
     }
 
@@ -68,12 +68,12 @@ public class EulerSource extends AbstractBehavior<SourceCommand> {
         return behavior;
     }
 
-    private final class ScanFailed implements SourceCommand {
+    private final class InternalScanFailed implements SourceCommand {
 
         public final URI uri;
         public final ActorRef<EulerCommand> replyTo;
 
-        public ScanFailed(JobToScan msg) {
+        public InternalScanFailed(JobToScan msg) {
             this.uri = msg.uri;
             this.replyTo = msg.replyTo;
         }
