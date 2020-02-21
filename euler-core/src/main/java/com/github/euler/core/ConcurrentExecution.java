@@ -44,14 +44,16 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
     }
 
     private Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) {
+        int tasksAccepted = 0;
         for (Task task : this.tasks) {
             JobTaskToProcess adaptedMsg = new JobTaskToProcess(msg, responseAdapter);
             if (task.accept(msg)) {
+                tasksAccepted++;
                 ActorRef<TaskCommand> ref = getTaskRef(task, msg);
                 ref.tell(adaptedMsg);
-                state.taskStarted(msg.itemURI, msg.replyTo);
             }
         }
+        state.taskStarted(msg.itemURI, msg.replyTo, tasksAccepted);
         return this;
     }
 
@@ -77,12 +79,12 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
     }
 
     private void onJobTaskFinished(JobTaskFinished msg) {
+        state.mergeContext(msg.itemURI, msg.ctx);
         checkTaskFinished(msg.uri, msg.itemURI);
     }
 
     private Behavior<TaskCommand> onInternalJobTaskFailed(InternalJobTaskFailed msg) {
         mapping.remove(msg.taskName);
-        // msg.replyTo.tell(new JobTaskFailed(msg.uri, msg.itemURI));
         checkTaskFinished(msg.uri, msg.itemURI);
         return Behaviors.same();
     }
@@ -91,7 +93,8 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
         state.taskFinished(itemURI);
         if (state.isTaskFinished(itemURI)) {
             ActorRef<ProcessorCommand> replyTo = state.getReplyTo(itemURI);
-            replyTo.tell(new JobTaskFinished(uri, itemURI, ProcessingContext.EMPTY));
+            ProcessingContext ctx = state.getProcessingContext(itemURI);
+            replyTo.tell(new JobTaskFinished(uri, itemURI, ctx));
         }
     }
 
@@ -111,12 +114,10 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
         public final URI uri;
         public final URI itemURI;
         public final String taskName;
-        // public final ActorRef<ProcessorCommand> replyTo;
 
         public InternalJobTaskFailed(JobTaskToProcess msg, String taskName) {
             this.uri = msg.uri;
             this.itemURI = msg.itemURI;
-            // this.replyTo = msg.replyTo;
             this.taskName = taskName;
         }
 

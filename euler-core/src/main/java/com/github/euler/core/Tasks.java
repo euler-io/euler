@@ -17,6 +17,10 @@ public final class Tasks {
         return new ConcurrentTask(name, tasks);
     }
 
+    public static Task pool(String name, int size, Task task) {
+        return new PooledTask(name, size, task);
+    }
+
     public static Task setup(final String name, final Predicate<JobTaskToProcess> accept, final Supplier<Behavior<TaskCommand>> behavior) {
         return new Task() {
 
@@ -62,6 +66,10 @@ public final class Tasks {
         return accept(name, () -> emptyBehavior());
     }
 
+    public static Task empty(String name, ProcessingContext ctx) {
+        return accept(name, () -> emptyBehavior(ctx));
+    }
+
     public static Behavior<TaskCommand> voidBehavior() {
         return Behaviors.receive(TaskCommand.class)
                 .onMessage(TaskCommand.class, (msg) -> Behaviors.same())
@@ -78,9 +86,13 @@ public final class Tasks {
     }
 
     public static Behavior<TaskCommand> emptyBehavior() {
+        return emptyBehavior(ProcessingContext.EMPTY);
+    }
+
+    public static Behavior<TaskCommand> emptyBehavior(ProcessingContext ctx) {
         return Behaviors.receive(TaskCommand.class)
                 .onMessage(JobTaskToProcess.class, (msg) -> {
-                    msg.replyTo.tell(new JobTaskFinished(msg, ProcessingContext.EMPTY));
+                    msg.replyTo.tell(new JobTaskFinished(msg, ctx));
                     return Behaviors.same();
                 })
                 .build();

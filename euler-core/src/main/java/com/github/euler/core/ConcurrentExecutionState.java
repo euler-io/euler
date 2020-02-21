@@ -10,15 +10,17 @@ class ConcurrentExecutionState {
 
     private class State {
         ActorRef<ProcessorCommand> replyTo;
+        ProcessingContext ctx;
         int tasks = 0;
     }
 
     private Map<URI, State> mapping = new HashMap<>();
 
-    public void taskStarted(URI itemURI, ActorRef<ProcessorCommand> replyTo) {
+    public void taskStarted(URI itemURI, ActorRef<ProcessorCommand> replyTo, int tasksAccepted) {
         State state = new State();
         state.replyTo = replyTo;
-        state.tasks++;
+        state.tasks = tasksAccepted;
+        state.ctx = ProcessingContext.EMPTY;
         mapping.put(itemURI, state);
     }
 
@@ -32,6 +34,15 @@ class ConcurrentExecutionState {
 
     public ActorRef<ProcessorCommand> getReplyTo(URI itemURI) {
         return mapping.get(itemURI).replyTo;
+    }
+
+    public void mergeContext(URI itemURI, ProcessingContext ctx) {
+        State state = mapping.get(itemURI);
+        state.ctx = state.ctx.merge(ctx);
+    }
+
+    public ProcessingContext getProcessingContext(URI itemURI) {
+        return mapping.get(itemURI).ctx;
     }
 
 }

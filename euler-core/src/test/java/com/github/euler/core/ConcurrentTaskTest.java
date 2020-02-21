@@ -1,5 +1,7 @@
 package com.github.euler.core;
 
+import static org.junit.Assert.assertEquals;
+
 import java.net.URI;
 import java.time.Duration;
 
@@ -86,5 +88,22 @@ public class ConcurrentTaskTest extends AkkaTest {
 
         probe.expectNoMessage(Duration.ofMillis(450));
         probe.expectMessageClass(JobTaskFinished.class);
+    }
+
+    @Test
+    public void testWhenJobTaskMultipleTasksContextsAreMerged() throws Exception {
+        Task task1 = Tasks.empty("task-1", ProcessingContext.builder().metadata("key1", "value1").build());
+        Task task2 = Tasks.empty("task-2", ProcessingContext.builder().metadata("key2", "value2").build());
+
+        Task concurrentTask = new ConcurrentTask("concurrent-task", task1, task2);
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        ActorRef<TaskCommand> ref = testKit.spawn(concurrentTask.behavior());
+
+        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, probe.ref());
+        ref.tell(msg);
+        JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
+        assertEquals(2, response.ctx.metadata().size());
+        assertEquals("value1", response.ctx.metadata("key1"));
+        assertEquals("value2", response.ctx.metadata("key2"));
     }
 }
