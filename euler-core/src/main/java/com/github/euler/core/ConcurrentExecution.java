@@ -71,6 +71,8 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
     private Behavior<TaskCommand> onInternalAdaptedProcessorCommand(InternalAdaptedProcessorCommand msg) {
         if (msg.processorCommand instanceof JobTaskFinished) {
             onJobTaskFinished((JobTaskFinished) msg.processorCommand);
+        } else if (msg.processorCommand instanceof JobTaskFailed) {
+            onJobTaskFailed((JobTaskFailed) msg.processorCommand);
         } else {
             throw new IllegalArgumentException("Impossible to handle " + msg.processorCommand.getClass().getName());
         }
@@ -79,6 +81,11 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
     }
 
     private void onJobTaskFinished(JobTaskFinished msg) {
+        state.mergeContext(msg.itemURI, msg.ctx);
+        checkTaskFinished(msg.uri, msg.itemURI);
+    }
+
+    private void onJobTaskFailed(JobTaskFailed msg) {
         state.mergeContext(msg.itemURI, msg.ctx);
         checkTaskFinished(msg.uri, msg.itemURI);
     }

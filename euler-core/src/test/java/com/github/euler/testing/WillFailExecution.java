@@ -1,8 +1,6 @@
 package com.github.euler.testing;
 
-import java.time.Duration;
-
-import com.github.euler.core.JobTaskFinished;
+import com.github.euler.core.JobTaskFailed;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.core.TaskCommand;
@@ -14,25 +12,24 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
-public class DelayedExecution extends AbstractBehavior<TaskCommand> {
+public class WillFailExecution extends AbstractBehavior<TaskCommand> {
 
-    public static Behavior<TaskCommand> create(Duration delay) {
-        return Behaviors.setup(ctx -> new DelayedExecution(ctx, delay));
+    public static Behavior<TaskCommand> create(ProcessingContext ctx) {
+        return Behaviors.setup((context) -> new WillFailExecution(context, ctx));
     }
 
-    private final Duration delay;
+    private final ProcessingContext ctx;
 
-    private DelayedExecution(ActorContext<TaskCommand> context, Duration delay) {
+    private WillFailExecution(ActorContext<TaskCommand> context, ProcessingContext ctx) {
         super(context);
-        this.delay = delay;
+        this.ctx = ctx;
     }
 
     @Override
     public Receive<TaskCommand> createReceive() {
         ReceiveBuilder<TaskCommand> builder = newReceiveBuilder();
         builder.onMessage(JobTaskToProcess.class, (msg) -> {
-            Thread.sleep(delay.toMillis());
-            msg.replyTo.tell(new JobTaskFinished(msg, ProcessingContext.EMPTY));
+            msg.replyTo.tell(new JobTaskFailed(msg, ctx));
             return Behaviors.same();
         });
         return builder.build();

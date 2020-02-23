@@ -5,13 +5,13 @@ import static org.junit.Assert.assertEquals;
 import java.net.URI;
 import java.time.Duration;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.euler.AkkaTest;
 import com.github.euler.testing.DelayedExecution;
 import com.github.euler.testing.FowardingBehavior;
 import com.github.euler.testing.WillFailBehavior;
+import com.github.euler.testing.WillFailExecution;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -58,7 +58,6 @@ public class ConcurrentTaskTest extends AkkaTest {
     }
 
     @Test
-    @Ignore
     public void testWhenTaskFailReplyToProcessorWithJobTaskFailed() throws Exception {
         Task task = Tasks.accept("task", () -> WillFailBehavior.create());
         Task concurrentTask = new ConcurrentTask("concurrent-task", task);
@@ -69,7 +68,7 @@ public class ConcurrentTaskTest extends AkkaTest {
         JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, probe.ref());
         ref.tell(msg);
 
-        probe.expectMessageClass(JobTaskFailed.class);
+        probe.expectMessageClass(JobTaskFinished.class);
     }
 
     @Test
@@ -94,6 +93,23 @@ public class ConcurrentTaskTest extends AkkaTest {
     public void testWhenJobTaskMultipleTasksContextsAreMerged() throws Exception {
         Task task1 = Tasks.empty("task-1", ProcessingContext.builder().metadata("key1", "value1").build());
         Task task2 = Tasks.empty("task-2", ProcessingContext.builder().metadata("key2", "value2").build());
+
+        Task concurrentTask = new ConcurrentTask("concurrent-task", task1, task2);
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        ActorRef<TaskCommand> ref = testKit.spawn(concurrentTask.behavior());
+
+        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, probe.ref());
+        ref.tell(msg);
+        JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
+        assertEquals(2, response.ctx.metadata().size());
+        assertEquals("value1", response.ctx.metadata("key1"));
+        assertEquals("value2", response.ctx.metadata("key2"));
+    }
+
+    @Test
+    public void testWhenJobTaskMultipleTasksFailedContextsAreMerged() throws Exception {
+        Task task1 = Tasks.accept("task-1", () -> WillFailExecution.create(ProcessingContext.builder().metadata("key1", "value1").build()));
+        Task task2 = Tasks.accept("task-2", () -> WillFailExecution.create(ProcessingContext.builder().metadata("key2", "value2").build()));
 
         Task concurrentTask = new ConcurrentTask("concurrent-task", task1, task2);
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();

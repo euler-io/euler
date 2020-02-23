@@ -23,7 +23,7 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
 
     private EulerProcessorState state;
 
-    public EulerProcessor(ActorContext<ProcessorCommand> ctx, Task... tasks) {
+    private EulerProcessor(ActorContext<ProcessorCommand> ctx, Task... tasks) {
         super(ctx);
         this.tasks = tasks;
         this.mapping = new HashMap<>();

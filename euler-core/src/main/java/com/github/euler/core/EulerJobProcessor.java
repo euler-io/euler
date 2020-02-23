@@ -4,6 +4,7 @@ import java.net.URI;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
+import akka.actor.typed.SupervisorStrategy;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
@@ -17,7 +18,6 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private Behavior<SourceCommand> sourceBehaviour;
-    private ActorRef<SourceCommand> sourceRef;
 
     private Behavior<ProcessorCommand> processorBehavior;
     private ActorRef<ProcessorCommand> processorRef;
@@ -33,7 +33,6 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private void start() {
-        sourceRef = getContext().spawn(sourceBehaviour, "euler-source");
         processorRef = getContext().spawn(processorBehavior, "euler-processor");
     }
 
@@ -45,15 +44,24 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
         builder.onMessage(JobItemProcessed.class, this::onJobItemProcessed);
         builder.onMessage(ScanFinished.class, this::onScanFinished);
         builder.onMessage(ScanFailed.class, this::onScanFailed);
-        builder.onMessage(NoSuitableSource.class, this::onNoSuitableSource);
         return builder.build();
     }
 
     private Behavior<EulerCommand> onJobToProcess(JobToProcess msg) {
         getContext().getLog().info("{} received to be processed.", msg.uri);
         state.onMessage(msg);
-        sourceRef.tell(new JobToScan(msg, getContext().getSelf()));
+        getSourceRef(msg).tell(new JobToScan(msg, getContext().getSelf()));
         return Behaviors.same();
+    }
+
+    private ActorRef<SourceCommand> getSourceRef(JobToProcess msg) {
+        ActorRef<SourceCommand> sourceRef = getContext().spawn(supervisedSourceBehavior(), "euler-source");
+        getContext().watchWith(sourceRef, new ScanFailed(msg.uri));
+        return sourceRef;
+    }
+
+    private Behavior<SourceCommand> supervisedSourceBehavior() {
+        return Behaviors.supervise(this.sourceBehaviour).onFailure(SupervisorStrategy.stop());
     }
 
     private Behavior<EulerCommand> onJobItemFound(JobItemFound msg) {
@@ -64,33 +72,26 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
 
     private Behavior<EulerCommand> onJobItemProcessed(JobItemProcessed msg) {
         state.onMessage(msg);
-        checkFinished(msg.uri);
-        return Behaviors.same();
+        return checkFinished(msg.uri);
     }
 
     private Behavior<EulerCommand> onScanFinished(ScanFinished msg) {
         state.onMessage(msg);
-        checkFinished(msg.uri);
-        return Behaviors.same();
+        return checkFinished(msg.uri);
     }
 
     private Behavior<EulerCommand> onScanFailed(ScanFailed msg) {
         state.onMessage(msg);
-        checkFinished(msg.uri);
-        return Behaviors.same();
+        return checkFinished(msg.uri);
     }
 
-    private Behavior<EulerCommand> onNoSuitableSource(NoSuitableSource msg) {
-        ActorRef<JobCommand> replyTo = state.getReplyTo();
-        replyTo.tell(new NoSuitableSourceForJob(msg.uri));
-        return Behaviors.same();
-    }
-
-    private void checkFinished(URI uri) {
+    private Behavior<EulerCommand> checkFinished(URI uri) {
         if (state.isProcessed()) {
             ActorRef<JobCommand> replyTo = state.getReplyTo();
             replyTo.tell(new JobProcessed(uri));
+            return Behaviors.stopped();
         }
+        return Behaviors.same();
     }
 
 }

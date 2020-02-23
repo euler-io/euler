@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import com.github.euler.AkkaTest;
 import com.github.euler.testing.FowardingBehavior;
+import com.github.euler.testing.WillFailBehavior;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -130,19 +131,6 @@ public class EulerJobProcessorTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenNoSuitableSourceReturnNoSuitableSourceForJob() throws Exception {
-        TestProbe<JobCommand> probe = testKit.createTestProbe();
-
-        ActorRef<EulerCommand> ref = testKit.spawn(EulerJobProcessor.create(Behaviors.empty(), Behaviors.empty()));
-
-        URI uri = new URI("file:///some/path");
-        ref.tell(new JobToProcess(uri, probe.ref()));
-        ref.tell(new NoSuitableSource(uri));
-
-        probe.expectMessageClass(NoSuitableSourceForJob.class);
-    }
-
-    @Test
     public void testWhenJobToProcessHasContextProcessorWillReceiveIt() throws Exception {
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
 
@@ -159,4 +147,17 @@ public class EulerJobProcessorTest extends AkkaTest {
         starterProbe.expectNoMessage();
     }
 
+    @Test
+    public void testWhenSourceFailsReturnScanFailedMessage() throws Exception {
+        Behavior<SourceCommand> sourceBehavior = WillFailBehavior.create();
+        Behavior<ProcessorCommand> processorBehavior = Behaviors.empty();
+
+        URI uri = new URI("file:///some/path");
+        ActorRef<EulerCommand> ref = testKit.spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior));
+        TestProbe<JobCommand> probe = testKit.createTestProbe();
+        ref.tell(new JobToProcess(uri, probe.ref()));
+
+        JobProcessed response = probe.expectMessageClass(JobProcessed.class);
+        assertEquals(uri, response.uri);
+    }
 }

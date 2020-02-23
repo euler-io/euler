@@ -16,7 +16,7 @@ public class FowardingBehavior<T> extends AbstractBehavior<T> {
 
     private final ActorRef<T> ref;
 
-    public FowardingBehavior(ActorContext<T> ctx, ActorRef<T> ref) {
+    private FowardingBehavior(ActorContext<T> ctx, ActorRef<T> ref) {
         super(ctx);
         this.ref = ref;
     }

@@ -13,7 +13,7 @@ public class WillFailBehavior<T> extends AbstractBehavior<T> {
         return Behaviors.setup(ctx -> new WillFailBehavior<T>(ctx));
     }
 
-    public WillFailBehavior(ActorContext<T> context) {
+    private WillFailBehavior(ActorContext<T> context) {
         super(context);
     }
 
