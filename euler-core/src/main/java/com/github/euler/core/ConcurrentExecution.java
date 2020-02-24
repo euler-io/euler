@@ -45,8 +45,8 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
 
     private Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) {
         int tasksAccepted = 0;
+        JobTaskToProcess adaptedMsg = new JobTaskToProcess(msg, responseAdapter);
         for (Task task : this.tasks) {
-            JobTaskToProcess adaptedMsg = new JobTaskToProcess(msg, responseAdapter);
             if (task.accept(msg)) {
                 tasksAccepted++;
                 ActorRef<TaskCommand> ref = getTaskRef(task, msg);

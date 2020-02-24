@@ -13,8 +13,8 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
 
-    public static Behavior<EulerCommand> create(Behavior<SourceCommand> sourceBehaviour, Behavior<ProcessorCommand> processorBehavior) {
-        return Behaviors.setup(ctx -> new EulerJobProcessor(ctx, sourceBehaviour, processorBehavior));
+    public static Behavior<EulerCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior) {
+        return Behaviors.setup(ctx -> new EulerJobProcessor(ctx, sourceBehavior, processorBehavior));
     }
 
     private Behavior<SourceCommand> sourceBehaviour;
