@@ -21,6 +21,10 @@ public final class Tasks {
         return new PooledTask(name, size, task);
     }
 
+    public static Task pipeline(String name, Task... tasks) {
+        return new PipelineTask(name, tasks);
+    }
+
     public static Task setup(final String name, final Predicate<JobTaskToProcess> accept, final Supplier<Behavior<TaskCommand>> behavior) {
         return new Task() {
 

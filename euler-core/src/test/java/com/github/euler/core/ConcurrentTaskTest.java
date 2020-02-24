@@ -58,8 +58,39 @@ public class ConcurrentTaskTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenTaskFailReplyToProcessorWithJobTaskFailed() throws Exception {
+    public void testWhenJobTaskMultipleTasksContextsAreMerged() throws Exception {
+        Task task1 = Tasks.empty("task-1", ProcessingContext.builder().metadata("key1", "value1").build());
+        Task task2 = Tasks.empty("task-2", ProcessingContext.builder().metadata("key2", "value2").build());
+
+        Task concurrentTask = new ConcurrentTask("concurrent-task", task1, task2);
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        ActorRef<TaskCommand> ref = testKit.spawn(concurrentTask.behavior());
+
+        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, probe.ref());
+        ref.tell(msg);
+        JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
+        assertEquals(2, response.ctx.metadata().size());
+        assertEquals("value1", response.ctx.metadata("key1"));
+        assertEquals("value2", response.ctx.metadata("key2"));
+    }
+
+    @Test
+    public void testWhenTaskFailReplyToProcessorWithJobTaskFinished() throws Exception {
         Task task = Tasks.accept("task", () -> WillFailBehavior.create());
+        Task concurrentTask = new ConcurrentTask("concurrent-task", task);
+
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        ActorRef<TaskCommand> ref = testKit.spawn(concurrentTask.behavior());
+
+        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, probe.ref());
+        ref.tell(msg);
+
+        probe.expectMessageClass(JobTaskFinished.class);
+    }
+
+    @Test
+    public void testWhenNoTaskAcceptSendTaskFinished() throws Exception {
+        Task task = Tasks.notAccept("task");
         Task concurrentTask = new ConcurrentTask("concurrent-task", task);
 
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
@@ -87,23 +118,6 @@ public class ConcurrentTaskTest extends AkkaTest {
 
         probe.expectNoMessage(Duration.ofMillis(450));
         probe.expectMessageClass(JobTaskFinished.class);
-    }
-
-    @Test
-    public void testWhenJobTaskMultipleTasksContextsAreMerged() throws Exception {
-        Task task1 = Tasks.empty("task-1", ProcessingContext.builder().metadata("key1", "value1").build());
-        Task task2 = Tasks.empty("task-2", ProcessingContext.builder().metadata("key2", "value2").build());
-
-        Task concurrentTask = new ConcurrentTask("concurrent-task", task1, task2);
-        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
-        ActorRef<TaskCommand> ref = testKit.spawn(concurrentTask.behavior());
-
-        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, probe.ref());
-        ref.tell(msg);
-        JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
-        assertEquals(2, response.ctx.metadata().size());
-        assertEquals("value1", response.ctx.metadata("key1"));
-        assertEquals("value2", response.ctx.metadata("key2"));
     }
 
     @Test

@@ -13,23 +13,23 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
-public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
+public class PipelineExecution extends AbstractBehavior<TaskCommand> {
 
     public static Behavior<TaskCommand> create(Task[] tasks) {
-        return Behaviors.setup(ctx -> new ConcurrentExecution(ctx, tasks));
+        return Behaviors.setup((context) -> new PipelineExecution(context, tasks));
     }
 
     private final Task[] tasks;
-    private final ConcurrentExecutionState state;
+    private PipelineExecutionState state;
 
     private Map<String, ActorRef<TaskCommand>> mapping;
     private ActorRef<ProcessorCommand> responseAdapter;
 
-    private ConcurrentExecution(ActorContext<TaskCommand> context, Task[] tasks) {
+    public PipelineExecution(ActorContext<TaskCommand> context, Task[] tasks) {
         super(context);
         this.tasks = tasks;
+        this.state = new PipelineExecutionState();
         this.mapping = new HashMap<>();
-        this.state = new ConcurrentExecutionState();
 
         this.responseAdapter = context.messageAdapter(ProcessorCommand.class, InternalAdaptedProcessorCommand::new);
     }
@@ -44,32 +44,9 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
     }
 
     private Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) {
-        int tasksAccepted = 0;
-        JobTaskToProcess adaptedMsg = new JobTaskToProcess(msg, responseAdapter);
-        for (Task task : this.tasks) {
-            if (task.accept(msg)) {
-                tasksAccepted++;
-                ActorRef<TaskCommand> ref = getTaskRef(task, msg);
-                ref.tell(adaptedMsg);
-            }
-        }
-        if (tasksAccepted > 0) {
-            state.taskStarted(msg.itemURI, msg.replyTo, tasksAccepted);
-        } else {
-            msg.replyTo.tell(new JobTaskFinished(msg.uri, msg.itemURI, ProcessingContext.EMPTY));
-        }
+        state.onMessage(msg);
+        sendToNextOrFinish(msg);
         return this;
-    }
-
-    private ActorRef<TaskCommand> getTaskRef(Task task, JobTaskToProcess msg) {
-        ActorRef<TaskCommand> ref = mapping.computeIfAbsent(task.name(), (k) -> getContext().spawn(superviseTaskBehavior(task), k));
-        getContext().watchWith(ref, new InternalJobTaskFailed(msg, task.name()));
-        return ref;
-    }
-
-    private Behavior<TaskCommand> superviseTaskBehavior(Task t) {
-        Behavior<TaskCommand> behavior = Behaviors.supervise(t.behavior()).onFailure(SupervisorStrategy.stop());
-        return behavior;
     }
 
     private Behavior<TaskCommand> onInternalAdaptedProcessorCommand(InternalAdaptedProcessorCommand msg) {
@@ -84,29 +61,59 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
         return this;
     }
 
-    private void onJobTaskFinished(JobTaskFinished msg) {
-        state.mergeContext(msg.itemURI, msg.ctx);
-        checkTaskFinished(msg.uri, msg.itemURI);
-    }
-
     private void onJobTaskFailed(JobTaskFailed msg) {
-        state.mergeContext(msg.itemURI, msg.ctx);
-        checkTaskFinished(msg.uri, msg.itemURI);
+        ActorRef<ProcessorCommand> replyTo = state.getReplyTo(msg.itemURI);
+        ProcessingContext ctx = state.mergeContext(msg.itemURI, msg.ctx);
+        replyTo.tell(new JobTaskFinished(msg.uri, msg.itemURI, ctx));
     }
 
     private Behavior<TaskCommand> onInternalJobTaskFailed(InternalJobTaskFailed msg) {
         mapping.remove(msg.taskName);
-        checkTaskFinished(msg.uri, msg.itemURI);
+        ActorRef<ProcessorCommand> replyTo = state.getReplyTo(msg.itemURI);
+        ProcessingContext ctx = state.getProcessingContext(msg.itemURI);
+        replyTo.tell(new JobTaskFinished(msg.uri, msg.itemURI, ctx));
         return Behaviors.same();
     }
 
-    protected void checkTaskFinished(URI uri, URI itemURI) {
-        state.taskFinished(itemURI);
-        if (state.isTaskFinished(itemURI)) {
-            ActorRef<ProcessorCommand> replyTo = state.getReplyTo(itemURI);
-            ProcessingContext ctx = state.getProcessingContext(itemURI);
-            replyTo.tell(new JobTaskFinished(uri, itemURI, ctx));
+    private void onJobTaskFinished(JobTaskFinished msg) {
+        ProcessingContext ctx = state.mergeContext(msg.itemURI, msg.ctx);
+        sendToNextOrFinish(new JobTaskToProcess(msg.uri, msg.itemURI, ctx, responseAdapter));
+    }
+
+    private void sendToNextOrFinish(JobTaskToProcess msg) {
+        Task task = getNextTask(msg);
+        if (task != null) {
+            ActorRef<TaskCommand> taskRef = getTaskRef(task, msg);
+            JobTaskToProcess adaptedMsg = new JobTaskToProcess(msg.uri, msg.itemURI, msg.ctx, responseAdapter);
+            taskRef.tell(adaptedMsg);
+        } else {
+            ActorRef<ProcessorCommand> replyTo = state.getReplyTo(msg.itemURI);
+            replyTo.tell(new JobTaskFinished(msg, msg.ctx));
         }
+    }
+
+    private Task getNextTask(JobTaskToProcess msg) {
+        Task task = null;
+        int position = state.getPosition(msg.itemURI);
+        while (task == null && position < tasks.length) {
+            if (tasks[position].accept(msg)) {
+                task = tasks[position];
+            }
+            position++;
+            state.setPosition(msg.itemURI, position);
+        }
+        return task;
+    }
+
+    private ActorRef<TaskCommand> getTaskRef(Task task, JobTaskToProcess msg) {
+        ActorRef<TaskCommand> ref = mapping.computeIfAbsent(task.name(), (k) -> getContext().spawn(superviseTaskBehavior(task), k));
+        getContext().watchWith(ref, new InternalJobTaskFailed(msg, task.name()));
+        return ref;
+    }
+
+    private Behavior<TaskCommand> superviseTaskBehavior(Task t) {
+        Behavior<TaskCommand> behavior = Behaviors.supervise(t.behavior()).onFailure(SupervisorStrategy.stop());
+        return behavior;
     }
 
     private static class InternalAdaptedProcessorCommand implements TaskCommand {
