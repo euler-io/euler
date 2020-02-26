@@ -18,6 +18,7 @@
         <module>euler-file</module>
         <module>euler-tika</module>
         <module>euler-elasticsearch</module>
+        <module>euler-cluster</module>
     </modules>
 
     <scm>
