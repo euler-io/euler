@@ -14,6 +14,10 @@
 
     <modules>
         <module>euler-core</module>
+        <module>euler-common</module>
+        <module>euler-file</module>
+        <module>euler-tika</module>
+        <module>euler-elasticsearch</module>
     </modules>
 
     <scm>
