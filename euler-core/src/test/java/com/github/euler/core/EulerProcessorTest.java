@@ -6,7 +6,6 @@ import java.net.URI;
 
 import org.junit.Test;
 
-import com.github.euler.AkkaTest;
 import com.github.euler.testing.WillFailBehavior;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;

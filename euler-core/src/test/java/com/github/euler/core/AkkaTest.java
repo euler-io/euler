@@ -1,4 +1,4 @@
-package com.github.euler;
+package com.github.euler.core;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

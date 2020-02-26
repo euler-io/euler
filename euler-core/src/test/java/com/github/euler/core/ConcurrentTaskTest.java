@@ -7,7 +7,6 @@ import java.time.Duration;
 
 import org.junit.Test;
 
-import com.github.euler.AkkaTest;
 import com.github.euler.testing.DelayedExecution;
 import com.github.euler.testing.FowardingBehavior;
 import com.github.euler.testing.WillFailBehavior;
