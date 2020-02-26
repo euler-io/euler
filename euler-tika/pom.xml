@@ -20,8 +20,13 @@
 
     <dependencies>
         <dependency>
-	    <groupId>com.github.euler</groupId>
-	    <artifactId>euler-core</artifactId>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers</artifactId>
+            <version>1.23</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.euler</groupId>
+            <artifactId>euler-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
