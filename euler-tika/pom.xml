@@ -25,6 +25,17 @@
             <version>1.23</version>
         </dependency>
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor-testkit-typed_2.13</artifactId>
+            <version>${akka.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.github.euler</groupId>
             <artifactId>euler-core</artifactId>
             <version>${project.version}</version>
