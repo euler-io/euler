@@ -18,6 +18,7 @@ import com.github.euler.core.ProcessingContext;
 import com.github.euler.core.ProcessorCommand;
 import com.github.euler.core.Task;
 import com.github.euler.core.TaskCommand;
+import com.github.euler.file.FileStreamFactory;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -27,13 +28,13 @@ public class ParseTaskTest extends AkkaTest {
     @Test
     @Ignore
     public void testParseFile() throws Exception {
-        String content = "";
+        String content = "some content";
         File file = Files.createTempFile("parse-", ".txt").toFile();
         try (FileOutputStream output = new FileOutputStream(file)) {
             IOUtils.write(content, output, "utf-8");
         }
 
-        Task task = new ParseTask("parse-task");
+        Task task = new ParseTask("parse-task", new FileStreamFactory());
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
         ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
 
