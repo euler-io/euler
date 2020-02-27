@@ -53,7 +53,7 @@ public class BasicFilePropertiesTaskTest extends AkkaTest {
         ProcessingContext ctx = response.ctx;
 
         assertEquals("item.txt", ctx.metadata(BasicFilePropertiesTask.NAME));
-        assertEquals(new Long(0), (Long) ctx.metadata(BasicFilePropertiesTask.SIZE));
+        assertEquals(Long.valueOf(0l), (Long) ctx.metadata(BasicFilePropertiesTask.SIZE));
         assertFalse((Boolean) ctx.metadata(BasicFilePropertiesTask.IS_DIRECTORY));
         assertEquals("dir/item.txt", ctx.metadata(BasicFilePropertiesTask.PATH));
         assertNotNull(ctx.metadata(BasicFilePropertiesTask.CREATED_DATETIME));

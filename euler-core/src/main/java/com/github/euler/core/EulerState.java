@@ -7,7 +7,7 @@ public class EulerState {
     private ActorRef<JobCommand> replyTo;
     private boolean discoveryFinishedOrFailed = false;
     private int items = 0;
-    private ProcessingContext ctx;
+    private ProcessingContext ctx = ProcessingContext.EMPTY;
 
     public void onMessage(JobToProcess msg) {
         this.replyTo = msg.replyTo;

@@ -22,12 +22,19 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class FileSource extends AbstractBehavior<SourceCommand> {
 
-    public static Behavior<SourceCommand> create() {
-        return Behaviors.setup((context) -> new FileSource(context));
+    public static Behavior<SourceCommand> create(FileSourceVisitorFactory factory) {
+        return Behaviors.setup((context) -> new FileSource(context, factory));
     }
 
-    public FileSource(ActorContext<SourceCommand> context) {
+    public static Behavior<SourceCommand> create() {
+        return create((uri, listener) -> new FileSourceVisitor(uri, listener));
+    }
+
+    private final FileSourceVisitorFactory factory;
+
+    protected FileSource(ActorContext<SourceCommand> context, FileSourceVisitorFactory factory) {
         super(context);
+        this.factory = factory;
     }
 
     @Override
@@ -37,10 +44,11 @@ public class FileSource extends AbstractBehavior<SourceCommand> {
         return builder.build();
     }
 
-    private Behavior<SourceCommand> onJobToScan(JobToScan msg) throws IOException {
+    protected Behavior<SourceCommand> onJobToScan(JobToScan msg) throws IOException {
         Path path = FileUtils.toPath(msg.uri);
         if (path.toFile().isDirectory()) {
-            Files.walkFileTree(path, new FileSourceVisitor(msg.uri, new Listener(msg.replyTo)));
+            FileSourceVisitor visitor = factory.apply(msg.uri, new Listener(msg.replyTo));
+            Files.walkFileTree(path, visitor);
         } else {
             msg.replyTo.tell(new JobItemFound(msg.uri, msg.uri));
         }
@@ -49,7 +57,7 @@ public class FileSource extends AbstractBehavior<SourceCommand> {
         return this;
     }
 
-    private static class Listener implements SourceListener {
+    protected static class Listener implements SourceListener {
 
         private final ActorRef<EulerCommand> replyTo;
 

@@ -65,7 +65,8 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private Behavior<EulerCommand> onJobItemFound(JobItemFound msg) {
-        processorRef.tell(new JobItemToProcess(msg, state.getCtx(), getContext().getSelf()));
+        ProcessingContext ctx = state.getCtx().merge(msg.ctx);
+        processorRef.tell(new JobItemToProcess(msg, ctx, getContext().getSelf()));
         state.onMessage(msg);
         return Behaviors.same();
     }

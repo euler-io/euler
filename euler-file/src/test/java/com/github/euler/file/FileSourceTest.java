@@ -61,4 +61,22 @@ public class FileSourceTest extends AkkaTest {
         probe.expectMessageClass(ScanFinished.class);
     }
 
+    @Test
+    public void testCustomVisitor() throws Exception {
+        File file = File.createTempFile("test", ".txt");
+        file.createNewFile();
+
+        TestProbe<EulerCommand> probe = testKit.createTestProbe();
+        JobToScan msg = new JobToScan(file.toURI(), probe.ref());
+
+        Behavior<SourceCommand> sourceBehavior = FileSource.create();
+        testKit.spawn(sourceBehavior).tell(msg);
+
+        JobItemFound response = probe.expectMessageClass(JobItemFound.class);
+        assertEquals(file.toURI(), response.uri);
+        assertEquals(file.toURI(), response.itemURI);
+
+        probe.expectMessageClass(ScanFinished.class);
+    }
+
 }

@@ -22,9 +22,13 @@ public final class Sources {
     }
 
     public static Behavior<SourceCommand> fixedItemBehavior(URI itemURI) {
+        return fixedItemBehavior(itemURI, ProcessingContext.EMPTY);
+    }
+
+    public static Behavior<SourceCommand> fixedItemBehavior(URI itemURI, ProcessingContext ctx) {
         return Behaviors.receive(SourceCommand.class)
                 .onMessage(JobToScan.class, (msg) -> {
-                    msg.replyTo.tell(new JobItemFound(msg.uri, itemURI));
+                    msg.replyTo.tell(new JobItemFound(msg.uri, itemURI, ctx));
                     msg.replyTo.tell(new ScanFinished(msg));
                     return Behaviors.same();
                 })

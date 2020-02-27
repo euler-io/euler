@@ -130,6 +130,22 @@ public class EulerJobProcessorTest extends AkkaTest {
     }
 
     @Test
+    public void testWhenJobItemFoundHasContextProcessorWillReceiveIt() throws Exception {
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+
+        URI uri = new URI("file:///some/path");
+        URI itemURI = new URI("file:///some/path/item");
+        ProcessingContext ctx = ProcessingContext.builder().metadata("key", "value").build();
+        ActorRef<EulerCommand> ref = testKit.spawn(EulerJobProcessor.create(Sources.fixedItemBehavior(itemURI, ctx), FowardingBehavior.create(probe.ref())));
+
+        TestProbe<JobCommand> starterProbe = testKit.createTestProbe();
+        ref.tell(new JobToProcess(uri, starterProbe.ref()));
+
+        JobItemToProcess jitp = probe.expectMessageClass(JobItemToProcess.class);
+        assertEquals(ctx, jitp.ctx);
+    }
+
+    @Test
     public void testWhenJobToProcessHasContextProcessorWillReceiveIt() throws Exception {
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
 
