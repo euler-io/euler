@@ -9,7 +9,6 @@ import java.net.URI;
 import java.nio.file.Files;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.euler.core.JobTaskFinished;
@@ -26,7 +25,6 @@ import akka.actor.typed.ActorRef;
 public class ParseTaskTest extends AkkaTest {
 
     @Test
-    @Ignore
     public void testParseFile() throws Exception {
         String content = "some content";
         File file = Files.createTempFile("parse-", ".txt").toFile();
@@ -34,7 +32,7 @@ public class ParseTaskTest extends AkkaTest {
             IOUtils.write(content, output, "utf-8");
         }
 
-        Task task = new ParseTask("parse-task", new FileStreamFactory());
+        Task task = ParseTask.builder("task").setStreamFactory(new FileStreamFactory()).build();
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
         ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
 
