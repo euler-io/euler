@@ -3,12 +3,14 @@ package com.github.euler.common;
 import java.net.URI;
 
 import com.github.euler.core.FlushTask;
+import com.github.euler.core.JobTaskFailed;
 import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.core.TaskCommand;
 
 import akka.actor.typed.Behavior;
+import akka.actor.typed.PostStop;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
@@ -35,6 +37,7 @@ public class BatchExecution extends AbstractBehavior<TaskCommand> implements Bat
         ReceiveBuilder<TaskCommand> builder = newReceiveBuilder();
         builder.onMessage(JobTaskToProcess.class, this::onJobTaskToProcess);
         builder.onMessage(FlushTask.class, this::onFlushTask);
+        builder.onSignal(PostStop.class, this::onPostStop);
         return builder.build();
     }
 
@@ -49,10 +52,21 @@ public class BatchExecution extends AbstractBehavior<TaskCommand> implements Bat
         return this;
     }
 
+    private Behavior<TaskCommand> onPostStop(PostStop signal) {
+        batch.finish();
+        return this;
+    }
+
     @Override
     public void finished(URI itemURI, ProcessingContext ctx) {
         JobTaskToProcess msg = state.finished(itemURI);
         msg.replyTo.tell(new JobTaskFinished(msg, ctx));
+    }
+
+    @Override
+    public void failed(URI itemURI, ProcessingContext ctx) {
+        JobTaskToProcess msg = state.finished(itemURI);
+        msg.replyTo.tell(new JobTaskFailed(msg, ctx));
     }
 
 }

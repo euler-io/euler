@@ -9,4 +9,6 @@ public interface Batch {
 
     void flush(FlushTask msg, BatchListener listener);
 
+    void finish();
+
 }

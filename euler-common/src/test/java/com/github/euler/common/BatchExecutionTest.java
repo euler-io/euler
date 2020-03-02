@@ -9,6 +9,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.github.euler.core.FlushTask;
+import com.github.euler.core.JobTaskFailed;
 import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
@@ -24,7 +25,6 @@ public class BatchExecutionTest extends AkkaTest {
     @Test
     public void testBatch() throws Exception {
         Batch batch = new Batch() {
-
             @Override
             public void process(JobTaskToProcess msg, BatchListener listener) {
                 listener.finished(msg.itemURI, ProcessingContext.EMPTY);
@@ -35,6 +35,10 @@ public class BatchExecutionTest extends AkkaTest {
                 // Nothing to do.
             }
 
+            @Override
+            public void finish() {
+                // Nothing to do.
+            }
         };
 
         Behavior<TaskCommand> behavior = BatchExecution.create(batch);
@@ -48,9 +52,37 @@ public class BatchExecutionTest extends AkkaTest {
     }
 
     @Test
+    public void testBatchFailed() throws Exception {
+        Batch batch = new Batch() {
+            @Override
+            public void process(JobTaskToProcess msg, BatchListener listener) {
+                listener.failed(msg.itemURI, ProcessingContext.EMPTY);
+            }
+
+            @Override
+            public void flush(FlushTask msg, BatchListener listener) {
+                // Nothing to do.
+            }
+
+            @Override
+            public void finish() {
+                // Nothing to do.
+            }
+        };
+
+        Behavior<TaskCommand> behavior = BatchExecution.create(batch);
+        ActorRef<TaskCommand> ref = testKit.spawn(behavior);
+
+        TestProbe<ProcessorCommand> starterProbe = testKit.createTestProbe();
+        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, starterProbe.ref());
+        ref.tell(msg);
+
+        starterProbe.expectMessageClass(JobTaskFailed.class);
+    }
+
+    @Test
     public void testBatchPostPoned() throws Exception {
         Batch batch = new Batch() {
-
             List<URI> buffer = new ArrayList<>();
 
             @Override
@@ -63,6 +95,11 @@ public class BatchExecutionTest extends AkkaTest {
 
             @Override
             public void flush(FlushTask msg, BatchListener listener) {
+                // Nothing to do.
+            }
+
+            @Override
+            public void finish() {
                 // Nothing to do.
             }
 
@@ -89,7 +126,6 @@ public class BatchExecutionTest extends AkkaTest {
     @Test
     public void testBatchFlush() throws Exception {
         Batch batch = new Batch() {
-
             List<URI> buffer = new ArrayList<>();
 
             @Override
@@ -102,6 +138,10 @@ public class BatchExecutionTest extends AkkaTest {
                 buffer.forEach((itemURI) -> listener.finished(itemURI, ProcessingContext.EMPTY));
             }
 
+            @Override
+            public void finish() {
+                // Nothing to do.
+            }
         };
 
         Behavior<TaskCommand> behavior = BatchExecution.create(batch);

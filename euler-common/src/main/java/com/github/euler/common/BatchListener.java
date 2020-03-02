@@ -8,4 +8,6 @@ public interface BatchListener {
 
     void finished(URI itemURI, ProcessingContext ctx);
 
+    void failed(URI itemURI, ProcessingContext empty);
+
 }
