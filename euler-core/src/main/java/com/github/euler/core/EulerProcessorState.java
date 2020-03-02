@@ -68,4 +68,12 @@ public class EulerProcessorState {
         return this.mapping.get(itemURI).tasks == 0;
     }
 
+    public void finish(JobTaskFailed msg) {
+        mapping.remove(msg.itemURI);
+    }
+
+    public void finish(JobTaskFinished msg) {
+        mapping.remove(msg.itemURI);
+    }
+
 }

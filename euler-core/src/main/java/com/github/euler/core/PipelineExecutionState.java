@@ -43,4 +43,8 @@ public class PipelineExecutionState {
         return mapping.get(itemURI).ctx;
     }
 
+    public void finish(URI itemURI) {
+        mapping.remove(itemURI);
+    }
+
 }

@@ -51,6 +51,7 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         if (state.isProcessed(msg)) {
             ActorRef<EulerCommand> replyTo = state.getReplyTo(msg);
             replyTo.tell(new JobItemProcessed(msg.uri, msg.itemURI));
+            state.finish(msg);
         }
         return Behaviors.same();
     }
@@ -90,6 +91,7 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         if (state.isProcessed(msg)) {
             ActorRef<EulerCommand> replyTo = state.getReplyTo(msg);
             replyTo.tell(new JobItemProcessed(msg.uri, msg.itemURI));
+            state.finish(msg);
         }
         return Behaviors.same();
     }

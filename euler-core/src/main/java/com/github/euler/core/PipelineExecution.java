@@ -65,6 +65,7 @@ public class PipelineExecution extends AbstractBehavior<TaskCommand> {
         ActorRef<ProcessorCommand> replyTo = state.getReplyTo(msg.itemURI);
         ProcessingContext ctx = state.mergeContext(msg.itemURI, msg.ctx);
         replyTo.tell(new JobTaskFinished(msg.uri, msg.itemURI, ctx));
+        state.finish(msg.itemURI);
     }
 
     private Behavior<TaskCommand> onInternalJobTaskFailed(InternalJobTaskFailed msg) {
@@ -72,6 +73,7 @@ public class PipelineExecution extends AbstractBehavior<TaskCommand> {
         ActorRef<ProcessorCommand> replyTo = state.getReplyTo(msg.itemURI);
         ProcessingContext ctx = state.getProcessingContext(msg.itemURI);
         replyTo.tell(new JobTaskFinished(msg.uri, msg.itemURI, ctx));
+        state.finish(msg.itemURI);
         return Behaviors.same();
     }
 
@@ -89,6 +91,7 @@ public class PipelineExecution extends AbstractBehavior<TaskCommand> {
         } else {
             ActorRef<ProcessorCommand> replyTo = state.getReplyTo(msg.itemURI);
             replyTo.tell(new JobTaskFinished(msg, msg.ctx));
+            state.finish(msg.itemURI);
         }
     }
 

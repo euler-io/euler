@@ -106,6 +106,7 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
             ActorRef<ProcessorCommand> replyTo = state.getReplyTo(itemURI);
             ProcessingContext ctx = state.getProcessingContext(itemURI);
             replyTo.tell(new JobTaskFinished(uri, itemURI, ctx));
+            state.finish(itemURI);
         }
     }
 
