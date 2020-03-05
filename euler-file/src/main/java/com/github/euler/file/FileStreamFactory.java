@@ -21,4 +21,14 @@ public class FileStreamFactory implements StreamFactory {
         return new FileOutputStream(FileUtils.toFile(uri));
     }
 
+    @Override
+    public boolean exists(URI uri) {
+        return FileUtils.toFile(uri).exists();
+    }
+
+    @Override
+    public boolean isEmpty(URI uri) {
+        return FileUtils.toFile(uri).length() == 0;
+    }
+
 }

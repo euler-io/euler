@@ -11,4 +11,8 @@ public interface StreamFactory {
 
     OutputStream openOutputStream(URI uri) throws IOException;
 
+    boolean exists(URI uri);
+
+    boolean isEmpty(URI uri);
+
 }

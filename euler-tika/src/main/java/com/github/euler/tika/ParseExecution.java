@@ -5,14 +5,15 @@ import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
-import java.nio.file.Files;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
+import com.github.euler.common.StorageStrategy;
 import com.github.euler.common.StreamFactory;
 import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
@@ -28,17 +29,25 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class ParseExecution extends AbstractBehavior<TaskCommand> {
 
-    public static Behavior<TaskCommand> create(AutoDetectParser parser, StreamFactory sf) {
-        return Behaviors.setup((context) -> new ParseExecution(context, parser, sf));
+    public static Behavior<TaskCommand> create(Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, MetadataParser metadataParser,
+            ParseContextFactory parseContextFactory) {
+        return Behaviors.setup((context) -> new ParseExecution(context, parser, sf, parsedContentStrategy, metadataParser, parseContextFactory));
     }
 
-    private final AutoDetectParser parser;
+    private final Parser parser;
     private final StreamFactory sf;
+    private final StorageStrategy parsedContentStrategy;
+    private final MetadataParser metadataParser;
+    private final ParseContextFactory parseContextFactory;
 
-    protected ParseExecution(ActorContext<TaskCommand> context, AutoDetectParser parser, StreamFactory sf) {
+    protected ParseExecution(ActorContext<TaskCommand> context, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, MetadataParser metadataParser,
+            ParseContextFactory parseContextFactory) {
         super(context);
         this.parser = parser;
         this.sf = sf;
+        this.parsedContentStrategy = parsedContentStrategy;
+        this.metadataParser = metadataParser;
+        this.parseContextFactory = parseContextFactory;
     }
 
     @Override
@@ -76,12 +85,13 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> {
 
     protected ProcessingContext parse(InputStream in, Writer out, ProcessingContext ctx) throws IOException, SAXException, TikaException {
         Metadata metadata = new Metadata();
-        parser.parse(in, new BodyContentHandler(out), metadata);
-        return ProcessingContext.EMPTY;
+        ParseContext parseContext = parseContextFactory.create(ctx);
+        parser.parse(in, new BodyContentHandler(out), metadata, parseContext);
+        return metadataParser.parse(metadata);
     }
 
     private URI createParsedContent(URI itemURI) throws IOException {
-        return Files.createTempFile("parsed", ".txt").toUri();
+        return parsedContentStrategy.createFile(itemURI);
     }
 
 }
