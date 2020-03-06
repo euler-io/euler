@@ -7,16 +7,16 @@ public class FragmentParserContentHandler extends DefaultHandler {
 
     private StringBuilder builder;
     private StringBuilder nextFragmentBuilder;
-    private FragmentListener listener;
+    private FragmentHandler listener;
 
     private int fragmentSize;
     private int maxLength;
 
-    public FragmentParserContentHandler(FragmentListener listener) {
+    public FragmentParserContentHandler(FragmentHandler listener) {
         this(1000, 50, listener);
     }
 
-    public FragmentParserContentHandler(int fragmentSize, int fragmentOverlap, FragmentListener listener) {
+    public FragmentParserContentHandler(int fragmentSize, int fragmentOverlap, FragmentHandler listener) {
         super();
         this.fragmentSize = fragmentSize;
         this.maxLength = fragmentSize + fragmentOverlap;
@@ -59,7 +59,7 @@ public class FragmentParserContentHandler extends DefaultHandler {
     }
 
     private void newFragmentFound() {
-        listener.newFragment(builder.toString().replaceAll("\u0000", " "));
+        listener.handleFragment(builder.toString().replaceAll("\u0000", " "));
     }
 
 }

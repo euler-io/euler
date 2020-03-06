@@ -17,7 +17,7 @@ public class FragmentParserContentHandlerTest {
       String item = "12345";
       List<String> fragments = new ArrayList<>();
 
-      FragmentListener listener = (String frag) -> fragments.add(frag);
+      FragmentHandler listener = (String frag) -> fragments.add(frag);
       FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
       handler.startDocument();
@@ -36,7 +36,7 @@ public class FragmentParserContentHandlerTest {
       String item = "123456789012";
       List<String> fragments = new ArrayList<>();
 
-      FragmentListener listener = (String frag) -> fragments.add(frag);
+      FragmentHandler listener = (String frag) -> fragments.add(frag);
       FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
       handler.startDocument();
@@ -57,7 +57,7 @@ public class FragmentParserContentHandlerTest {
         String frag2 = "4";
         List<String> fragments = new ArrayList<>();
 
-        FragmentListener listener = (String frag) -> fragments.add(frag);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
         FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
         handler.startDocument();
@@ -77,7 +77,7 @@ public class FragmentParserContentHandlerTest {
         String frag1 = "1234567890";
         List<String> fragments = new ArrayList<>();
 
-        FragmentListener listener = (String frag) -> fragments.add(frag);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
         FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
         handler.startDocument();
@@ -97,7 +97,7 @@ public class FragmentParserContentHandlerTest {
         String frag2 = "67890";
         List<String> fragments = new ArrayList<>();
 
-        FragmentListener listener = (String frag) -> fragments.add(frag);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
         FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
         handler.startDocument();
@@ -117,7 +117,7 @@ public class FragmentParserContentHandlerTest {
         String frag1 = "123456789012";
         List<String> fragments = new ArrayList<>();
 
-        FragmentListener listener = (String frag) -> fragments.add(frag);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
         FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
         handler.startDocument();
@@ -138,7 +138,7 @@ public class FragmentParserContentHandlerTest {
         String frag2 = "89012";
         List<String> fragments = new ArrayList<>();
 
-        FragmentListener listener = (String frag) -> fragments.add(frag);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
         FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
         handler.startDocument();
@@ -159,7 +159,7 @@ public class FragmentParserContentHandlerTest {
         String frag1 = "1234567890123";
         List<String> fragments = new ArrayList<>();
 
-        FragmentListener listener = (String frag) -> fragments.add(frag);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
         FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
         handler.startDocument();
@@ -181,7 +181,7 @@ public class FragmentParserContentHandlerTest {
         String frag3 = "0123";
         List<String> fragments = new ArrayList<>();
 
-        FragmentListener listener = (String frag) -> fragments.add(frag);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
         FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
         handler.startDocument();
@@ -203,7 +203,7 @@ public class FragmentParserContentHandlerTest {
         String frag1 = "12345678901234567890123";
         List<String> fragments = new ArrayList<>();
 
-        FragmentListener listener = (String frag) -> fragments.add(frag);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
         FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
         handler.startDocument();
@@ -228,7 +228,7 @@ public class FragmentParserContentHandlerTest {
         String frag5 = "0123";
         List<String> fragments = new ArrayList<>();
 
-        FragmentListener listener = (String frag) -> fragments.add(frag);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
         FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
         handler.startDocument();
