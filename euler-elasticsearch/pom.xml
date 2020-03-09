@@ -26,7 +26,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.euler</groupId>
-            <artifactId>euler-common</artifactId>
+            <artifactId>euler-tika</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

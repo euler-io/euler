@@ -1,6 +1,7 @@
 package com.github.euler.tika;
 
 import java.net.URI;
+import java.util.List;
 
 import com.github.euler.core.ProcessingContext;
 
@@ -10,8 +11,8 @@ public interface BatchSink {
 
     String store(URI uri, ProcessingContext ctx);
 
-    SinkReponse storeFragment(String parentId, String frag);
+    List<SinkReponse> storeFragment(String parentId, String fragId, int index, String fragment);
 
-    SinkReponse flush(boolean force);
+    List<SinkReponse> flush(boolean force);
 
 }
