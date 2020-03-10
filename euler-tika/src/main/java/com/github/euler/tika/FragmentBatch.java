@@ -3,8 +3,6 @@ package com.github.euler.tika;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.List;
-import java.util.UUID;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -47,7 +45,9 @@ public class FragmentBatch implements Batch {
 
     @Override
     public void process(JobTaskToProcess msg, BatchListener listener) {
-        String id = sink.store(msg.itemURI, msg.ctx);
+        SinkResponse response = sink.store(msg.itemURI, msg.ctx);
+
+        String id = response.getId();
         state.itemStored(id, msg);
 
         if (sf.isEmpty(msg.itemURI)) {
@@ -62,21 +62,20 @@ public class FragmentBatch implements Batch {
                 state.itemParsed(id);
             }
         }
-        List<SinkReponse> response = sink.flush(false);
         handleResponse(response, listener);
     }
 
     @Override
     public void flush(FlushTask msg, BatchListener listener) {
-        List<SinkReponse> response = sink.flush(msg.force);
+        SinkResponse response = sink.flush(msg.force);
         handleResponse(response, listener);
     }
 
-    public void handleResponse(List<SinkReponse> responses, BatchListener listener) {
-        for (SinkReponse response : responses) {
+    public void handleResponse(SinkResponse response, BatchListener listener) {
+        for (SinkItemResponse itemResponse : response.getResponses()) {
             String id = response.getId();
-            if (response.isFailed()) {
-                Exception e = response.getFailureCause();
+            if (itemResponse.isFailed()) {
+                Exception e = itemResponse.getFailureCause();
                 LOGGER.warn("Sink operation failed.", e);
             }
             boolean finished = state.itemIndexex(id);
@@ -114,8 +113,8 @@ public class FragmentBatch implements Batch {
 
         @Override
         public void handleFragment(String frag) {
-            String fragId = UUID.randomUUID().toString();
-            List<SinkReponse> response = sink.storeFragment(id, fragId, count++, frag);
+            SinkResponse response = sink.storeFragment(id, count++, frag);
+            String fragId = response.getId();
             state.fragmentStored(id, fragId);
             handleResponse(response, listener);
         }

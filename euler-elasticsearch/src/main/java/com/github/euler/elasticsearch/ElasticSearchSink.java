@@ -2,12 +2,9 @@ package com.github.euler.elasticsearch;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -21,8 +18,9 @@ import org.slf4j.LoggerFactory;
 import com.github.euler.common.SizeUtils;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.tika.BatchSink;
+import com.github.euler.tika.EmptyResponse;
 import com.github.euler.tika.FlushConfig;
-import com.github.euler.tika.SinkReponse;
+import com.github.euler.tika.SinkResponse;
 
 public class ElasticSearchSink implements BatchSink {
 
@@ -43,7 +41,7 @@ public class ElasticSearchSink implements BatchSink {
     }
 
     @Override
-    public String store(URI uri, ProcessingContext ctx) {
+    public SinkResponse store(URI uri, ProcessingContext ctx) {
         Map<String, Object> metadata = new HashMap<>(ctx.metadata());
         metadata.put("join_field", "item");
 
@@ -53,7 +51,7 @@ public class ElasticSearchSink implements BatchSink {
         req.source(metadata);
         add(req);
 
-        return id;
+        return flush(id, false);
     }
 
     protected String generateId(URI uri, ProcessingContext ctx) {
@@ -61,7 +59,7 @@ public class ElasticSearchSink implements BatchSink {
     }
 
     @Override
-    public List<SinkReponse> storeFragment(String parentId, String fragId, int index, String fragment) {
+    public SinkResponse storeFragment(String parentId, int index, String fragment) {
         Map<String, Object> data = new HashMap<>();
         data.put("content", fragment);
         data.put("size", fragment);
@@ -73,12 +71,14 @@ public class ElasticSearchSink implements BatchSink {
 
         data.put("join_field", joinField);
 
+        String fragId = UUID.randomUUID().toString();
+
         IndexRequest req = new IndexRequest(this.index);
         req.routing(parentId);
         req.id(fragId);
         req.source(data);
         add(req);
-        return flush(false);
+        return flush(fragId, false);
     }
 
     private void add(IndexRequest req) {
@@ -86,7 +86,11 @@ public class ElasticSearchSink implements BatchSink {
     }
 
     @Override
-    public List<SinkReponse> flush(boolean force) {
+    public SinkResponse flush(boolean force) {
+        return flush(null, force);
+    }
+
+    private SinkResponse flush(String id, boolean force) {
         int actions = bulkRequest.numberOfActions();
         long bytes = bulkRequest.estimatedSizeInBytes();
         boolean aboveMinimum = flushConfig.isAboveMinimum(actions, bytes);
@@ -99,13 +103,12 @@ public class ElasticSearchSink implements BatchSink {
                 BulkResponse response = flush();
                 bulkRequest = new BulkRequest();
 
-                return Arrays.stream(response.getItems())
-                        .map((i) -> new ElasticSearchResponse(i)).collect(Collectors.toList());
+                return new ElasticSearchResponse(id, response);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        return Collections.emptyList();
+        return new EmptyResponse(id);
     }
 
     private BulkResponse flush() throws IOException {

@@ -1,6 +1,6 @@
 package com.github.euler.tika;
 
-public interface SinkReponse {
+public interface SinkItemResponse {
 
     String getId();
 

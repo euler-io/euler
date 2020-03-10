@@ -1,38 +1,34 @@
 package com.github.euler.elasticsearch;
 
-import org.elasticsearch.action.bulk.BulkItemResponse;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import com.github.euler.tika.SinkReponse;
+import org.elasticsearch.action.bulk.BulkResponse;
 
-public class ElasticSearchResponse implements SinkReponse {
+import com.github.euler.tika.SinkItemResponse;
+import com.github.euler.tika.SinkResponse;
 
-    private BulkItemResponse item;
+public class ElasticSearchResponse implements SinkResponse {
 
-    public ElasticSearchResponse(BulkItemResponse item) {
-        this.item = item;
+    private final String id;
+    private final BulkResponse response;
+
+    public ElasticSearchResponse(String id, BulkResponse response) {
+        this.id = id;
+        this.response = response;
     }
 
     @Override
     public String getId() {
-        if (item.isFailed()) {
-            return item.getResponse().getId();
-        } else {
-            return item.getFailure().getId();
-        }
+        return id;
     }
 
     @Override
-    public boolean isFailed() {
-        return item.isFailed();
-    }
-
-    @Override
-    public Exception getFailureCause() {
-        if (item.isFailed()) {
-            return item.getFailure().getCause();
-        } else {
-            return null;
-        }
+    public List<SinkItemResponse> getResponses() {
+        return Arrays.stream(response.getItems())
+                .map((item) -> new ElasticSearchItemResponse(item))
+                .collect(Collectors.toList());
     }
 
 }
