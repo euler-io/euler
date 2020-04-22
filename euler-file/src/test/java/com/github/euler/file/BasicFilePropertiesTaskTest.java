@@ -11,6 +11,7 @@ import java.nio.file.Files;
 
 import org.junit.Test;
 
+import com.github.euler.common.CommonMetadata;
 import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
@@ -52,12 +53,12 @@ public class BasicFilePropertiesTaskTest extends AkkaTest {
         JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
         ProcessingContext ctx = response.ctx;
 
-        assertEquals("item.txt", ctx.metadata(BasicFilePropertiesTask.NAME));
-        assertEquals(Long.valueOf(0l), (Long) ctx.metadata(BasicFilePropertiesTask.SIZE));
-        assertFalse((Boolean) ctx.metadata(BasicFilePropertiesTask.IS_DIRECTORY));
-        assertEquals("dir/item.txt", ctx.metadata(BasicFilePropertiesTask.PATH));
-        assertNotNull(ctx.metadata(BasicFilePropertiesTask.CREATED_DATETIME));
-        assertNotNull(ctx.metadata(BasicFilePropertiesTask.LAST_MODIFIED_DATETIME));
+        assertEquals("item.txt", ctx.metadata(CommonMetadata.NAME));
+        assertEquals(Long.valueOf(0l), (Long) ctx.metadata(CommonMetadata.SIZE));
+        assertFalse((Boolean) ctx.metadata(CommonMetadata.IS_DIRECTORY));
+        assertEquals("dir/item.txt", ctx.metadata(CommonMetadata.PATH));
+        assertNotNull(ctx.metadata(CommonMetadata.CREATED_DATETIME));
+        assertNotNull(ctx.metadata(CommonMetadata.LAST_MODIFIED_DATETIME));
     }
 
 }

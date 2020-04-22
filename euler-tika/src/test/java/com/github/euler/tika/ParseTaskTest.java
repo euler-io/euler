@@ -9,10 +9,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.time.Duration;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import com.github.euler.common.CommonContext;
+import com.github.euler.common.CommonMetadata;
+import com.github.euler.core.EmbeddedItemFound;
 import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
@@ -67,6 +72,86 @@ public class ParseTaskTest extends AkkaTest {
         JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
         String contentType = response.ctx.metadata("Content-Type").toString();
         assertTrue(contentType.startsWith("text/plain"));
+    }
+
+    @Test
+    public void testParseEmbedded() throws Exception {
+        File file = Paths.get(ParseTaskTest.class.getClassLoader().getResource("content.zip").toURI()).normalize().toFile();
+
+        File root = Files.createTempDirectory("dir").toFile();
+        File tmp = Files.createTempDirectory("tmp").toFile();
+        Task task = ParseTask.builder("task")
+                .setStreamFactory(new FileStreamFactory())
+                .setParsedContentStrategy(new FileStorageStrategy(root, ".txt"))
+                .setEmbeddedContentStrategy(new FileStorageStrategy(tmp, ".tmp"))
+                .setExtractEmbedded(true)
+                .setIncludeExtractEmbedded("application\\/zip")
+                .setExcludeExtractEmbedded("a^")
+                .build();
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
+
+        ProcessingContext ctx = ProcessingContext.builder().metadata("category", "application/zip").build();
+        JobTaskToProcess msg = new JobTaskToProcess(file.toURI(), file.toURI(), ctx, probe.ref());
+        ref.tell(msg);
+
+        EmbeddedItemFound response = probe.expectMessageClass(EmbeddedItemFound.class, Duration.ofDays(1));
+
+        assertTrue(response.ctx.metadata().containsKey(CommonMetadata.CREATED_DATETIME));
+        assertTrue(response.ctx.metadata().containsKey(CommonMetadata.LAST_MODIFIED_DATETIME));
+        assertTrue(response.ctx.metadata().containsKey(CommonMetadata.NAME));
+
+        assertTrue(response.ctx.context().containsKey(CommonContext.TEMPORARY_URI));
+
+        probe.expectMessageClass(JobTaskFinished.class);
+    }
+
+    @Test
+    public void testParseEmbeddedNotIncluded() throws Exception {
+        File file = Paths.get(ParseTaskTest.class.getClassLoader().getResource("content.zip").toURI()).normalize().toFile();
+
+        File root = Files.createTempDirectory("dir").toFile();
+        File tmp = Files.createTempDirectory("tmp").toFile();
+        Task task = ParseTask.builder("task")
+                .setStreamFactory(new FileStreamFactory())
+                .setParsedContentStrategy(new FileStorageStrategy(root, ".txt"))
+                .setEmbeddedContentStrategy(new FileStorageStrategy(tmp, ".tmp"))
+                .setExtractEmbedded(true)
+                .setIncludeExtractEmbedded("text\\/html")
+                .setExcludeExtractEmbedded("a^")
+                .build();
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
+
+        ProcessingContext ctx = ProcessingContext.builder().metadata("category", "application/zip").build();
+        JobTaskToProcess msg = new JobTaskToProcess(file.toURI(), file.toURI(), ctx, probe.ref());
+        ref.tell(msg);
+
+        probe.expectMessageClass(JobTaskFinished.class);
+    }
+
+    @Test
+    public void testParseEmbeddedExcluded() throws Exception {
+        File file = Paths.get(ParseTaskTest.class.getClassLoader().getResource("content.zip").toURI()).normalize().toFile();
+
+        File root = Files.createTempDirectory("dir").toFile();
+        File tmp = Files.createTempDirectory("tmp").toFile();
+        Task task = ParseTask.builder("task")
+                .setStreamFactory(new FileStreamFactory())
+                .setParsedContentStrategy(new FileStorageStrategy(root, ".txt"))
+                .setEmbeddedContentStrategy(new FileStorageStrategy(tmp, ".tmp"))
+                .setExtractEmbedded(true)
+                .setIncludeExtractEmbedded(".+")
+                .setExcludeExtractEmbedded("application\\/zip")
+                .build();
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
+
+        ProcessingContext ctx = ProcessingContext.builder().metadata("category", "application/zip").build();
+        JobTaskToProcess msg = new JobTaskToProcess(file.toURI(), file.toURI(), ctx, probe.ref());
+        ref.tell(msg);
+
+        probe.expectMessageClass(JobTaskFinished.class);
     }
 
     private File createFile(String content) throws IOException {

@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Date;
 
+import com.github.euler.common.CommonMetadata;
 import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
@@ -43,15 +44,15 @@ public class BasicFilePropertiesExecution extends AbstractBehavior<TaskCommand> 
 
         Builder builder = ProcessingContext.builder();
 
-        builder.metadata(BasicFilePropertiesTask.NAME, file.getName());
-        builder.metadata(BasicFilePropertiesTask.SIZE, file.length());
-        builder.metadata(BasicFilePropertiesTask.IS_DIRECTORY, file.isDirectory());
-        builder.metadata(BasicFilePropertiesTask.PATH, FileUtils.getRelativePath(parent, file));
+        builder.metadata(CommonMetadata.NAME, file.getName());
+        builder.metadata(CommonMetadata.SIZE, file.length());
+        builder.metadata(CommonMetadata.IS_DIRECTORY, file.isDirectory());
+        builder.metadata(CommonMetadata.PATH, FileUtils.getRelativePath(parent, file));
 
         BasicFileAttributes fileAttributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
 
-        builder.metadata(BasicFilePropertiesTask.CREATED_DATETIME, new Date(fileAttributes.creationTime().toMillis()));
-        builder.metadata(BasicFilePropertiesTask.LAST_MODIFIED_DATETIME, new Date(fileAttributes.lastModifiedTime().toMillis()));
+        builder.metadata(CommonMetadata.CREATED_DATETIME, new Date(fileAttributes.creationTime().toMillis()));
+        builder.metadata(CommonMetadata.LAST_MODIFIED_DATETIME, new Date(fileAttributes.lastModifiedTime().toMillis()));
 
         ProcessingContext ctx = builder.build();
         msg.replyTo.tell(new JobTaskFinished(msg, ctx));

@@ -22,14 +22,24 @@ public class ParseTask implements Task {
     private final Parser parser;
     private final StreamFactory sf;
     private final StorageStrategy parsedContentStrategy;
+    private final StorageStrategy embeddedContentStrategy;
+    private boolean extractEmbedded;
+    private final String includeExtractEmbeddedPattern;
+    private final String excludeExtractEmbeddedPattern;
     private final MetadataParser metadataParser;
     private final ParseContextFactory parseContextFactory;
 
-    public ParseTask(String name, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, MetadataParser metadataParser, ParseContextFactory parseContextFactory) {
+    private ParseTask(String name, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy, boolean extractEmbedded,
+            String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
+            ParseContextFactory parseContextFactory) {
         this.name = name;
         this.parser = parser;
         this.sf = sf;
         this.parsedContentStrategy = parsedContentStrategy;
+        this.embeddedContentStrategy = embeddedContentStrategy;
+        this.extractEmbedded = extractEmbedded;
+        this.includeExtractEmbeddedPattern = includeExtractEmbeddedPattern;
+        this.excludeExtractEmbeddedPattern = excludeExtractEmbeddedPattern;
         this.metadataParser = metadataParser;
         this.parseContextFactory = parseContextFactory;
     }
@@ -41,7 +51,9 @@ public class ParseTask implements Task {
 
     @Override
     public Behavior<TaskCommand> behavior() {
-        return ParseExecution.create(this.parser, this.sf, this.parsedContentStrategy, this.metadataParser, this.parseContextFactory);
+        return ParseExecution.create(this.parser, this.sf, this.parsedContentStrategy, this.embeddedContentStrategy, this.extractEmbedded, this.includeExtractEmbeddedPattern,
+                this.excludeExtractEmbeddedPattern, this.metadataParser,
+                this.parseContextFactory);
     }
 
     @Override
@@ -59,8 +71,12 @@ public class ParseTask implements Task {
         private Parser parser;
         private StreamFactory streamFactory;
         private StorageStrategy parsedContentStrategy;
+        private StorageStrategy embeddedContentStrategy;
         private MetadataParser metadataParser;
         private ParseContextFactory parseContextFactory;
+        private boolean extractEmbedded = false;
+        private String includeExtractEmbeddedPattern = ".+";
+        private String excludeExtractEmbeddedPattern = "a^";
 
         private Builder(String name) {
             super();
@@ -106,6 +122,15 @@ public class ParseTask implements Task {
             return this;
         }
 
+        public Builder setEmbeddedContentStrategy(StorageStrategy embeddedContentStrategy) {
+            this.embeddedContentStrategy = embeddedContentStrategy;
+            return this;
+        }
+
+        public StorageStrategy getEmbeddedContentStrategy() {
+            return embeddedContentStrategy;
+        }
+
         public MetadataParser getMetadataParser() {
             return metadataParser;
         }
@@ -124,14 +149,47 @@ public class ParseTask implements Task {
             return this;
         }
 
+        public Builder setExtractEmbedded(boolean extractEmbedded) {
+            this.extractEmbedded = extractEmbedded;
+            return this;
+        }
+
+        public Builder setIncludeExtractEmbedded(String includeExtractEmbeddedPattern) {
+            this.includeExtractEmbeddedPattern = includeExtractEmbeddedPattern;
+            return this;
+        }
+
+        public Builder setExcludeExtractEmbedded(String excludeExtractEmbeddedPattern) {
+            this.excludeExtractEmbeddedPattern = excludeExtractEmbeddedPattern;
+            return this;
+        }
+
+        public boolean isExtractEmbedded() {
+            return extractEmbedded;
+        }
+
+        public String getIncludeExtractEmbeddedPattern() {
+            return includeExtractEmbeddedPattern;
+        }
+
+        public String getExcludeExtractEmbeddedPattern() {
+            return excludeExtractEmbeddedPattern;
+        }
+
         public ParseTask build() {
-            Objects.requireNonNull(name, () -> "name cannont be null");
-            Objects.requireNonNull(parser, () -> "parser cannont be null");
-            Objects.requireNonNull(streamFactory, () -> "streamFactory cannont be null");
-            Objects.requireNonNull(parsedContentStrategy, () -> "parsedContentStrategy cannont be null");
-            Objects.requireNonNull(metadataParser, () -> "metadataParser cannont be null");
-            Objects.requireNonNull(parseContextFactory, () -> "parseContextFactory cannont be null");
-            return new ParseTask(name, parser, streamFactory, parsedContentStrategy, metadataParser, parseContextFactory);
+            Objects.requireNonNull(name, () -> "name cannot be null");
+            Objects.requireNonNull(parser, () -> "parser cannot be null");
+            Objects.requireNonNull(streamFactory, () -> "streamFactory cannot be null");
+            Objects.requireNonNull(parsedContentStrategy, () -> "parsedContentStrategy cannot be null");
+            if (extractEmbedded) {
+                Objects.requireNonNull(embeddedContentStrategy, () -> "embeddedContentStrategy cannot be null");
+                Objects.requireNonNull(includeExtractEmbeddedPattern, () -> "includeExtractEmbeddedPattern cannot be null");
+                Objects.requireNonNull(excludeExtractEmbeddedPattern, () -> "excludeExtractEmbeddedPattern cannot be null");
+            }
+            Objects.requireNonNull(metadataParser, () -> "metadataParser cannot be null");
+            Objects.requireNonNull(parseContextFactory, () -> "parseContextFactory cannot be null");
+            return new ParseTask(name, parser, streamFactory, parsedContentStrategy, embeddedContentStrategy, this.extractEmbedded, this.includeExtractEmbeddedPattern,
+                    this.excludeExtractEmbeddedPattern, metadataParser, parseContextFactory);
         }
 
     }

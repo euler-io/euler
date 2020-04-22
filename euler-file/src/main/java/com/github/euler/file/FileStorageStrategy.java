@@ -21,10 +21,14 @@ public class FileStorageStrategy implements StorageStrategy {
 
     @Override
     public URI createFile(URI uri) {
+        String baseName = FilenameUtils.getBaseName(FileUtils.toFile(uri).getAbsolutePath());
+        return createFile(baseName, suffix);
+    }
+
+    public URI createFile(String baseName, String suffix) {
         String uuid = UUID.randomUUID().toString();
         File dir = new File(root, uuid.substring(0, 1) + "/" + uuid.substring(1, 2));
         dir.mkdirs();
-        String baseName = FilenameUtils.getBaseName(FileUtils.toFile(uri).getAbsolutePath());
         String name = uuid + "-" + baseName + suffix;
         File file = new File(dir, name);
         try {
@@ -33,6 +37,11 @@ public class FileStorageStrategy implements StorageStrategy {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public URI createFile(String suffix) {
+        return createFile("", suffix);
     }
 
 }

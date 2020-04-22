@@ -8,13 +8,6 @@ import akka.actor.typed.Behavior;
 
 public class BasicFilePropertiesTask implements Task {
 
-    public static final String NAME = "name";
-    public static final String SIZE = "size";
-    public static final String IS_DIRECTORY = "is-directory";
-    public static final String PATH = "path";
-    public static final String CREATED_DATETIME = "created-datetime";
-    public static final String LAST_MODIFIED_DATETIME = "last-modified-datetime";
-
     private String name;
 
     public BasicFilePropertiesTask(String name) {
