@@ -8,5 +8,6 @@ public interface CommonMetadata {
     final static String SIZE = "size";
     final static String IS_DIRECTORY = "is-directory";
     final static String PATH = "path";
+    final static String CATEGORY = "category";
 
 }
