@@ -1,0 +1,4 @@
+com.github.euler.config.TestTaskCreator
+com.github.euler.config.ConcurrentTaskCreator
+com.github.euler.config.PipelineTaskCreator
+com.github.euler.config.PooledTaskCreator

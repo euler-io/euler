@@ -40,6 +40,14 @@ public class Euler implements AutoCloseable {
         return completionStage.toCompletableFuture();
     }
 
+    public Behavior<SourceCommand> getSourceBehavior() {
+        return sourceBehavior;
+    }
+
+    public Task[] getTasks() {
+        return tasks;
+    }
+
     @Override
     public void close() throws Exception {
         if (system != null) {

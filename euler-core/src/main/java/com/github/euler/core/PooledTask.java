@@ -29,4 +29,8 @@ public class PooledTask implements Task {
         return task.accept(msg);
     }
 
+    public int getSize() {
+        return size;
+    }
+
 }

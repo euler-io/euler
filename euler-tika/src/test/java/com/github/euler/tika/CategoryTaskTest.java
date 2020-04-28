@@ -55,6 +55,23 @@ public class CategoryTaskTest extends AkkaTest {
         assertEquals("application/zip", response.ctx.metadata(CommonMetadata.CATEGORY));
     }
 
+    @Test
+    public void testDetectDirectory() throws Exception {
+        File file = Files.createTempDirectory("dir").toFile();
+
+        Task task = new CategoryDetectTask("category-task", new FileStreamFactory(), TikaConfig.getDefaultConfig().getDetector());
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
+
+        ProcessingContext ctx = ProcessingContext.builder()
+                .metadata(CommonMetadata.IS_DIRECTORY, true)
+                .build();
+        JobTaskToProcess msg = new JobTaskToProcess(file.toURI(), file.toURI(), ctx, probe.ref());
+        ref.tell(msg);
+        JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
+        assertEquals("text/directory", response.ctx.metadata(CommonMetadata.CATEGORY));
+    }
+
     private File createFile(String content) throws IOException {
         File file = Files.createTempFile("parse-", ".txt").toFile();
         try (FileOutputStream output = new FileOutputStream(file)) {

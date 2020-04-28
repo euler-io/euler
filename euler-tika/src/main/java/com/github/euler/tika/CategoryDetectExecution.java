@@ -46,16 +46,20 @@ public class CategoryDetectExecution extends AbstractBehavior<TaskCommand> {
     protected Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) throws IOException {
         String category = null;
 
-        Metadata metadata = new Metadata();
-        if (msg.ctx.metadata().containsKey(CommonMetadata.NAME)) {
-            metadata.set(Metadata.RESOURCE_NAME_KEY, msg.ctx.metadata(CommonMetadata.NAME).toString());
+        Boolean isDirectory = (Boolean) msg.ctx.metadata(CommonMetadata.IS_DIRECTORY);
+        if (isDirectory != null && isDirectory) {
+            category = "text/directory";
+        } else {
+            Metadata metadata = new Metadata();
+            if (msg.ctx.metadata().containsKey(CommonMetadata.NAME)) {
+                metadata.set(Metadata.RESOURCE_NAME_KEY, msg.ctx.metadata(CommonMetadata.NAME).toString());
+            }
+            try (TikaInputStream tikaInputStream = TikaInputStream.get(sf.openInputStream(msg.itemURI))) {
+                MediaType type = detector.detect(tikaInputStream, metadata);
+                type = type.getBaseType();
+                category = type.getType() + "/" + type.getSubtype();
+            }
         }
-        try (TikaInputStream tikaInputStream = TikaInputStream.get(sf.openInputStream(msg.itemURI))) {
-            MediaType type = detector.detect(tikaInputStream, metadata);
-            type = type.getBaseType();
-            category = type.getType() + "/" + type.getSubtype();
-        }
-
         ProcessingContext ctx = ProcessingContext.builder()
                 .metadata(CommonMetadata.CATEGORY, category)
                 .build();

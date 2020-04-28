@@ -29,4 +29,8 @@ public class PipelineTask implements Task {
         return Arrays.stream(this.tasks).anyMatch(t -> t.accept(msg));
     }
 
+    public Task[] getTasks() {
+        return tasks;
+    }
+
 }
