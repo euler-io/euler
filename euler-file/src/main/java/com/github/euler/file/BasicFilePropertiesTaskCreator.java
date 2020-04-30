@@ -1,5 +1,6 @@
 package com.github.euler.file;
 
+import com.github.euler.config.ConfigContext;
 import com.github.euler.config.TaskCreator;
 import com.github.euler.config.TaskFactory;
 import com.github.euler.core.Task;
@@ -15,7 +16,7 @@ public class BasicFilePropertiesTaskCreator implements TaskCreator {
     }
 
     @Override
-    public Task create(Config config, TaskFactory taskFactory) {
+    public Task create(Config config, TaskFactory taskFactory, ConfigContext ctx) {
         String name;
         if (config.hasPath(NAME)) {
             name = config.getString(NAME);

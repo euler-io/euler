@@ -15,7 +15,7 @@ public class PooledTaskCreatorTest {
         Config config = ConfigFactory.parseString("{task = \"test\", size = 1}");
         TaskFactory factory = TaskFactory.load();
         TaskCreator creator = new PooledTaskCreator();
-        PooledTask task = (PooledTask) creator.create(config, factory);
+        PooledTask task = (PooledTask) creator.create(config, factory, ConfigContext.EMPTY);
         assertEquals(1, task.getSize());
     }
 
@@ -24,7 +24,7 @@ public class PooledTaskCreatorTest {
         Config config = ConfigFactory.parseString("{task = \"test\", size = 1, name = \"test-task\"}");
         TaskFactory factory = TaskFactory.load();
         TaskCreator creator = new PooledTaskCreator();
-        PooledTask task = (PooledTask) creator.create(config, factory);
+        PooledTask task = (PooledTask) creator.create(config, factory, ConfigContext.EMPTY);
         assertEquals(1, task.getSize());
         assertEquals("test-task", task.name());
     }

@@ -12,7 +12,7 @@ public class TestTaskCreator implements TaskCreator {
     }
 
     @Override
-    public Task create(Config config, TaskFactory taskFactory) {
+    public Task create(Config config, TaskFactory taskFactory, ConfigContext ctx) {
         return Tasks.empty("test");
     }
 

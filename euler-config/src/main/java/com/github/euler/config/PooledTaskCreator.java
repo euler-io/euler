@@ -17,7 +17,7 @@ public class PooledTaskCreator implements TaskCreator {
     }
 
     @Override
-    public Task create(Config config, TaskFactory taskFactory) {
+    public Task create(Config config, TaskFactory taskFactory, ConfigContext ctx) {
         String name;
         if (config.hasPath(NAME)) {
             name = config.getString(NAME);

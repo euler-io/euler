@@ -24,7 +24,7 @@ public class SourceFactory extends AbstractFactory<Behavior<SourceCommand>> {
         this.loadersMap = loaders.stream().map(Provider::get).collect(Collectors.toMap(l -> l.type(), l -> l));
     }
 
-    public Behavior<SourceCommand> create(String type, Config config) {
+    public Behavior<SourceCommand> create(String type, Config config, ConfigContext ctx) {
         SourceCreator sourceLoader = loadersMap.get(type);
         return sourceLoader.create(config);
     }

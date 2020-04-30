@@ -16,7 +16,7 @@ public class ConcurrentTaskCreatorTest {
         Config config = ConfigFactory.parseString("{tasks = [{type = \"test\"}], name = \"test-task\"}");
         TaskFactory factory = TaskFactory.load();
         ConcurrentTaskCreator creator = new ConcurrentTaskCreator();
-        ConcurrentTask task = (ConcurrentTask) creator.create(config, factory);
+        ConcurrentTask task = (ConcurrentTask) creator.create(config, factory, ConfigContext.EMPTY);
         assertEquals(1, task.getTasks().length);
         assertEquals("test-task", task.name());
     }
@@ -26,7 +26,7 @@ public class ConcurrentTaskCreatorTest {
         Config config = ConfigFactory.parseString("{tasks = [{type = \"test\"}]}");
         TaskFactory factory = TaskFactory.load();
         ConcurrentTaskCreator creator = new ConcurrentTaskCreator();
-        ConcurrentTask task = (ConcurrentTask) creator.create(config, factory);
+        ConcurrentTask task = (ConcurrentTask) creator.create(config, factory, ConfigContext.EMPTY);
         assertEquals(1, task.getTasks().length);
         assertNotNull(task.name());
     }

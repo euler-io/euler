@@ -48,6 +48,14 @@ public class EulerFactoryTest {
     }
 
     @Test
+    public void testCreateContext() {
+        Config config = ConfigFactory.parseString("{test = { test-key = test-value }}");
+        EulerFactory factory = EulerFactory.load();
+        ConfigContext ctx = factory.createContext(config);
+        assertEquals("test-value", ctx.get("test-key"));
+    }
+
+    @Test
     public void testCreateSource() {
         Config config = ConfigFactory.parseString("{source = \"test\"}");
         EulerFactory factory = EulerFactory.load();

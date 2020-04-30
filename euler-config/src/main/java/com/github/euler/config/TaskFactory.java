@@ -32,9 +32,9 @@ public class TaskFactory extends AbstractFactory<Task> {
         return new TaskFactory(classLoader);
     }
 
-    public Task create(String type, Config config) {
+    public Task create(String type, Config config, ConfigContext ctx) {
         TaskCreator creator = creatorsMap.get(type);
-        return creator.create(config, this);
+        return creator.create(config, this, ctx);
     }
 
     public String createTaskName() {

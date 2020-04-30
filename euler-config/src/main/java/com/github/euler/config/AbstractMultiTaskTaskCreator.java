@@ -9,10 +9,10 @@ public abstract class AbstractMultiTaskTaskCreator implements TaskCreator {
     private static final String TASKS = "tasks";
 
     @Override
-    public Task create(Config config, TaskFactory taskFactory) {
+    public Task create(Config config, TaskFactory taskFactory, ConfigContext ctx) {
         Task[] tasks = config.getList(TASKS)
                 .stream()
-                .map(v -> taskFactory.create(v))
+                .map(v -> taskFactory.create(v, ctx))
                 .toArray(s -> new Task[s]);
         String name;
         if (config.hasPath(NAME)) {

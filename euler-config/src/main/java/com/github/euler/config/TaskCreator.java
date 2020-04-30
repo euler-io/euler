@@ -7,6 +7,6 @@ public interface TaskCreator {
 
     String type();
 
-    Task create(Config config, TaskFactory taskFactory);
+    Task create(Config config, TaskFactory taskFactory, ConfigContext ctx);
 
 }
