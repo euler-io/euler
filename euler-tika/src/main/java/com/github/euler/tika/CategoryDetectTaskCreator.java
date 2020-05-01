@@ -18,8 +18,8 @@ public class CategoryDetectTaskCreator implements TaskCreator {
 
     @Override
     public Task create(Config config, TaskFactory taskFactory, ConfigContext ctx) {
-        Detector detector = null;
-        StreamFactory sf = null;
+        Detector detector = ctx.getRequired(Detector.class);
+        StreamFactory sf = ctx.getRequired(StreamFactory.class);
         String name = null;
         return new CategoryDetectTask(name, sf, detector);
     }

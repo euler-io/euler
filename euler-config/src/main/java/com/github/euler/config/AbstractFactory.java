@@ -10,11 +10,11 @@ public abstract class AbstractFactory<T> {
 
     private static final String TYPE = "type";
 
-    public T create(ConfigValue value) {
-        return (T) create(value, ConfigContext.EMPTY);
+    protected T createFromConfig(ConfigValue value) {
+        return (T) createFromConfigWithContext(value, ConfigContext.EMPTY);
     }
 
-    public T create(ConfigValue value, ConfigContext ctx) {
+    protected T createFromConfigWithContext(ConfigValue value, ConfigContext ctx) {
         if (value.valueType() == ConfigValueType.STRING) {
             String type = value.unwrapped().toString();
             return create(type, ConfigFactory.empty(), ctx);

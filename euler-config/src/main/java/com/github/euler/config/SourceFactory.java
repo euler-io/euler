@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.github.euler.core.SourceCommand;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigValue;
 
 import akka.actor.typed.Behavior;
 
@@ -16,10 +17,10 @@ public class SourceFactory extends AbstractFactory<Behavior<SourceCommand>> {
 
     private SourceFactory(ClassLoader classLoader) {
         super();
-        this.loadSourceLoaders(classLoader);
+        this.loadSourceCreators(classLoader);
     }
 
-    private void loadSourceLoaders(ClassLoader classLoader) {
+    private void loadSourceCreators(ClassLoader classLoader) {
         ServiceLoader<SourceCreator> loaders = ServiceLoader.load(SourceCreator.class, classLoader);
         this.loadersMap = loaders.stream().map(Provider::get).collect(Collectors.toMap(l -> l.type(), l -> l));
     }
@@ -36,6 +37,14 @@ public class SourceFactory extends AbstractFactory<Behavior<SourceCommand>> {
     public static SourceFactory load(ClassLoader classLoader) {
         SourceFactory factory = new SourceFactory(classLoader);
         return factory;
+    }
+
+    public Behavior<SourceCommand> create(ConfigValue value, ConfigContext ctx) {
+        return this.createFromConfigWithContext(value, ctx);
+    }
+
+    public Behavior<SourceCommand> create(ConfigValue value) {
+        return this.createFromConfig(value);
     }
 
 }
