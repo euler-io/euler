@@ -38,6 +38,16 @@ public class ProcessingContext {
         return context;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T context(String key, T defaultValue) {
+        if (context.containsKey(key)) {
+            T value = (T) context(key);
+            return value;
+        } else {
+            return defaultValue;
+        }
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;

@@ -6,7 +6,8 @@ import java.net.URI;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import org.xml.sax.SAXException;
 
 import com.github.euler.common.Batch;
 import com.github.euler.common.BatchListener;
+import com.github.euler.common.CommonContext;
 import com.github.euler.common.FragmentHandler;
 import com.github.euler.common.FragmentParserContentHandler;
 import com.github.euler.common.StreamFactory;
@@ -26,7 +28,7 @@ public class FragmentBatch implements Batch {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FragmentBatch.class);
 
-    private final AutoDetectParser parser;
+    private final Parser parser;
     private final StreamFactory sf;
     private final int fragmentSize;
     private final int fragmentOverlap;
@@ -34,7 +36,7 @@ public class FragmentBatch implements Batch {
 
     private FragmentBatchState state;
 
-    public FragmentBatch(AutoDetectParser parser, StreamFactory sf, int fragmentSize, int fragmentOverlap, BatchSink sink) {
+    public FragmentBatch(Parser parser, StreamFactory sf, int fragmentSize, int fragmentOverlap, BatchSink sink) {
         super();
         this.parser = parser;
         this.sf = sf;
@@ -55,7 +57,8 @@ public class FragmentBatch implements Batch {
         } else {
             BatchFragmentListener fragmentListener = new BatchFragmentListener(id, listener);
             try {
-                parse(msg.itemURI, fragmentListener);
+                URI uri = msg.ctx.context(CommonContext.PARSED_CONTENT_FILE, msg.itemURI);
+                parse(uri, fragmentListener);
             } catch (IOException | SAXException | TikaException e) {
                 throw new RuntimeException(e);
             } finally {
@@ -90,7 +93,7 @@ public class FragmentBatch implements Batch {
     protected void parse(URI uri, FragmentHandler fragmentHandler) throws IOException, SAXException, TikaException {
         ContentHandler handler = new BodyContentHandler(new FragmentParserContentHandler(fragmentSize, fragmentOverlap, fragmentHandler));
         try (InputStream in = sf.openInputStream(uri)) {
-            parser.parse(in, handler, new Metadata());
+            parser.parse(in, handler, new Metadata(), new ParseContext());
         }
     }
 

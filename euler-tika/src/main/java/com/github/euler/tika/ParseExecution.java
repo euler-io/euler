@@ -79,7 +79,7 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         this.currentMsg = msg;
         ProcessingContext.Builder builder = ProcessingContext.builder();
         URI parsedContent = createParsedContent(msg.itemURI);
-        builder.context(ParseTask.PARSED_CONTENT_FILE, parsedContent);
+        builder.context(CommonContext.PARSED_CONTENT_FILE, parsedContent);
 
         InputStream in = null;
         Writer out = null;

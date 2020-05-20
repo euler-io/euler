@@ -38,9 +38,8 @@ public class ParseTaskTest extends AkkaTest {
         File file = createFile(content);
 
         File root = Files.createTempDirectory("dir").toFile();
-        Task task = ParseTask.builder("task")
-                .setStreamFactory(new FileStreamFactory())
-                .setParsedContentStrategy(new FileStorageStrategy(root, ".txt"))
+        Task task = ParseTask
+                .builder("task", new FileStreamFactory(), new FileStorageStrategy(root, ".txt"), new FileStorageStrategy(root, ".tmp"))
                 .build();
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
         ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
@@ -49,8 +48,8 @@ public class ParseTaskTest extends AkkaTest {
         ref.tell(msg);
 
         JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
-        assertNotNull(response.ctx.context(ParseTask.PARSED_CONTENT_FILE));
-        assertEquals(content, IOUtils.toString((URI) response.ctx.context(ParseTask.PARSED_CONTENT_FILE), "utf-8").trim());
+        assertNotNull(response.ctx.context(CommonContext.PARSED_CONTENT_FILE));
+        assertEquals(content, IOUtils.toString((URI) response.ctx.context(CommonContext.PARSED_CONTENT_FILE), "utf-8").trim());
     }
 
     @Test
@@ -59,9 +58,8 @@ public class ParseTaskTest extends AkkaTest {
         File file = createFile(content);
 
         File root = Files.createTempDirectory("dir").toFile();
-        Task task = ParseTask.builder("task")
-                .setStreamFactory(new FileStreamFactory())
-                .setParsedContentStrategy(new FileStorageStrategy(root, ".txt"))
+        Task task = ParseTask
+                .builder("task", new FileStreamFactory(), new FileStorageStrategy(root, ".txt"), new FileStorageStrategy(root, ".tmp"))
                 .build();
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
         ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
@@ -80,10 +78,8 @@ public class ParseTaskTest extends AkkaTest {
 
         File root = Files.createTempDirectory("dir").toFile();
         File tmp = Files.createTempDirectory("tmp").toFile();
-        Task task = ParseTask.builder("task")
-                .setStreamFactory(new FileStreamFactory())
-                .setParsedContentStrategy(new FileStorageStrategy(root, ".txt"))
-                .setEmbeddedContentStrategy(new FileStorageStrategy(tmp, ".tmp"))
+        Task task = ParseTask
+                .builder("task", new FileStreamFactory(), new FileStorageStrategy(root, ".txt"), new FileStorageStrategy(tmp, ".tmp"))
                 .setExtractEmbedded(true)
                 .setIncludeExtractEmbedded("application\\/zip")
                 .setExcludeExtractEmbedded("a^")
@@ -112,10 +108,8 @@ public class ParseTaskTest extends AkkaTest {
 
         File root = Files.createTempDirectory("dir").toFile();
         File tmp = Files.createTempDirectory("tmp").toFile();
-        Task task = ParseTask.builder("task")
-                .setStreamFactory(new FileStreamFactory())
-                .setParsedContentStrategy(new FileStorageStrategy(root, ".txt"))
-                .setEmbeddedContentStrategy(new FileStorageStrategy(tmp, ".tmp"))
+        Task task = ParseTask
+                .builder("task", new FileStreamFactory(), new FileStorageStrategy(root, ".txt"), new FileStorageStrategy(tmp, ".tmp"))
                 .setExtractEmbedded(true)
                 .setIncludeExtractEmbedded("text\\/html")
                 .setExcludeExtractEmbedded("a^")
@@ -136,10 +130,8 @@ public class ParseTaskTest extends AkkaTest {
 
         File root = Files.createTempDirectory("dir").toFile();
         File tmp = Files.createTempDirectory("tmp").toFile();
-        Task task = ParseTask.builder("task")
-                .setStreamFactory(new FileStreamFactory())
-                .setParsedContentStrategy(new FileStorageStrategy(root, ".txt"))
-                .setEmbeddedContentStrategy(new FileStorageStrategy(tmp, ".tmp"))
+        Task task = ParseTask
+                .builder("task", new FileStreamFactory(), new FileStorageStrategy(root, ".txt"), new FileStorageStrategy(tmp, ".tmp"))
                 .setExtractEmbedded(true)
                 .setIncludeExtractEmbedded(".+")
                 .setExcludeExtractEmbedded("application\\/zip")

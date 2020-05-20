@@ -26,6 +26,12 @@
         </dependency>
         <dependency>
             <groupId>com.github.euler</groupId>
+            <artifactId>euler-config</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.euler</groupId>
             <artifactId>euler-tika</artifactId>
             <version>${project.version}</version>
         </dependency>

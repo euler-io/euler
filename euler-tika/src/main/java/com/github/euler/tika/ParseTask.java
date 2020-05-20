@@ -16,8 +16,6 @@ import akka.actor.typed.Behavior;
 
 public class ParseTask implements Task {
 
-    public static final String PARSED_CONTENT_FILE = ParseTask.class.getName() + ".PARSED_CONTENT_FILE";
-
     private final String name;
     private final Parser parser;
     private final StreamFactory sf;
@@ -61,29 +59,29 @@ public class ParseTask implements Task {
         return sf.exists(msg.itemURI) && !sf.isEmpty(msg.itemURI);
     }
 
-    public static Builder builder(String name) {
-        return new Builder(name);
+    public static Builder builder(String name, StreamFactory streamFactory, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy) {
+        return new Builder(name, streamFactory, parsedContentStrategy, embeddedContentStrategy);
     }
 
     public static class Builder {
 
         private String name;
-        private Parser parser;
+        private Parser parser = new AutoDetectParser();
         private StreamFactory streamFactory;
         private StorageStrategy parsedContentStrategy;
         private StorageStrategy embeddedContentStrategy;
-        private MetadataParser metadataParser;
-        private ParseContextFactory parseContextFactory;
+        private MetadataParser metadataParser = new DefaultMetadataParser();
+        private ParseContextFactory parseContextFactory = new FixedParseContextFactory(new ParseContext());
         private boolean extractEmbedded = false;
         private String includeExtractEmbeddedPattern = ".+";
         private String excludeExtractEmbeddedPattern = "a^";
 
-        private Builder(String name) {
+        private Builder(String name, StreamFactory streamFactory, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy) {
             super();
             this.name = name;
-            this.parser = new AutoDetectParser();
-            this.metadataParser = new DefaultMetadataParser();
-            this.parseContextFactory = new FixedParseContextFactory(new ParseContext());
+            this.streamFactory = streamFactory;
+            this.parsedContentStrategy = parsedContentStrategy;
+            this.embeddedContentStrategy = embeddedContentStrategy;
         }
 
         public String getName() {

@@ -15,6 +15,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.euler.common.CommonContext;
 import com.github.euler.common.SizeUtils;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.tika.BatchSink;
@@ -26,15 +27,14 @@ public class ElasticSearchSink implements BatchSink {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchSink.class);
 
-    private final String index;
     private final RestHighLevelClient client;
     private final FlushConfig flushConfig;
 
     private BulkRequest bulkRequest;
+    private String index;
 
-    public ElasticSearchSink(String index, RestHighLevelClient client, FlushConfig flushConfig) {
+    public ElasticSearchSink(RestHighLevelClient client, FlushConfig flushConfig) {
         super();
-        this.index = index;
         this.client = client;
         this.flushConfig = flushConfig;
         this.bulkRequest = new BulkRequest();
@@ -42,10 +42,12 @@ public class ElasticSearchSink implements BatchSink {
 
     @Override
     public SinkResponse store(URI uri, ProcessingContext ctx) {
+        this.index = (String) ctx.context(CommonContext.INDEX);
+
         Map<String, Object> metadata = new HashMap<>(ctx.metadata());
         metadata.put("join_field", "item");
 
-        IndexRequest req = new IndexRequest(this.index);
+        IndexRequest req = new IndexRequest(index);
         String id = generateId(uri, ctx);
         req.id(id);
         req.source(metadata);
@@ -59,11 +61,11 @@ public class ElasticSearchSink implements BatchSink {
     }
 
     @Override
-    public SinkResponse storeFragment(String parentId, int index, String fragment) {
+    public SinkResponse storeFragment(String parentId, int fragIndex, String fragment) {
         Map<String, Object> data = new HashMap<>();
         data.put("content", fragment);
         data.put("size", fragment);
-        data.put("index", index);
+        data.put("index", fragIndex);
 
         Map<String, Object> joinField = new HashMap<String, Object>(1);
         joinField.put("name", "fragment");
