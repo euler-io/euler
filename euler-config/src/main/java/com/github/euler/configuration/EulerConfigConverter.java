@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
+import java.util.function.BiFunction;
 
 import com.github.euler.core.Euler;
 import com.github.euler.core.EulerProcessor;
@@ -79,6 +80,15 @@ public class EulerConfigConverter {
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
         Behavior<ProcessorCommand> processorBehavior = EulerProcessor.create(tasks.toArray(new Task[tasks.size()]));
         return JobExecution.create(sourceBehavior, processorBehavior);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <R> R create(Config config, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
+        ConfigContext ctx = convertContext(config);
+        List<Task> tasks = (List<Task>) ctx.getRequired(TasksConfigConverter.TASKS);
+        Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
+        Behavior<ProcessorCommand> processorBehavior = EulerProcessor.create(tasks.toArray(new Task[tasks.size()]));
+        return func.apply(sourceBehavior, processorBehavior);
     }
 
     @SuppressWarnings("unchecked")

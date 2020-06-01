@@ -1,6 +1,6 @@
 package com.github.euler.file;
 
-import com.github.euler.common.AbstractSourceConfigConverter;
+import com.github.euler.configuration.AbstractSourceConfigConverter;
 import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.core.SourceCommand;

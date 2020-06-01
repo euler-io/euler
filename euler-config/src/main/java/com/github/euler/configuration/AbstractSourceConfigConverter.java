@@ -1,7 +1,5 @@
-package com.github.euler.common;
+package com.github.euler.configuration;
 
-import com.github.euler.configuration.SourceConfigConverter;
-import com.github.euler.configuration.TypeConfigConverter;
 import com.github.euler.core.SourceCommand;
 
 import akka.actor.typed.Behavior;

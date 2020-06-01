@@ -15,6 +15,8 @@ import akka.actor.typed.javadsl.Routers;
 
 public class PooledExecution extends AbstractBehavior<TaskCommand> {
 
+    private static final String ROUTER = "router";
+
     public static Behavior<TaskCommand> create(int size, Task task) {
         return Behaviors.setup((ctx) -> new PooledExecution(ctx, size, task));
     }
@@ -24,7 +26,7 @@ public class PooledExecution extends AbstractBehavior<TaskCommand> {
     public PooledExecution(ActorContext<TaskCommand> context, int size, Task task) {
         super(context);
         PoolRouter<TaskCommand> pool = Routers.pool(size, superviseTaskBehavior(task)).withRoundRobinRouting();
-        router = getContext().spawn(pool, "router");
+        router = getContext().spawn(pool, ROUTER);
     }
 
     @Override

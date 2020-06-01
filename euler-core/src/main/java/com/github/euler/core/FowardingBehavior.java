@@ -1,4 +1,4 @@
-package com.github.euler.testing;
+package com.github.euler.core;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
