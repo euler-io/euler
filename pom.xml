@@ -31,7 +31,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <downloadSources>true</downloadSources>
         <downloadJavadocs>true</downloadJavadocs>
-        <akka.version>2.6.3</akka.version>
+        <akka.version>2.6.5</akka.version>
         <java.version>11</java.version>
     </properties>
 
