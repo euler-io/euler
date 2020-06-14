@@ -10,8 +10,10 @@ import org.junit.Test;
 import com.github.euler.core.EulerCommand;
 import com.github.euler.core.JobItemFound;
 import com.github.euler.core.JobToScan;
+import com.github.euler.core.PausableSourceExecution;
 import com.github.euler.core.ScanFinished;
 import com.github.euler.core.SourceCommand;
+import com.github.euler.core.SourceExecution;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.Behavior;
@@ -26,7 +28,7 @@ public class FileSourceTest extends AkkaTest {
         TestProbe<EulerCommand> probe = testKit.createTestProbe();
         JobToScan msg = new JobToScan(file.toURI(), probe.ref());
 
-        Behavior<SourceCommand> sourceBehavior = FileSource.create();
+        Behavior<SourceCommand> sourceBehavior = SourceExecution.create(new FileSource());
         testKit.spawn(sourceBehavior).tell(msg);
 
         JobItemFound response = probe.expectMessageClass(JobItemFound.class);
@@ -47,7 +49,7 @@ public class FileSourceTest extends AkkaTest {
         TestProbe<EulerCommand> probe = testKit.createTestProbe();
         JobToScan msg = new JobToScan(dir.toURI(), probe.ref());
 
-        Behavior<SourceCommand> sourceBehavior = FileSource.create(1);
+        Behavior<SourceCommand> sourceBehavior = PausableSourceExecution.create(new FileSource(1));
         testKit.spawn(sourceBehavior).tell(msg);
 
         JobItemFound response = probe.expectMessageClass(JobItemFound.class);

@@ -7,35 +7,28 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import com.github.euler.core.CancellableSource;
+import com.github.euler.core.AbstractPausableSource;
 import com.github.euler.core.ProcessingContext;
-import com.github.euler.core.SourceCommand;
+import com.github.euler.core.SourceListener;
 
-import akka.actor.typed.Behavior;
-import akka.actor.typed.javadsl.ActorContext;
-import akka.actor.typed.javadsl.Behaviors;
-
-public class FileSource extends CancellableSource {
-
-    public static Behavior<SourceCommand> create(int maxItemsPerYield) {
-        return Behaviors.setup((context) -> new FileSource(context, maxItemsPerYield));
-    }
-
-    public static Behavior<SourceCommand> create() {
-        return create(100);
-    }
+public class FileSource extends AbstractPausableSource {
 
     private final int maxItemsPerYield;
     private int itemsFound;
     private Iterator<File> fileIterator;
+    private URI uri;
 
-    protected FileSource(ActorContext<SourceCommand> context, int maxItemsPerYield) {
-        super(context);
+    public FileSource(int maxItemsPerYield) {
         this.maxItemsPerYield = maxItemsPerYield;
     }
 
+    public FileSource() {
+        this.maxItemsPerYield = 100;
+    }
+
     @Override
-    protected void prepareScan(URI uri) {
+    public void prepareScan(URI uri) {
+        this.uri = uri;
         Path path = FileUtils.toPath(uri);
         if (path.toFile().isDirectory()) {
             fileIterator = new FileTreeIterator(path.toFile());
@@ -45,17 +38,21 @@ public class FileSource extends CancellableSource {
     }
 
     @Override
-    protected boolean doScan(URI uri) throws IOException {
+    public boolean doScan(SourceListener listener) throws IOException {
         while (fileIterator.hasNext() && itemsFound <= maxItemsPerYield) {
             itemsFound++;
             File found = fileIterator.next();
-            notifyItemFound(uri, found.toURI(), ProcessingContext.EMPTY);
+            listener.notifyItemFound(uri, found.toURI(), ProcessingContext.EMPTY);
         }
         if (fileIterator.hasNext()) {
             itemsFound = 0;
-            yield();
         }
         return !fileIterator.hasNext();
+    }
+
+    @Override
+    public void finishScan() {
+
     }
 
 }
