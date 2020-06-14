@@ -17,6 +17,8 @@ public class JobExecution extends AbstractBehavior<JobCommand> {
     private final Behavior<SourceCommand> sourceBehavior;
     private final Behavior<ProcessorCommand> processorBehavior;
 
+    private ActorRef<EulerCommand> eulerRef;
+
     private JobExecution(ActorContext<JobCommand> context, Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior) {
         super(context);
         this.sourceBehavior = sourceBehavior;
@@ -28,16 +30,21 @@ public class JobExecution extends AbstractBehavior<JobCommand> {
         ReceiveBuilder<JobCommand> builder = newReceiveBuilder();
         builder.onMessage(Job.class, this::onJob);
         builder.onMessage(JobProcessed.class, this::onJobProcessed);
+        builder.onMessage(CancelJob.class, this::onCancelJob);
         return builder.build();
     }
 
     private Behavior<JobCommand> onJob(Job msg) {
-        ActorRef<EulerCommand> eulerRef = getContext().spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior), "euler");
+        this.eulerRef = getContext().spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior), "euler");
         eulerRef.tell(new JobToProcess(msg.uri, msg.replyTo));
         return Behaviors.same();
     }
 
     private Behavior<JobCommand> onJobProcessed(JobProcessed msg) {
+        return Behaviors.stopped();
+    }
+
+    private Behavior<JobCommand> onCancelJob(CancelJob msg) {
         return Behaviors.stopped();
     }
 

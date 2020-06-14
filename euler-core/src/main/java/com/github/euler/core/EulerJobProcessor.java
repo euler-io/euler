@@ -18,15 +18,16 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private Behavior<SourceCommand> sourceBehaviour;
+    private ActorRef<SourceCommand> sourceRef;
 
     private Behavior<ProcessorCommand> processorBehavior;
     private ActorRef<ProcessorCommand> processorRef;
 
     private final EulerState state;
 
-    public EulerJobProcessor(ActorContext<EulerCommand> ctx, Behavior<SourceCommand> discovererBehaviour, Behavior<ProcessorCommand> processorBehavior) {
+    public EulerJobProcessor(ActorContext<EulerCommand> ctx, Behavior<SourceCommand> sourceBehaviour, Behavior<ProcessorCommand> processorBehavior) {
         super(ctx);
-        this.sourceBehaviour = discovererBehaviour;
+        this.sourceBehaviour = sourceBehaviour;
         this.processorBehavior = processorBehavior;
         this.state = new EulerState();
         start();
@@ -50,12 +51,12 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     private Behavior<EulerCommand> onJobToProcess(JobToProcess msg) {
         getContext().getLog().info("{} received to be processed.", msg.uri);
         state.onMessage(msg);
-        getSourceRef(msg).tell(new JobToScan(msg, getContext().getSelf()));
+        spawnSourceRef(msg).tell(new JobToScan(msg, getContext().getSelf()));
         return Behaviors.same();
     }
 
-    private ActorRef<SourceCommand> getSourceRef(JobToProcess msg) {
-        ActorRef<SourceCommand> sourceRef = getContext().spawn(supervisedSourceBehavior(), "euler-source");
+    private ActorRef<SourceCommand> spawnSourceRef(JobToProcess msg) {
+        this.sourceRef = getContext().spawn(supervisedSourceBehavior(), "euler-source");
         getContext().watchWith(sourceRef, new ScanFailed(msg.uri));
         return sourceRef;
     }

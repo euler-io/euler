@@ -174,4 +174,5 @@ public class EulerJobProcessorTest extends AkkaTest {
         JobProcessed response = probe.expectMessageClass(JobProcessed.class);
         assertEquals(uri, response.uri);
     }
+
 }

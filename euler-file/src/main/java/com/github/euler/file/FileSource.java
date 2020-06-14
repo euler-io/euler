@@ -1,76 +1,61 @@
 package com.github.euler.file;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Iterator;
 
-import com.github.euler.core.EulerCommand;
-import com.github.euler.core.JobItemFound;
-import com.github.euler.core.JobToScan;
+import com.github.euler.core.CancellableSource;
 import com.github.euler.core.ProcessingContext;
-import com.github.euler.core.ScanFinished;
 import com.github.euler.core.SourceCommand;
 
-import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
-import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
-import akka.actor.typed.javadsl.Receive;
-import akka.actor.typed.javadsl.ReceiveBuilder;
 
-public class FileSource extends AbstractBehavior<SourceCommand> {
+public class FileSource extends CancellableSource {
 
-    public static Behavior<SourceCommand> create(FileSourceVisitorFactory factory) {
-        return Behaviors.setup((context) -> new FileSource(context, factory));
+    public static Behavior<SourceCommand> create(int maxItemsPerYield) {
+        return Behaviors.setup((context) -> new FileSource(context, maxItemsPerYield));
     }
 
     public static Behavior<SourceCommand> create() {
-        return create((uri, listener) -> new FileSourceVisitor(uri, listener));
+        return create(100);
     }
 
-    private final FileSourceVisitorFactory factory;
+    private final int maxItemsPerYield;
+    private int itemsFound;
+    private Iterator<File> fileIterator;
 
-    protected FileSource(ActorContext<SourceCommand> context, FileSourceVisitorFactory factory) {
+    protected FileSource(ActorContext<SourceCommand> context, int maxItemsPerYield) {
         super(context);
-        this.factory = factory;
+        this.maxItemsPerYield = maxItemsPerYield;
     }
 
     @Override
-    public Receive<SourceCommand> createReceive() {
-        ReceiveBuilder<SourceCommand> builder = newReceiveBuilder();
-        builder.onMessage(JobToScan.class, this::onJobToScan);
-        return builder.build();
-    }
-
-    protected Behavior<SourceCommand> onJobToScan(JobToScan msg) throws IOException {
-        Path path = FileUtils.toPath(msg.uri);
+    protected void prepareScan(URI uri) {
+        Path path = FileUtils.toPath(uri);
         if (path.toFile().isDirectory()) {
-            FileSourceVisitor visitor = factory.apply(msg.uri, new Listener(msg.replyTo));
-            Files.walkFileTree(path, visitor);
+            fileIterator = new FileTreeIterator(path.toFile());
         } else {
-            msg.replyTo.tell(new JobItemFound(msg.uri, msg.uri));
+            fileIterator = Arrays.asList(path.toFile()).iterator();
         }
-
-        msg.replyTo.tell(new ScanFinished(msg));
-        return this;
     }
 
-    protected static class Listener implements SourceListener {
-
-        private final ActorRef<EulerCommand> replyTo;
-
-        public Listener(ActorRef<EulerCommand> replyTo) {
-            super();
-            this.replyTo = replyTo;
+    @Override
+    protected boolean doScan(URI uri) throws IOException {
+        while (fileIterator.hasNext() && itemsFound <= maxItemsPerYield) {
+            itemsFound++;
+            File found = fileIterator.next();
+            notifyItemFound(uri, found.toURI(), ProcessingContext.EMPTY);
         }
-
-        @Override
-        public void itemFound(URI uri, URI itemURI, ProcessingContext ctx) {
-            replyTo.tell(new JobItemFound(uri, itemURI, ctx));
+        if (fileIterator.hasNext()) {
+            itemsFound = 0;
+            yield();
         }
-
+        return !fileIterator.hasNext();
     }
 
 }
