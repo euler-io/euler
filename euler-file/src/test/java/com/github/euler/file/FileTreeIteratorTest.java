@@ -6,7 +6,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -32,10 +34,14 @@ public class FileTreeIteratorTest {
         file2.createNewFile();
 
         Iterator<File> iterator = new FileTreeIterator(root);
-        assertTrue(iterator.hasNext());
         assertEquals(root, iterator.next());
-        assertEquals(file1, iterator.next());
-        assertEquals(file2, iterator.next());
+
+        Set<File> files = new HashSet<>();
+        while (iterator.hasNext()) {
+            files.add(iterator.next());
+        }
+        assertTrue(files.contains(file1));
+        assertTrue(files.contains(file2));
         assertFalse(iterator.hasNext());
     }
 
@@ -55,25 +61,37 @@ public class FileTreeIteratorTest {
         dir2.mkdir();
         File file2 = new File(dir2, "file2");
         file2.createNewFile();
-        
+
         File dir3 = new File(dir2, "dir03");
         dir3.mkdir();
         File file3 = new File(dir3, "file3");
         file3.createNewFile();
 
         Iterator<File> iterator = new FileTreeIterator(root);
-        assertTrue(iterator.hasNext());
+        Set<File> files = new HashSet<>();
+        File lastDir = root;
         assertEquals(root, iterator.next());
-        assertEquals(file0, iterator.next());
-        assertEquals(dir1, iterator.next());
-        assertEquals(file1, iterator.next());
-        assertEquals(file11, iterator.next());
-        assertEquals(dir2, iterator.next());
-        assertEquals(file2, iterator.next());
-        assertEquals(dir3, iterator.next());
-        assertEquals(file3, iterator.next());
+        while (iterator.hasNext()) {
+            File file = iterator.next();
+            files.add(file);
+            if (file.isFile()) {
+                // make sure that every dir cames before their files.
+                assertEquals(lastDir, file.getParentFile());
+            } else if (file.isDirectory()) {
+                lastDir = file;
+            }
+        }
         assertFalse(iterator.hasNext());
-        assertFalse(iterator.hasNext());
+        assertEquals(8, files.size());
+        assertTrue(files.contains(file0));
+        assertTrue(files.contains(dir1));
+        assertTrue(files.contains(file1));
+        assertTrue(files.contains(file11));
+        assertTrue(files.contains(dir2));
+        assertTrue(files.contains(file2));
+        assertTrue(files.contains(dir3));
+        assertTrue(files.contains(file3));
+
     }
 
 }
