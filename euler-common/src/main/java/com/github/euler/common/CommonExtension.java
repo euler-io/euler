@@ -6,7 +6,7 @@ import java.util.List;
 import com.github.euler.configuration.ContextConfigConverter;
 import com.github.euler.configuration.EulerExtension;
 
-public class CommonExtesion implements EulerExtension {
+public class CommonExtension implements EulerExtension {
 
     @Override
     public List<ContextConfigConverter> pathConverters() {

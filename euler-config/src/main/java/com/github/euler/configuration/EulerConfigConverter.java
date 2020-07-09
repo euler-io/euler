@@ -1,6 +1,7 @@
 package com.github.euler.configuration;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ public class EulerConfigConverter {
     private final Map<String, ContextConfigConverter> convertersMap = new HashMap<>();
     private final Map<String, TaskConfigConverter> taskConverterMap = new HashMap<>();
     private final List<TypeConfigConverter<?>> typeConverters = new ArrayList<>();
+    private final List<EulerExtension> extensions = new ArrayList<>();
 
     public EulerConfigConverter() {
         this(Thread.currentThread().getContextClassLoader());
@@ -44,6 +46,7 @@ public class EulerConfigConverter {
     }
 
     public EulerConfigConverter register(EulerExtension extension) {
+        extensions.add(extension);
         extension.pathConverters().forEach(c -> convertersMap.put(c.path(), c));
         extension.taskConverters().forEach(c -> taskConverterMap.put(c.type(), c));
         typeConverters.addAll(extension.typeConverters());
@@ -97,6 +100,10 @@ public class EulerConfigConverter {
         List<Task> tasks = (List<Task>) ctx.getRequired(TasksConfigConverter.TASKS);
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
         return new Euler(sourceBehavior, tasks.toArray(new Task[tasks.size()]));
+    }
+
+    public List<EulerExtension> getExtensions() {
+        return Collections.unmodifiableList(extensions);
     }
 
 }

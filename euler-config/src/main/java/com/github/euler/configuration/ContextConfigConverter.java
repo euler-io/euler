@@ -8,4 +8,8 @@ public interface ContextConfigConverter {
 
     public ConfigContext convert(ConfigValue value, ConfigContext configContext, TypesConfigConverter typesConfigConverter);
 
+    default String getDescription() {
+        return "";
+    }
+
 }

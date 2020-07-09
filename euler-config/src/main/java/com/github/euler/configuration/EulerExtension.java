@@ -17,4 +17,8 @@ public interface EulerExtension {
         return Collections.emptyList();
     };
 
+    default String getDescription() {
+        return "";
+    }
+
 }

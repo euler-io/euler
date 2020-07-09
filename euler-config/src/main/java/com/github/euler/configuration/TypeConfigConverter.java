@@ -10,4 +10,8 @@ public interface TypeConfigConverter<T> {
 
     T convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter);
 
+    default String getDescription() {
+        return "";
+    }
+
 }

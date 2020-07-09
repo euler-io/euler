@@ -9,4 +9,8 @@ public interface TaskConfigConverter {
 
     Task convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter, TasksConfigConverter tasksConfigConverter);
 
+    default String getDescription() {
+        return "";
+    }
+
 }
