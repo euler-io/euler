@@ -70,4 +70,9 @@ public class UtilityExtension implements EulerExtension {
                 });
     }
 
+    @Override
+    public String getDescription() {
+        return "Utility Extension";
+    }
+
 }

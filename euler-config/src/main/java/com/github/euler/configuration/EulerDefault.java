@@ -13,4 +13,9 @@ public class EulerDefault implements EulerExtension {
                 new PooledTaskConfigConverter());
     }
 
+    @Override
+    public String getDescription() {
+        return "Euler Default Extension";
+    }
+
 }

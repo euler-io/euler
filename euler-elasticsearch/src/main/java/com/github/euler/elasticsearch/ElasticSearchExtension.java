@@ -13,4 +13,9 @@ public class ElasticSearchExtension implements EulerExtension {
         return Arrays.asList(new ElasticSearchTaskConfigConverter());
     }
 
+    @Override
+    public String getDescription() {
+        return "Elasticsearch Extension";
+    }
+
 }
