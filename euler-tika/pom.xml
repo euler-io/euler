@@ -15,6 +15,7 @@
 
     <name>Euler - Tika</name>
     <url>https://github.com/euler-io/euler</url>
+    <description>Euler - File Processing API - Tika module.</description>
 
     <dependencies>
         <dependency>

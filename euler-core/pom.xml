@@ -15,6 +15,7 @@
 
     <name>Euler - Core</name>
     <url>https://github.com/euler-io/euler</url>
+    <description>Euler - File Processing API - Core module.</description>
 
     <dependencies>
         <dependency>

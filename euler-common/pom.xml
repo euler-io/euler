@@ -15,6 +15,7 @@
 
     <name>Euler - Common</name>
     <url>https://github.com/euler-io/euler</url>
+    <description>Euler - File Processing API - Common classes module.</description>
 
     <dependencies>
         <dependency>

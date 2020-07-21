@@ -15,6 +15,7 @@
 
     <name>Euler - Elasticsearch</name>
     <url>https://github.com/euler-io/euler</url>
+    <description>Euler - File Processing API - Elasticsearch module.</description>
 
     <dependencies>
         <dependency>

@@ -9,6 +9,7 @@
 
     <name>Euler - Parent</name>
     <url>https://github.com/euler-io/euler</url>
+    <description>Euler - File Processing API.</description>
 
     <licenses>
         <license>

@@ -15,6 +15,7 @@
 
     <name>Euler - Cluster</name>
     <url>https://github.com/euler-io/euler</url>
+    <description>Euler - File Processing API - Cluster module.</description>
 
     <dependencies>
         <dependency>
