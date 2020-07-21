@@ -37,12 +37,11 @@
 
     <scm>
         <url>https://github.com/euler-io/euler</url>
-        <connection>scm:git:ssh://github.com/euler-io/euler.git</connection>
-        <developerConnection>scm:git:ssh://github.com/euler-io/euler.git</developerConnection>
+        <connection>scm:git:ssh://git@github.com/euler-io/euler.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/euler-io/euler.git</developerConnection>
         <tag>0.1.0</tag>
     </scm>
     <properties>
-        <project.scm.id>euler-io</project.scm.id>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <downloadSources>true</downloadSources>
         <downloadJavadocs>true</downloadJavadocs>
