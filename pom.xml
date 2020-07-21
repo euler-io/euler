@@ -100,7 +100,6 @@
             <id>deploy</id>
             <build>
                 <plugins>
-
                     <!-- GPG plugin -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
