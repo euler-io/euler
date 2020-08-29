@@ -2,7 +2,7 @@ package com.github.euler.common;
 
 import java.net.URI;
 
-import com.github.euler.core.FlushTask;
+import com.github.euler.core.FlushCommand;
 import com.github.euler.core.JobTaskFailed;
 import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
@@ -36,7 +36,7 @@ public class BatchExecution extends AbstractBehavior<TaskCommand> implements Bat
     public Receive<TaskCommand> createReceive() {
         ReceiveBuilder<TaskCommand> builder = newReceiveBuilder();
         builder.onMessage(JobTaskToProcess.class, this::onJobTaskToProcess);
-        builder.onMessage(FlushTask.class, this::onFlushTask);
+        builder.onMessage(FlushCommand.class, this::onFlushTask);
         builder.onSignal(PostStop.class, this::onPostStop);
         return builder.build();
     }
@@ -47,7 +47,7 @@ public class BatchExecution extends AbstractBehavior<TaskCommand> implements Bat
         return this;
     }
 
-    private Behavior<TaskCommand> onFlushTask(FlushTask msg) {
+    private Behavior<TaskCommand> onFlushTask(FlushCommand msg) {
         batch.flush(msg, this);
         return this;
     }

@@ -1,15 +1,15 @@
 package com.github.euler.core;
 
-public class FlushTask implements TaskCommand {
+public class FlushCommand implements TaskCommand {
 
     public final boolean force;
 
-    public FlushTask(boolean force) {
+    public FlushCommand(boolean force) {
         super();
         this.force = force;
     }
 
-    public FlushTask() {
+    public FlushCommand() {
         super();
         this.force = false;
     }

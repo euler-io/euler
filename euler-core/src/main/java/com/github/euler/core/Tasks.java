@@ -46,6 +46,31 @@ public final class Tasks {
         };
     }
 
+    public static Task setupTask(final String name, final Predicate<Item> accept, final Supplier<ItemProcessor> processor) {
+        return new Task() {
+
+            @Override
+            public String name() {
+                return name;
+            }
+
+            @Override
+            public boolean accept(JobTaskToProcess msg) {
+                return accept.test(new Item(msg));
+            }
+
+            @Override
+            public Behavior<TaskCommand> behavior() {
+                return Behaviors.setup((ctx) -> new ItemProcessorTaskCommand(ctx, processor.get()));
+            }
+
+        };
+    }
+
+    public static Task setupTask(final String name, final Supplier<ItemProcessor> processor) {
+        return setupTask(name, (item) -> true, processor);
+    }
+
     public static Task accept(String name, final Supplier<Behavior<TaskCommand>> behavior) {
         return setup(name, (msg) -> true, behavior);
     }
