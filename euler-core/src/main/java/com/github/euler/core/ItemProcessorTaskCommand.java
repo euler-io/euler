@@ -33,6 +33,10 @@ class ItemProcessorTaskCommand extends AbstractBehavior<TaskCommand> {
     }
 
     protected ProcessingContext process(URI parentURI, URI itemURI, ProcessingContext ctx) {
-        return itemProcessor.process(new Item(parentURI, itemURI, ctx));
+        return process(new Item(parentURI, itemURI, ctx));
+    }
+
+    protected ProcessingContext process(Item item) {
+        return this.itemProcessor.process(item);
     }
 }

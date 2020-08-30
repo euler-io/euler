@@ -34,6 +34,7 @@
         <module>euler-elasticsearch</module>
         <module>euler-cluster</module>
         <module>euler-config</module>
+        <module>euler-sample</module>
     </modules>
 
     <scm>
