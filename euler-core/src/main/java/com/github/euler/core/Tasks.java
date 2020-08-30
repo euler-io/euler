@@ -95,8 +95,8 @@ public final class Tasks {
         return accept(name, () -> emptyBehavior());
     }
 
-    public static Task empty(String name, ProcessingContext ctx) {
-        return accept(name, () -> emptyBehavior(ctx));
+    public static Task fixed(String name, ProcessingContext ctx) {
+        return accept(name, () -> fixedBehavior(ctx));
     }
 
     public static Behavior<TaskCommand> voidBehavior() {
@@ -115,10 +115,10 @@ public final class Tasks {
     }
 
     public static Behavior<TaskCommand> emptyBehavior() {
-        return emptyBehavior(ProcessingContext.EMPTY);
+        return fixedBehavior(ProcessingContext.EMPTY);
     }
 
-    public static Behavior<TaskCommand> emptyBehavior(ProcessingContext ctx) {
+    public static Behavior<TaskCommand> fixedBehavior(ProcessingContext ctx) {
         return Behaviors.receive(TaskCommand.class)
                 .onMessage(JobTaskToProcess.class, (msg) -> {
                     msg.replyTo.tell(new JobTaskFinished(msg, ctx));

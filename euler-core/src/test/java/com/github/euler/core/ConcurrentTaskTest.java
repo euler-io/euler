@@ -57,8 +57,8 @@ public class ConcurrentTaskTest extends AkkaTest {
 
     @Test
     public void testWhenJobTaskMultipleTasksContextsAreMerged() throws Exception {
-        Task task1 = Tasks.empty("task-1", ProcessingContext.builder().metadata("key1", "value1").build());
-        Task task2 = Tasks.empty("task-2", ProcessingContext.builder().metadata("key2", "value2").build());
+        Task task1 = Tasks.fixed("task-1", ProcessingContext.builder().metadata("key1", "value1").build());
+        Task task2 = Tasks.fixed("task-2", ProcessingContext.builder().metadata("key2", "value2").build());
 
         Task concurrentTask = new ConcurrentTask("concurrent-task", task1, task2);
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();

@@ -1,7 +1,6 @@
 package com.github.euler.sample;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
