@@ -24,6 +24,16 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.github.euler-io</groupId>
+            <artifactId>euler-file</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.euler-io</groupId>
+            <artifactId>euler-elasticsearch</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
