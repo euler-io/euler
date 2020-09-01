@@ -31,18 +31,24 @@ public class ElasticSearchSink implements BatchSink {
     private final FlushConfig flushConfig;
 
     private BulkRequest bulkRequest;
+    private String globalIndex;
     private String index;
 
-    public ElasticSearchSink(RestHighLevelClient client, FlushConfig flushConfig) {
+    public ElasticSearchSink(RestHighLevelClient client, String index, FlushConfig flushConfig) {
         super();
         this.client = client;
+        this.globalIndex = index;
         this.flushConfig = flushConfig;
         this.bulkRequest = new BulkRequest();
     }
 
     @Override
     public SinkResponse store(URI uri, ProcessingContext ctx) {
-        this.index = (String) ctx.context(CommonContext.INDEX);
+        if (ctx.context().containsKey(CommonContext.INDEX)) {
+            this.index = (String) ctx.context(CommonContext.INDEX);
+        } else {
+            this.index = this.globalIndex;
+        }
 
         Map<String, Object> metadata = new HashMap<>(ctx.metadata());
         metadata.put("join_field", "item");

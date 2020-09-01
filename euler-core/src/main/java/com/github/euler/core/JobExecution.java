@@ -36,7 +36,7 @@ public class JobExecution extends AbstractBehavior<JobCommand> {
 
     private Behavior<JobCommand> onJob(Job msg) {
         this.eulerRef = getContext().spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior), "euler");
-        eulerRef.tell(new JobToProcess(msg.uri, msg.replyTo));
+        eulerRef.tell(new JobToProcess(msg.uri, msg.ctx, msg.replyTo));
         return Behaviors.same();
     }
 

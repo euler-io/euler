@@ -15,9 +15,9 @@ import com.github.euler.tika.FragmentBatch;
 
 public class ElasticSearchTask extends AbstractBatchTask {
 
-    private ElasticSearchTask(String name, Parser parser, StreamFactory sf, int fragmentSize, int fragmentOverlap, RestHighLevelClient client,
+    private ElasticSearchTask(String name, String index, Parser parser, StreamFactory sf, int fragmentSize, int fragmentOverlap, RestHighLevelClient client,
             FlushConfig flushConfig) {
-        super(name, () -> new FragmentBatch(parser, sf, fragmentSize, fragmentOverlap, new ElasticSearchSink(client, flushConfig)));
+        super(name, () -> new FragmentBatch(parser, sf, fragmentSize, fragmentOverlap, new ElasticSearchSink(client, index, flushConfig)));
     }
 
     @Override
@@ -32,6 +32,7 @@ public class ElasticSearchTask extends AbstractBatchTask {
     public static class Builder {
 
         private String name;
+        private String index = null;
         private Parser parser = new AutoDetectParser();
         private StreamFactory streamFactory;
         private int fragmentSize = 1000;
@@ -52,6 +53,15 @@ public class ElasticSearchTask extends AbstractBatchTask {
 
         public Builder setName(String name) {
             this.name = name;
+            return this;
+        }
+
+        public String getIndex() {
+            return index;
+        }
+
+        public Builder setIndex(String index) {
+            this.index = index;
             return this;
         }
 
@@ -117,7 +127,7 @@ public class ElasticSearchTask extends AbstractBatchTask {
             Objects.requireNonNull(fragmentOverlap, () -> "fragmentOverlap is required");
             Objects.requireNonNull(client, () -> "client is required");
             Objects.requireNonNull(flushConfig, () -> "flushConfig is required");
-            return new ElasticSearchTask(name, parser, streamFactory, fragmentSize, fragmentOverlap, client, flushConfig);
+            return new ElasticSearchTask(name, index, parser, streamFactory, fragmentSize, fragmentOverlap, client, flushConfig);
         }
 
     }
