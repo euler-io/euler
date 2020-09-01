@@ -23,7 +23,7 @@ public class TikaExtension implements EulerExtension {
     @Override
     public List<TaskConfigConverter> taskConverters() {
         return Arrays.asList(
-                new CategoryDetectTaskConfigConverter(),
+                new MimeTypeDetectTaskConfigConverter(),
                 new ParseTaskConfigConverter());
     }
 
