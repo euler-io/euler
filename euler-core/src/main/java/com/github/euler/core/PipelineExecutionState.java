@@ -36,7 +36,10 @@ public class PipelineExecutionState {
     }
 
     public ProcessingContext mergeContext(URI itemURI, ProcessingContext ctx) {
-        return mapping.get(itemURI).ctx.merge(ctx);
+        State state = mapping.get(itemURI);
+        ProcessingContext merged = state.ctx.merge(ctx);
+        state.ctx = merged;
+        return merged;
     }
 
     public ProcessingContext getProcessingContext(URI itemURI) {

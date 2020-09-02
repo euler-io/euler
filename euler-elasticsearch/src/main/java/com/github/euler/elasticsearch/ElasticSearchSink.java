@@ -70,7 +70,7 @@ public class ElasticSearchSink implements BatchSink {
     public SinkResponse storeFragment(String parentId, int fragIndex, String fragment) {
         Map<String, Object> data = new HashMap<>();
         data.put("content", fragment);
-        data.put("size", fragment);
+        data.put("size", fragment.length());
         data.put("index", fragIndex);
 
         Map<String, Object> joinField = new HashMap<String, Object>(1);

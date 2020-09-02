@@ -59,6 +59,7 @@ public class FragmentParserContentHandler extends DefaultHandler {
     }
 
     private void newFragmentFound() {
+        // TODO Use regex
         listener.handleFragment(builder.toString().replaceAll("\u0000", " "));
     }
 

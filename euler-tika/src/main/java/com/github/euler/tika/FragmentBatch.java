@@ -43,6 +43,7 @@ public class FragmentBatch implements Batch {
         this.fragmentSize = fragmentSize;
         this.fragmentOverlap = fragmentOverlap;
         this.sink = sink;
+        this.state = new FragmentBatchState();
     }
 
     @Override
