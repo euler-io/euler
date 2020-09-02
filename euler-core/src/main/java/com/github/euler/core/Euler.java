@@ -26,7 +26,11 @@ public class Euler implements AutoCloseable {
         this.tasks = tasks;
     }
 
-    public synchronized CompletableFuture<JobProcessed> process(URI uri, Duration duration) {
+    public CompletableFuture<JobProcessed> process(URI uri, Duration duration) {
+        return process(uri, ProcessingContext.EMPTY, duration);
+    }
+
+    public synchronized CompletableFuture<JobProcessed> process(URI uri, ProcessingContext ctx, Duration duration) {
         if (system != null) {
             throw new IllegalStateException("System already started");
         }
