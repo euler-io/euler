@@ -18,6 +18,7 @@ import com.github.euler.common.StreamFactory;
 import com.github.euler.core.Euler;
 import com.github.euler.core.JobProcessed;
 import com.github.euler.core.SourceExecution;
+import com.github.euler.core.Tasks;
 import com.github.euler.elasticsearch.ElasticSearchTask;
 import com.github.euler.file.BasicFilePropertiesTask;
 import com.github.euler.file.FileSource;
@@ -27,8 +28,8 @@ import com.github.euler.tika.MimeTypeDetectTask;
 import com.github.euler.tika.ParseTask;
 
 /**
- * A simple euler file processing pipeline.
- * This samples assumes a non-authenticated elasticsearch instance running on localhost: 9200.
+ * A simple euler file processing pipeline. This samples assumes a
+ * non-authenticated elasticsearch instance running on localhost: 9200.
  *
  */
 public class EulerSample {
@@ -45,14 +46,15 @@ public class EulerSample {
 
         Euler euler = Euler.builder()
                 .source(SourceExecution.create(new FileSource()))
-                .task(new BasicFilePropertiesTask("basic-file-properties"))
-                .task(new MimeTypeDetectTask("mime-type-detect", sf, detector))
-                .task(ParseTask.builder("parse", sf, parsedContentStrategy, embeddedContentStrategy).build())
-                .task(ElasticSearchTask.builder("elasticsearch-sink", sf, client).setIndex("euler-files").build())
+                .task(Tasks.pipeline("main-pipeline",
+                        new BasicFilePropertiesTask("basic-file-properties"),
+                        new MimeTypeDetectTask("mime-type-detect", sf, detector),
+                        ParseTask.builder("parse", sf, parsedContentStrategy, embeddedContentStrategy).build(),
+                        ElasticSearchTask.builder("elasticsearch-sink", sf, client).setIndex("euler-files").build()))
                 .build();
 
         URI uri = EulerSample.class.getClassLoader().getResource("File.txt").toURI();
-        CompletableFuture<JobProcessed> future = euler.process(uri, Duration.ofSeconds(10));
+        CompletableFuture<JobProcessed> future = euler.process(uri, Duration.ofHours(10));
         JobProcessed jobProcessed = future.get();
         System.out.println("Finished processing " + jobProcessed.uri);
     }
