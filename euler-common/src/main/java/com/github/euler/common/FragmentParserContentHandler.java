@@ -33,14 +33,16 @@ public class FragmentParserContentHandler extends DefaultHandler {
     public void characters(char[] chars, int start, int length) throws SAXException {
         // TODO Optimize
         for (char c : chars) {
-            builder.append(c);
-            if (builder.length() > this.fragmentSize) {
-                nextFragmentBuilder.append(c);
-            }
-            if (builder.length() >= this.maxLength) {
-                newFragmentFound();
-                builder = nextFragmentBuilder;
-                nextFragmentBuilder = new StringBuilder();
+            if (c != 0) {
+                builder.append(c);
+                if (builder.length() > this.fragmentSize) {
+                    nextFragmentBuilder.append(c);
+                }
+                if (builder.length() >= this.maxLength) {
+                    newFragmentFound();
+                    builder = nextFragmentBuilder;
+                    nextFragmentBuilder = new StringBuilder();
+                }
             }
         }
 
@@ -48,7 +50,7 @@ public class FragmentParserContentHandler extends DefaultHandler {
 
     @Override
     public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-        this.characters(ch, start, length);
+        // this.characters(ch, start, length);
     }
 
     @Override

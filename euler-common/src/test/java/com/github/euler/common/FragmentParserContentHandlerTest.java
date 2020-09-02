@@ -2,51 +2,59 @@ package com.github.euler.common;
 
 import static org.junit.Assert.assertEquals;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
 import org.junit.Test;
+import org.xml.sax.ContentHandler;
 
 public class FragmentParserContentHandlerTest {
 
-  @Test
-  public void testFragmentSmallerThanSize() throws Exception {
-      int fragmentSize = 10;
-      int fragmentOverlap = 2;
+    @Test
+    public void testFragmentSmallerThanSize() throws Exception {
+        int fragmentSize = 10;
+        int fragmentOverlap = 2;
 
-      String item = "12345";
-      List<String> fragments = new ArrayList<>();
+        String item = "12345";
+        List<String> fragments = new ArrayList<>();
 
-      FragmentHandler listener = (String frag) -> fragments.add(frag);
-      FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
+        FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
-      handler.startDocument();
-      handler.characters(item.toCharArray(), 0, item.length());
-      handler.endDocument();
+        handler.startDocument();
+        handler.characters(item.toCharArray(), 0, item.length());
+        handler.endDocument();
 
-      assertEquals(1, fragments.size());
-      assertEquals(item, fragments.get(0));
-  }
+        assertEquals(1, fragments.size());
+        assertEquals(item, fragments.get(0));
+    }
 
-  @Test
-  public void testFragmentSize() throws Exception {
-      int fragmentSize = 10;
-      int fragmentOverlap = 2;
+    @Test
+    public void testFragmentSize() throws Exception {
+        int fragmentSize = 10;
+        int fragmentOverlap = 2;
 
-      String item = "123456789012";
-      List<String> fragments = new ArrayList<>();
+        String item = "123456789012";
+        List<String> fragments = new ArrayList<>();
 
-      FragmentHandler listener = (String frag) -> fragments.add(frag);
-      FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
+        FragmentParserContentHandler handler = new FragmentParserContentHandler(fragmentSize, fragmentOverlap, listener);
 
-      handler.startDocument();
-      handler.characters(item.toCharArray(), 0, item.length());
-      handler.endDocument();
+        handler.startDocument();
+        handler.characters(item.toCharArray(), 0, item.length());
+        handler.endDocument();
 
-      assertEquals(2, fragments.size());
-      assertEquals(item, fragments.get(0));
-      assertEquals("12", fragments.get(1));
-  }
+        assertEquals(2, fragments.size());
+        assertEquals(item, fragments.get(0));
+        assertEquals("12", fragments.get(1));
+    }
 
     @Test
     public void testFragmentsSmallerThanSize() throws Exception {
@@ -243,6 +251,23 @@ public class FragmentParserContentHandlerTest {
         assertEquals("123456789012", fragments.get(0));
         assertEquals("123456789012", fragments.get(1));
         assertEquals("123", fragments.get(2));
+    }
+
+    @Test
+    public void testParseFile() throws Exception {
+        Parser parser = new AutoDetectParser();
+
+        List<String> fragments = new ArrayList<>();
+        FragmentHandler listener = (String frag) -> fragments.add(frag);
+
+        ContentHandler handler = new BodyContentHandler(new FragmentParserContentHandler(1000, 50, listener));
+        try (InputStream in = FragmentParserContentHandlerTest.class.getClassLoader().getResourceAsStream("sample-file.txt")) {
+            System.out.println(parser);
+            parser.parse(in, handler, new Metadata(), new ParseContext());
+        }
+
+        assertEquals(1, fragments.size());
+        assertEquals("File Content", fragments.get(0));
     }
 
 }
