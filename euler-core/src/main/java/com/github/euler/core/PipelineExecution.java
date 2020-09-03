@@ -40,7 +40,18 @@ public class PipelineExecution extends AbstractBehavior<TaskCommand> {
         builder.onMessage(JobTaskToProcess.class, this::onJobTaskToProcess);
         builder.onMessage(InternalAdaptedProcessorCommand.class, this::onInternalAdaptedProcessorCommand);
         builder.onMessage(InternalJobTaskFailed.class, this::onInternalJobTaskFailed);
+        builder.onMessage(Flush.class, this::onFlush);
         return builder.build();
+    }
+
+    public Behavior<TaskCommand> onFlush(Flush msg) {
+        for (Task task : tasks) {
+            if (task.isFlushable() && mapping.containsKey(task.name())) {
+                ActorRef<TaskCommand> taskRef = getTaskRef(task);
+                taskRef.tell(msg);
+            }
+        }
+        return Behaviors.same();
     }
 
     private Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) {
@@ -85,7 +96,7 @@ public class PipelineExecution extends AbstractBehavior<TaskCommand> {
     private void sendToNextOrFinish(JobTaskToProcess msg) {
         Task task = getNextTask(msg);
         if (task != null) {
-            ActorRef<TaskCommand> taskRef = getTaskRef(task, msg);
+            ActorRef<TaskCommand> taskRef = getOrSpawnTaskRef(task, msg);
             JobTaskToProcess adaptedMsg = new JobTaskToProcess(msg.uri, msg.itemURI, msg.ctx, responseAdapter);
             taskRef.tell(adaptedMsg);
         } else {
@@ -108,7 +119,11 @@ public class PipelineExecution extends AbstractBehavior<TaskCommand> {
         return task;
     }
 
-    private ActorRef<TaskCommand> getTaskRef(Task task, JobTaskToProcess msg) {
+    private ActorRef<TaskCommand> getTaskRef(Task task) {
+        return mapping.get(task.name());
+    }
+
+    private ActorRef<TaskCommand> getOrSpawnTaskRef(Task task, JobTaskToProcess msg) {
         ActorRef<TaskCommand> ref = mapping.computeIfAbsent(task.name(), (k) -> getContext().spawn(superviseTaskBehavior(task), k));
         getContext().watchWith(ref, new InternalJobTaskFailed(msg, task.name()));
         return ref;

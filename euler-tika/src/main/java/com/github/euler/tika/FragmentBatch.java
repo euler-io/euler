@@ -20,7 +20,7 @@ import com.github.euler.common.CommonContext;
 import com.github.euler.common.FragmentHandler;
 import com.github.euler.common.FragmentParserContentHandler;
 import com.github.euler.common.StreamFactory;
-import com.github.euler.core.FlushCommand;
+import com.github.euler.core.Flush;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
 
@@ -70,7 +70,7 @@ public class FragmentBatch implements Batch {
     }
 
     @Override
-    public void flush(FlushCommand msg, BatchListener listener) {
+    public void flush(Flush msg, BatchListener listener) {
         SinkResponse response = sink.flush(msg.force);
         handleResponse(response, listener);
     }

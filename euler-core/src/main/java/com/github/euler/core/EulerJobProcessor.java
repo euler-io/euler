@@ -95,7 +95,7 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
 
             @Override
             public void run() {
-                processorRef.tell(new FlushCommand());
+                processorRef.tell(new Flush());
             }
         }, getContext().getExecutionContext());
     }

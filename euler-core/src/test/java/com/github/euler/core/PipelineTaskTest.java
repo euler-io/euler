@@ -11,6 +11,7 @@ import com.github.euler.testing.WillFailExecution;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
+import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.Behaviors;
 
 public class PipelineTaskTest extends AkkaTest {
@@ -118,6 +119,58 @@ public class PipelineTaskTest extends AkkaTest {
         JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
         assertEquals(1, response.ctx.metadata().size());
         assertEquals("value1", response.ctx.metadata("key1"));
+    }
+
+    @Test
+    public void testWhenReceiceFlushSendItToAllFlushableTasks() throws Exception {
+        TestProbe<TaskCommand> probe = testKit.createTestProbe();
+
+        Task flushable = new Flushable(true, probe.ref()) {
+
+            @Override
+            public Behavior<TaskCommand> behavior() {
+                return Behaviors.receive(TaskCommand.class)
+                        .onMessage(JobTaskToProcess.class, (msg) -> {
+                            msg.replyTo.tell(new JobTaskFinished(msg, ProcessingContext.EMPTY));
+                            return Behaviors.same();
+                        }).onMessage(Flush.class, (msg) -> {
+                            ref.tell(msg);
+                            return Behaviors.same();
+                        })
+                        .build();
+            }
+        };
+        Task notFlushable = new Flushable(false, probe.ref()) {
+
+            @Override
+            public Behavior<TaskCommand> behavior() {
+                return Behaviors.receive(TaskCommand.class)
+                        .onMessage(JobTaskToProcess.class, (msg) -> {
+                            msg.replyTo.tell(new JobTaskFinished(msg, ProcessingContext.EMPTY));
+                            return Behaviors.same();
+                        }).onMessage(Flush.class, (msg) -> {
+                            ref.tell(msg);
+                            return Behaviors.same();
+                        })
+                        .build();
+            }
+
+            @Override
+            public String name() {
+                return "not-flushable";
+            }
+        };
+
+        Task pipelineTask = new PipelineTask("pipeline-task", flushable, notFlushable);
+        ActorRef<TaskCommand> ref = testKit.spawn(pipelineTask.behavior());
+        TestProbe<ProcessorCommand> startedProbe = testKit.createTestProbe();
+        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, startedProbe.ref());
+        ref.tell(msg);
+
+        startedProbe.expectMessageClass(JobTaskFinished.class);
+        ref.tell(new Flush());
+        probe.expectMessageClass(Flush.class);
+        probe.expectNoMessage();
     }
 
 }

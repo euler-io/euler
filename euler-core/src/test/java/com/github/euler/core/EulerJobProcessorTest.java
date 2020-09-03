@@ -192,7 +192,7 @@ public class EulerJobProcessorTest extends AkkaTest {
         TestProbe<JobCommand> probe = testKit.createTestProbe();
         ref.tell(new JobToProcess(uri, probe.ref()));
         
-        testProbe.expectMessageClass(FlushCommand.class);
+        testProbe.expectMessageClass(Flush.class);
         probe.expectMessageClass(JobProcessed.class);
 
     }

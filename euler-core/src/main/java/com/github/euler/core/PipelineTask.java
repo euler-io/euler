@@ -33,4 +33,9 @@ public class PipelineTask implements Task {
         return tasks;
     }
 
+    @Override
+    public boolean isFlushable() {
+        return Arrays.stream(this.tasks).anyMatch(t -> t.isFlushable());
+    }
+
 }

@@ -37,12 +37,17 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         builder.onMessage(JobTaskFinished.class, this::onJobTaskFinished);
         builder.onMessage(JobTaskFailed.class, this::onJobTaskFailed);
         builder.onMessage(InternalJobTaskFailed.class, this::onInternalJobTaskFailed);
-        builder.onMessage(FlushCommand.class, this::onFlushCommand);
+        builder.onMessage(Flush.class, this::onFlush);
         return builder.build();
     }
 
-    public Behavior<ProcessorCommand> onFlushCommand(FlushCommand msg) {
-        
+    public Behavior<ProcessorCommand> onFlush(Flush msg) {
+        for (Task task : tasks) {
+            if (task.isFlushable() && mapping.containsKey(task.name())) {
+                ActorRef<TaskCommand> taskRef = getTaskRef(task);
+                taskRef.tell(msg);
+            }
+        }
         return Behaviors.same();
     }
 
@@ -66,13 +71,17 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         for (Task task : tasks) {
             JobTaskToProcess jttp = new JobTaskToProcess(msg, getContext().getSelf());
             if (task.accept(jttp)) {
-                ActorRef<TaskCommand> taskRef = getTaskRef(task, msg);
+                ActorRef<TaskCommand> taskRef = getOrSpawnTaskRef(task, msg);
                 taskRef.tell(jttp);
             }
         }
     }
 
-    private ActorRef<TaskCommand> getTaskRef(Task task, JobItemToProcess msg) {
+    private ActorRef<TaskCommand> getTaskRef(Task task) {
+        return mapping.get(task.name());
+    }
+
+    private ActorRef<TaskCommand> getOrSpawnTaskRef(Task task, JobItemToProcess msg) {
         return mapping.computeIfAbsent(task.name(), (key) -> {
             Behavior<TaskCommand> behavior = superviseTaskBehavior(task);
             ActorRef<TaskCommand> ref = getContext().spawn(behavior, key);

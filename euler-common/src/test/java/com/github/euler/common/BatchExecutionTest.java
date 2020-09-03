@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.github.euler.core.FlushCommand;
+import com.github.euler.core.Flush;
 import com.github.euler.core.JobTaskFailed;
 import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
@@ -31,7 +31,7 @@ public class BatchExecutionTest extends AkkaTest {
             }
 
             @Override
-            public void flush(FlushCommand msg, BatchListener listener) {
+            public void flush(Flush msg, BatchListener listener) {
                 // Nothing to do.
             }
 
@@ -60,7 +60,7 @@ public class BatchExecutionTest extends AkkaTest {
             }
 
             @Override
-            public void flush(FlushCommand msg, BatchListener listener) {
+            public void flush(Flush msg, BatchListener listener) {
                 // Nothing to do.
             }
 
@@ -94,7 +94,7 @@ public class BatchExecutionTest extends AkkaTest {
             }
 
             @Override
-            public void flush(FlushCommand msg, BatchListener listener) {
+            public void flush(Flush msg, BatchListener listener) {
                 // Nothing to do.
             }
 
@@ -134,7 +134,7 @@ public class BatchExecutionTest extends AkkaTest {
             }
 
             @Override
-            public void flush(FlushCommand msg, BatchListener listener) {
+            public void flush(Flush msg, BatchListener listener) {
                 buffer.forEach((itemURI) -> listener.finished(itemURI, ProcessingContext.EMPTY));
             }
 
@@ -153,7 +153,7 @@ public class BatchExecutionTest extends AkkaTest {
 
         starterProbe.expectNoMessage();
 
-        ref.tell(new FlushCommand(true));
+        ref.tell(new Flush(true));
 
         starterProbe.expectMessageClass(JobTaskFinished.class);
     }

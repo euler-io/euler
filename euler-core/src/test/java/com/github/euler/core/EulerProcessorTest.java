@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.euler.testing.WillFailBehavior;
@@ -124,19 +123,21 @@ public class EulerProcessorTest extends AkkaTest {
     }
 
     @Test
-    @Ignore
     public void testWhenReceiceFlushSendItToAllFlushableTasks() throws Exception {
-//        TestProbe<TaskCommand> probe = testKit.createTestProbe();
-//        Task task = Tasks.foward("task", probe.ref());
-//
-//        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task));
-//        TestProbe<EulerCommand> startedProbe = testKit.createTestProbe();
-//        ProcessingContext ctx = ProcessingContext.builder().metadata("key", "value").build();
-//        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ctx, startedProbe.ref());
-//        ref.tell(msg);
-//
-//        JobTaskToProcess jttp = probe.expectMessageClass(JobTaskToProcess.class);
-//        assertEquals(ctx, jttp.ctx);
+        TestProbe<TaskCommand> probe = testKit.createTestProbe();
+        Task flushable = new Flushable(true, probe.ref());
+        Task notFlushable = new Flushable(false, probe.ref());
+
+        TestProbe<EulerCommand> startedProbe = testKit.createTestProbe();
+        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(flushable, notFlushable));
+        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, startedProbe.ref());
+        ref.tell(msg);
+        ref.tell(new Flush());
+
+        probe.expectMessageClass(JobTaskToProcess.class);
+        probe.expectMessageClass(JobTaskToProcess.class);
+        probe.expectMessageClass(Flush.class);
+        probe.expectNoMessage();
     }
 
 }

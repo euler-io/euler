@@ -28,4 +28,9 @@ public abstract class AbstractBatchTask implements Task {
         return BatchExecution.create(batchFactory.get());
     }
 
+    @Override
+    public boolean isFlushable() {
+        return true;
+    }
+
 }
