@@ -141,7 +141,7 @@ public class EulerJobProcessorTest extends AkkaTest {
         ref.tell(new JobToProcess(uri, starterProbe.ref()));
 
         JobItemToProcess jitp = probe.expectMessageClass(JobItemToProcess.class);
-        assertEquals(ctx, jitp.ctx);
+        assertEquals(ctx.metadata(), jitp.ctx.metadata());
     }
 
     @Test

@@ -138,7 +138,7 @@ public class ProcessingContext {
 
         private Map<String, Object> metadata;
         private Map<String, Object> context;
-        private Action action = Action.PUT_IF_ABSENT;
+        private Action action = Action.OVERWRITE;
 
         public Builder() {
             super();
