@@ -50,7 +50,7 @@ public class FragmentParserContentHandler extends DefaultHandler {
 
     @Override
     public void ignorableWhitespace(char[] ch, int start, int length) throws SAXException {
-        // this.characters(ch, start, length);
+        this.characters(ch, start, length);
     }
 
     @Override

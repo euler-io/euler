@@ -267,7 +267,7 @@ public class FragmentParserContentHandlerTest {
         }
 
         assertEquals(1, fragments.size());
-        assertEquals("File Content", fragments.get(0));
+        assertEquals("File Content\n", fragments.get(0));
     }
 
 }
