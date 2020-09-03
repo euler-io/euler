@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.euler.testing.WillFailBehavior;
@@ -120,6 +121,22 @@ public class EulerProcessorTest extends AkkaTest {
 
         JobTaskToProcess jttp = probe.expectMessageClass(JobTaskToProcess.class);
         assertEquals(ctx, jttp.ctx);
+    }
+
+    @Test
+    @Ignore
+    public void testWhenReceiceFlushSendItToAllFlushableTasks() throws Exception {
+//        TestProbe<TaskCommand> probe = testKit.createTestProbe();
+//        Task task = Tasks.foward("task", probe.ref());
+//
+//        ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task));
+//        TestProbe<EulerCommand> startedProbe = testKit.createTestProbe();
+//        ProcessingContext ctx = ProcessingContext.builder().metadata("key", "value").build();
+//        JobItemToProcess msg = new JobItemToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ctx, startedProbe.ref());
+//        ref.tell(msg);
+//
+//        JobTaskToProcess jttp = probe.expectMessageClass(JobTaskToProcess.class);
+//        assertEquals(ctx, jttp.ctx);
     }
 
 }

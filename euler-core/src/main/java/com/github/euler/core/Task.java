@@ -10,4 +10,8 @@ public interface Task {
 
     boolean accept(JobTaskToProcess msg);
 
+    default boolean isFlushable() {
+        return false;
+    }
+
 }

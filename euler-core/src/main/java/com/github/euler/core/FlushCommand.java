@@ -1,6 +1,6 @@
 package com.github.euler.core;
 
-public class FlushCommand implements TaskCommand {
+public class FlushCommand implements TaskCommand, ProcessorCommand {
 
     public final boolean force;
 
@@ -10,8 +10,7 @@ public class FlushCommand implements TaskCommand {
     }
 
     public FlushCommand() {
-        super();
-        this.force = false;
+        this(false);
     }
 
 }

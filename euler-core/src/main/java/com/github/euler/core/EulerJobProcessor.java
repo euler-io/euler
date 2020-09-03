@@ -1,6 +1,7 @@
 package com.github.euler.core;
 
 import java.net.URI;
+import java.time.Duration;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -25,7 +26,7 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
 
     private final EulerState state;
 
-    public EulerJobProcessor(ActorContext<EulerCommand> ctx, Behavior<SourceCommand> sourceBehaviour, Behavior<ProcessorCommand> processorBehavior) {
+    private EulerJobProcessor(ActorContext<EulerCommand> ctx, Behavior<SourceCommand> sourceBehaviour, Behavior<ProcessorCommand> processorBehavior) {
         super(ctx);
         this.sourceBehaviour = sourceBehaviour;
         this.processorBehavior = processorBehavior;
@@ -79,12 +80,24 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
 
     private Behavior<EulerCommand> onScanFinished(ScanFinished msg) {
         state.onMessage(msg);
+        startFlush();
         return checkFinished(msg.uri);
     }
 
     private Behavior<EulerCommand> onScanFailed(ScanFailed msg) {
         state.onMessage(msg);
+        startFlush();
         return checkFinished(msg.uri);
+    }
+
+    private void startFlush() {
+        getContext().getSystem().scheduler().scheduleAtFixedRate(Duration.ZERO, Duration.ofSeconds(2), new Runnable() {
+
+            @Override
+            public void run() {
+                processorRef.tell(new FlushCommand());
+            }
+        }, getContext().getExecutionContext());
     }
 
     private Behavior<EulerCommand> checkFinished(URI uri) {

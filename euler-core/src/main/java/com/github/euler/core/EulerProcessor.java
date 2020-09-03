@@ -37,7 +37,13 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         builder.onMessage(JobTaskFinished.class, this::onJobTaskFinished);
         builder.onMessage(JobTaskFailed.class, this::onJobTaskFailed);
         builder.onMessage(InternalJobTaskFailed.class, this::onInternalJobTaskFailed);
+        builder.onMessage(FlushCommand.class, this::onFlushCommand);
         return builder.build();
+    }
+
+    public Behavior<ProcessorCommand> onFlushCommand(FlushCommand msg) {
+        
+        return Behaviors.same();
     }
 
     public Behavior<ProcessorCommand> onJobItemToProcess(JobItemToProcess msg) {

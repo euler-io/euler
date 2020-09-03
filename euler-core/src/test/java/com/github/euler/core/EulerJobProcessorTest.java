@@ -175,4 +175,26 @@ public class EulerJobProcessorTest extends AkkaTest {
         assertEquals(uri, response.uri);
     }
 
+    @Test
+    public void testWhenScanFinishedStartFlushingPeriodically() throws Exception {
+        TestProbe<ProcessorCommand> testProbe = testKit.createTestProbe();
+
+        Behavior<SourceCommand> sourceBehavior = Sources.emptyBehavior();
+        Behavior<ProcessorCommand> processorBehavior = Behaviors.receive(ProcessorCommand.class)
+                .onAnyMessage((msg) -> {
+                    testProbe.ref().tell(msg);
+                    return Behaviors.same();
+                })
+                .build();
+
+        URI uri = new URI("file:///some/path");
+        ActorRef<EulerCommand> ref = testKit.spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior));
+        TestProbe<JobCommand> probe = testKit.createTestProbe();
+        ref.tell(new JobToProcess(uri, probe.ref()));
+        
+        testProbe.expectMessageClass(FlushCommand.class);
+        probe.expectMessageClass(JobProcessed.class);
+
+    }
+
 }
