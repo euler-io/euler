@@ -2,9 +2,9 @@ package com.github.euler.tika;
 
 public class FlushConfig {
 
-    private int minActionsToFlush = 50;
+    private int minActionsToFlush = 0;
+    private long minBytesToFlush = 0;
     private int maxActionsToFlush = 1000;
-    private long minBytesToFlush = 1000000;
     private long maxBytesToFlush = 10 * 1000000;
 
     public FlushConfig() {

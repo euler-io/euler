@@ -103,9 +103,7 @@ public class ElasticSearchSink implements BatchSink {
         long bytes = bulkRequest.estimatedSizeInBytes();
         boolean aboveMinimum = flushConfig.isAboveMinimum(actions, bytes);
         boolean aboveMaximum = flushConfig.isAboveMaximum(actions, bytes);
-        if ((force && aboveMinimum) || (!force && aboveMaximum)) {
-            String size = SizeUtils.humanReadableByteCount(bytes, true);
-            LOGGER.info("Executing bulk request with {} actions and {}.", actions, size);
+        if (actions > 0 && (force && aboveMinimum) || (!force && aboveMaximum)) {
 
             try {
                 BulkResponse response = flush();
@@ -121,10 +119,14 @@ public class ElasticSearchSink implements BatchSink {
 
     private BulkResponse flush() throws IOException {
         int actions = bulkRequest.numberOfActions();
-        long bytes = bulkRequest.estimatedSizeInBytes();
-        String size = SizeUtils.humanReadableByteCount(bytes, true);
-        LOGGER.info("Executing bulk request with {} actions and {}.", actions, size);
-        return client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        if (actions > 0) {
+            long bytes = bulkRequest.estimatedSizeInBytes();
+            String size = SizeUtils.humanReadableByteCount(bytes, true);
+            LOGGER.info("Executing bulk request with {} actions and {}.", actions, size);
+            return client.bulk(bulkRequest, RequestOptions.DEFAULT);
+        } else {
+            return null;
+        }
     }
 
     @Override

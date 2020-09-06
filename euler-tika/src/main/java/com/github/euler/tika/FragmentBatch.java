@@ -77,16 +77,17 @@ public class FragmentBatch implements Batch {
 
     public void handleResponse(SinkResponse response, BatchListener listener) {
         for (SinkItemResponse itemResponse : response.getResponses()) {
-            String id = response.getId();
             if (itemResponse.isFailed()) {
                 Exception e = itemResponse.getFailureCause();
                 LOGGER.warn("Sink operation failed.", e);
             }
-            boolean finished = state.itemIndexex(id);
+            String id = itemResponse.getId();
+            boolean finished = state.itemIndexed(id);
             if (finished) {
-                JobTaskToProcess msg = state.getMessage(id);
+                String parentId = state.getParent(id);
+                JobTaskToProcess msg = state.getMessage(parentId);
                 listener.finished(msg.itemURI, ProcessingContext.EMPTY);
-                state.finish(id);
+                state.finish(parentId);
             }
         }
     }

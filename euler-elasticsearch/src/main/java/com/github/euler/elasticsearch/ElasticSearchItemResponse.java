@@ -14,7 +14,7 @@ public class ElasticSearchItemResponse implements SinkItemResponse {
 
     @Override
     public String getId() {
-        if (item.isFailed()) {
+        if (!item.isFailed()) {
             return item.getResponse().getId();
         } else {
             return item.getFailure().getId();

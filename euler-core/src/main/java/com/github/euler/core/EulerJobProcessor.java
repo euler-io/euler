@@ -3,6 +3,7 @@ package com.github.euler.core;
 import java.net.URI;
 import java.time.Duration;
 
+import akka.actor.Cancellable;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.SupervisorStrategy;
@@ -25,12 +26,15 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     private ActorRef<ProcessorCommand> processorRef;
 
     private final EulerState state;
+    private Cancellable flusher;
 
     private EulerJobProcessor(ActorContext<EulerCommand> ctx, Behavior<SourceCommand> sourceBehaviour, Behavior<ProcessorCommand> processorBehavior) {
         super(ctx);
         this.sourceBehaviour = sourceBehaviour;
         this.processorBehavior = processorBehavior;
         this.state = new EulerState();
+        this.flusher = null;
+
         start();
     }
 
@@ -91,12 +95,13 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private void startFlush() {
-        getContext().getSystem().scheduler().scheduleAtFixedRate(Duration.ZERO, Duration.ofSeconds(2), new Runnable() {
+        this.flusher = getContext().getSystem().scheduler().scheduleAtFixedRate(Duration.ZERO, Duration.ofSeconds(2), new Runnable() {
 
             @Override
             public void run() {
-                processorRef.tell(new Flush());
+                processorRef.tell(new Flush(true));
             }
+
         }, getContext().getExecutionContext());
     }
 
@@ -104,6 +109,9 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
         if (state.isProcessed()) {
             ActorRef<JobCommand> replyTo = state.getReplyTo();
             replyTo.tell(new JobProcessed(uri));
+            if (flusher != null) {
+                flusher.cancel();
+            }
             return Behaviors.stopped();
         }
         return Behaviors.same();

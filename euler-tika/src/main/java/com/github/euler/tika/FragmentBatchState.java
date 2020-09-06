@@ -36,7 +36,7 @@ public class FragmentBatchState {
         mapping.put(fragId, id);
     }
 
-    public boolean itemIndexex(String id) {
+    public boolean itemIndexed(String id) {
         String parentId = mapping.get(id);
         State state;
         if (parentId == null) {
@@ -47,7 +47,6 @@ public class FragmentBatchState {
             // is fragment
             state = control.get(parentId);
             state.fragmentsIndexed++;
-            mapping.remove(id);
         }
         return state.parsed && state.indexed && state.fragments == state.fragmentsIndexed;
     }
@@ -58,6 +57,17 @@ public class FragmentBatchState {
 
     public void finish(String id) {
         control.remove(id);
+        mapping.values().removeIf(v -> v.equals(id));
+    }
+
+    public String getParent(String id) {
+        if (control.containsKey(id)) {
+            return id;
+        } else if (mapping.containsKey(id)) {
+            return mapping.get(id);
+        } else {
+            return null;
+        }
     }
 
 }

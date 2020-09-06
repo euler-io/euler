@@ -36,7 +36,7 @@ public class Euler implements AutoCloseable {
         }
         Behavior<ProcessorCommand> processorBehavior = EulerProcessor.create(tasks);
         system = ActorSystem.create(JobExecution.create(sourceBehavior, processorBehavior), "euler-" + UUID.randomUUID().toString());
-
+        
         CompletionStage<JobCommand> result = AskPattern.ask(system, (replyTo) -> new Job(uri, replyTo), duration, system.scheduler());
         CompletionStage<JobProcessed> completionStage = result.thenCompose((r) -> {
             if (r instanceof JobProcessed) {
