@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -18,14 +17,14 @@ import org.slf4j.LoggerFactory;
 import com.github.euler.common.CommonContext;
 import com.github.euler.common.SizeUtils;
 import com.github.euler.core.ProcessingContext;
-import com.github.euler.tika.BatchSink;
 import com.github.euler.tika.EmptyResponse;
 import com.github.euler.tika.FlushConfig;
+import com.github.euler.tika.MetadataBatchSink;
 import com.github.euler.tika.SinkResponse;
 
-public class ElasticSearchSink implements BatchSink {
+public class ElasticsearchMetadataSink implements MetadataBatchSink {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ElasticSearchSink.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ElasticsearchMetadataSink.class);
 
     private final RestHighLevelClient client;
     private final FlushConfig flushConfig;
@@ -34,7 +33,7 @@ public class ElasticSearchSink implements BatchSink {
     private String globalIndex;
     private String index;
 
-    public ElasticSearchSink(RestHighLevelClient client, String index, FlushConfig flushConfig) {
+    public ElasticsearchMetadataSink(RestHighLevelClient client, String index, FlushConfig flushConfig) {
         super();
         this.client = client;
         this.globalIndex = index;
@@ -50,8 +49,7 @@ public class ElasticSearchSink implements BatchSink {
             this.index = this.globalIndex;
         }
 
-        Map<String, Object> metadata = new HashMap<>(ctx.metadata());
-        metadata.put("join_field", "item");
+        Map<String, Object> metadata = buildSource(ctx);
 
         IndexRequest req = new IndexRequest(index);
         String id = generateId(uri, ctx);
@@ -62,34 +60,16 @@ public class ElasticSearchSink implements BatchSink {
         return flush(id, false);
     }
 
+    protected Map<String, Object> buildSource(ProcessingContext ctx) {
+        Map<String, Object> metadata = new HashMap<>(ctx.metadata());
+        return metadata;
+    }
+
     protected String generateId(URI uri, ProcessingContext ctx) {
         return DigestUtils.md5Hex(uri.toString()).toLowerCase();
     }
 
-    @Override
-    public SinkResponse storeFragment(String parentId, int fragIndex, String fragment) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("content", fragment);
-        data.put("size", fragment.length());
-        data.put("index", fragIndex);
-
-        Map<String, Object> joinField = new HashMap<String, Object>(1);
-        joinField.put("name", "fragment");
-        joinField.put("parent", parentId);
-
-        data.put("join_field", joinField);
-
-        String fragId = UUID.randomUUID().toString();
-
-        IndexRequest req = new IndexRequest(this.index);
-        req.routing(parentId);
-        req.id(fragId);
-        req.source(data);
-        add(req);
-        return flush(fragId, false);
-    }
-
-    private void add(IndexRequest req) {
+    protected void add(IndexRequest req) {
         bulkRequest.add(req);
     }
 
@@ -98,7 +78,7 @@ public class ElasticSearchSink implements BatchSink {
         return flush(null, force);
     }
 
-    private SinkResponse flush(String id, boolean force) {
+    protected SinkResponse flush(String id, boolean force) {
         int actions = bulkRequest.numberOfActions();
         long bytes = bulkRequest.estimatedSizeInBytes();
         boolean aboveMinimum = flushConfig.isAboveMinimum(actions, bytes);
@@ -109,7 +89,7 @@ public class ElasticSearchSink implements BatchSink {
                 BulkResponse response = flush();
                 bulkRequest = new BulkRequest();
 
-                return new ElasticSearchResponse(id, response);
+                return new ElasticsearchResponse(id, response);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -148,6 +128,10 @@ public class ElasticSearchSink implements BatchSink {
                 LOGGER.error("Error closing {}.", client.getClass().getSimpleName(), e);
             }
         }
+    }
+
+    protected String getIndex() {
+        return index;
     }
 
 }

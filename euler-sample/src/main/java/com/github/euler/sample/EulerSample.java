@@ -23,7 +23,7 @@ import com.github.euler.core.Euler;
 import com.github.euler.core.JobProcessed;
 import com.github.euler.core.SourceExecution;
 import com.github.euler.core.Tasks;
-import com.github.euler.elasticsearch.ElasticSearchTask;
+import com.github.euler.elasticsearch.ElasticsearchContentTask;
 import com.github.euler.file.BasicFilePropertiesTask;
 import com.github.euler.file.FileSource;
 import com.github.euler.file.FileStorageStrategy;
@@ -33,7 +33,7 @@ import com.github.euler.tika.ParseTask;
 
 /**
  * A simple euler file processing pipeline. This samples assumes a
- * non-authenticated elasticsearch instance running on localhost: 9200.
+ * non-authenticated elasticsearch instance running on localhost:9200.
  *
  */
 public class EulerSample {
@@ -59,7 +59,7 @@ public class EulerSample {
                             new BasicFilePropertiesTask("basic-file-properties"),
                             new MimeTypeDetectTask("mime-type-detect", sf, detector),
                             ParseTask.builder("parse", sf, parsedContentStrategy, embeddedContentStrategy).build(),
-                            ElasticSearchTask.builder("elasticsearch-sink", sf, client).setIndex(indexName).build()))
+                            ElasticsearchContentTask.builder("elasticsearch-content-sink", sf, client).setIndex(indexName).build()))
                     .build();
 
             URI uri = EulerSample.class.getClassLoader().getResource("File.txt").toURI();

@@ -13,11 +13,11 @@ import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.tika.FlushConfig;
 import com.github.euler.tika.FragmentBatch;
 
-public class ElasticSearchTask extends AbstractBatchTask {
+public class ElasticsearchContentTask extends AbstractBatchTask {
 
-    private ElasticSearchTask(String name, String index, Parser parser, StreamFactory sf, int fragmentSize, int fragmentOverlap, RestHighLevelClient client,
+    private ElasticsearchContentTask(String name, String index, Parser parser, StreamFactory sf, int fragmentSize, int fragmentOverlap, RestHighLevelClient client,
             FlushConfig flushConfig) {
-        super(name, () -> new FragmentBatch(parser, sf, fragmentSize, fragmentOverlap, new ElasticSearchSink(client, index, flushConfig)));
+        super(name, () -> new FragmentBatch(parser, sf, fragmentSize, fragmentOverlap, new ElasticsearchFragmentSink(client, index, flushConfig)));
     }
 
     @Override
@@ -119,7 +119,7 @@ public class ElasticSearchTask extends AbstractBatchTask {
             return this;
         }
 
-        public ElasticSearchTask build() {
+        public ElasticsearchContentTask build() {
             Objects.requireNonNull(name, () -> "name is required");
             Objects.requireNonNull(parser, () -> "parser is required");
             Objects.requireNonNull(streamFactory, () -> "streamFactory is required");
@@ -127,7 +127,7 @@ public class ElasticSearchTask extends AbstractBatchTask {
             Objects.requireNonNull(fragmentOverlap, () -> "fragmentOverlap is required");
             Objects.requireNonNull(client, () -> "client is required");
             Objects.requireNonNull(flushConfig, () -> "flushConfig is required");
-            return new ElasticSearchTask(name, index, parser, streamFactory, fragmentSize, fragmentOverlap, client, flushConfig);
+            return new ElasticsearchContentTask(name, index, parser, streamFactory, fragmentSize, fragmentOverlap, client, flushConfig);
         }
 
     }

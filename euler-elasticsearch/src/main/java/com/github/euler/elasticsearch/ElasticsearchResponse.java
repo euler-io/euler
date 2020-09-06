@@ -9,12 +9,12 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import com.github.euler.tika.SinkItemResponse;
 import com.github.euler.tika.SinkResponse;
 
-public class ElasticSearchResponse implements SinkResponse {
+public class ElasticsearchResponse implements SinkResponse {
 
     private final String id;
     private final BulkResponse response;
 
-    public ElasticSearchResponse(String id, BulkResponse response) {
+    public ElasticsearchResponse(String id, BulkResponse response) {
         this.id = id;
         this.response = response;
     }
@@ -27,7 +27,7 @@ public class ElasticSearchResponse implements SinkResponse {
     @Override
     public List<SinkItemResponse> getResponses() {
         return Arrays.stream(response.getItems())
-                .map((item) -> new ElasticSearchItemResponse(item))
+                .map((item) -> new ElasticsearchItemResponse(item))
                 .collect(Collectors.toList());
     }
 

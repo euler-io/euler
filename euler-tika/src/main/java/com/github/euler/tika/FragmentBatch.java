@@ -32,11 +32,11 @@ public class FragmentBatch implements Batch {
     private final StreamFactory sf;
     private final int fragmentSize;
     private final int fragmentOverlap;
-    private final BatchSink sink;
+    private final FragmentBatchSink sink;
 
     private FragmentBatchState state;
 
-    public FragmentBatch(Parser parser, StreamFactory sf, int fragmentSize, int fragmentOverlap, BatchSink sink) {
+    public FragmentBatch(Parser parser, StreamFactory sf, int fragmentSize, int fragmentOverlap, FragmentBatchSink sink) {
         super();
         this.parser = parser;
         this.sf = sf;

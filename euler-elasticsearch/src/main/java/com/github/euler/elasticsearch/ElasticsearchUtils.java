@@ -25,7 +25,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 
-public class ElasticSearchUtils {
+public class ElasticsearchUtils {
 
     public static RestHighLevelClient initializeClient(Config config) {
         String username;
@@ -95,7 +95,7 @@ public class ElasticSearchUtils {
 
     public static KeyStore loadTrustStore(String password, String trustStore) throws GeneralSecurityException, IOException {
         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        try (InputStream keystoreStream = ElasticSearchUtils.class.getResourceAsStream(trustStore)) {
+        try (InputStream keystoreStream = ElasticsearchUtils.class.getResourceAsStream(trustStore)) {
             if (password != null) {
                 keystore.load(keystoreStream, password.toCharArray());
             } else {

@@ -4,11 +4,11 @@ import org.elasticsearch.action.bulk.BulkItemResponse;
 
 import com.github.euler.tika.SinkItemResponse;
 
-public class ElasticSearchItemResponse implements SinkItemResponse {
+public class ElasticsearchItemResponse implements SinkItemResponse {
 
     private BulkItemResponse item;
 
-    public ElasticSearchItemResponse(BulkItemResponse item) {
+    public ElasticsearchItemResponse(BulkItemResponse item) {
         this.item = item;
     }
 

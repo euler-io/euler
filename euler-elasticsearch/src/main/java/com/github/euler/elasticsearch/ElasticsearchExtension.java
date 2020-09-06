@@ -6,11 +6,13 @@ import java.util.List;
 import com.github.euler.configuration.EulerExtension;
 import com.github.euler.configuration.TaskConfigConverter;
 
-public class ElasticSearchExtension implements EulerExtension {
+public class ElasticsearchExtension implements EulerExtension {
 
     @Override
     public List<TaskConfigConverter> taskConverters() {
-        return Arrays.asList(new ElasticSearchTaskConfigConverter());
+        return Arrays.asList(
+                new ElasticsearchFragmentTaskConfigConverter(),
+                new ElasticsearchMetadataTaskConfigConverter());
     }
 
     @Override
