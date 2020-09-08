@@ -16,7 +16,7 @@ import com.github.euler.core.Tasks;
 
 public class ObjectOrientedStyleSampleSource {
 
-    private static class OOSource implements Source {
+    public static class OOSource implements Source {
 
         @Override
         public void scan(URI uri, SourceListener listener) throws IOException {

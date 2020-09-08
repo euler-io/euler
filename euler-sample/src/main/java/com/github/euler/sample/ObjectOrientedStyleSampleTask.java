@@ -14,7 +14,7 @@ import com.github.euler.core.Sources;
 
 public class ObjectOrientedStyleSampleTask {
 
-    private static class OOTask extends AbstractTask {
+    public static class OOTask extends AbstractTask {
 
         public OOTask(String name) {
             super(name);
@@ -27,7 +27,7 @@ public class ObjectOrientedStyleSampleTask {
 
     }
 
-    private static class OOSampleProcessor implements ItemProcessor {
+    public static class OOSampleProcessor implements ItemProcessor {
 
         @Override
         public ProcessingContext process(Item item) {
