@@ -61,7 +61,7 @@ public final class Tasks {
 
             @Override
             public Behavior<TaskCommand> behavior() {
-                return Behaviors.setup((ctx) -> new ItemProcessorTaskCommand(ctx, processor.get()));
+                return Behaviors.setup((ctx) -> new ItemProcessorExecution(ctx, processor.get()));
             }
 
         };

@@ -1,40 +1,34 @@
 package com.github.euler.tika;
 
+import java.net.URI;
+
 import org.apache.tika.detect.Detector;
 
 import com.github.euler.common.CommonMetadata;
 import com.github.euler.common.StreamFactory;
-import com.github.euler.core.JobTaskToProcess;
-import com.github.euler.core.Task;
-import com.github.euler.core.TaskCommand;
+import com.github.euler.core.AbstractTask;
+import com.github.euler.core.ItemProcessor;
+import com.github.euler.core.ProcessingContext;
 
-import akka.actor.typed.Behavior;
+public class MimeTypeDetectTask extends AbstractTask {
 
-public class MimeTypeDetectTask implements Task {
-
-    private String name;
-    private StreamFactory sf;
-    private Detector detector;
+    private final StreamFactory sf;
+    private final Detector detector;
 
     public MimeTypeDetectTask(String name, StreamFactory sf, Detector detector) {
-        this.name = name;
+        super(name);
         this.sf = sf;
         this.detector = detector;
     }
 
     @Override
-    public String name() {
-        return this.name;
+    protected boolean accept(URI uri, URI itemURI, ProcessingContext ctx) {
+        return !ctx.metadata().containsKey(CommonMetadata.MIME_TYPE);
     }
 
     @Override
-    public Behavior<TaskCommand> behavior() {
-        return MimeTypeDetectExecution.create(this.sf, this.detector);
-    }
-
-    @Override
-    public boolean accept(JobTaskToProcess msg) {
-        return !msg.ctx.metadata().containsKey(CommonMetadata.MIME_TYPE);
+    protected ItemProcessor itemProcessor() {
+        return new MimeTypeItemProcessor(sf, detector);
     }
 
 }

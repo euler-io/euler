@@ -21,7 +21,7 @@ public abstract class AbstractTask implements Task {
 
     @Override
     public Behavior<TaskCommand> behavior() {
-        return Behaviors.setup((context) -> new ItemProcessorTaskCommand(context, itemProcessor()));
+        return Behaviors.setup((context) -> new ItemProcessorExecution(context, itemProcessor()));
     }
 
     protected abstract ItemProcessor itemProcessor();

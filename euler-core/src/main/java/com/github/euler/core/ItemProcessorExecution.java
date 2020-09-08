@@ -10,11 +10,11 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
-class ItemProcessorTaskCommand extends AbstractBehavior<TaskCommand> {
+class ItemProcessorExecution extends AbstractBehavior<TaskCommand> {
 
     private final ItemProcessor itemProcessor;
 
-    public ItemProcessorTaskCommand(ActorContext<TaskCommand> context, ItemProcessor itemProcessor) {
+    public ItemProcessorExecution(ActorContext<TaskCommand> context, ItemProcessor itemProcessor) {
         super(context);
         this.itemProcessor = itemProcessor;
     }
