@@ -3,7 +3,6 @@ package com.github.euler.core;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
-import java.time.Duration;
 
 import org.junit.Test;
 
@@ -193,7 +192,7 @@ public class EulerJobProcessorTest extends AkkaTest {
         TestProbe<JobCommand> probe = testKit.createTestProbe();
         ref.tell(new JobToProcess(uri, probe.ref()));
 
-        testProbe.expectMessageClass(Flush.class, Duration.ofSeconds(10));
+        testProbe.expectMessageClass(Flush.class);
         probe.expectMessageClass(JobProcessed.class);
 
     }

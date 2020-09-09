@@ -95,7 +95,9 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private void startFlush() {
-        this.flusher = getContext().getSystem().scheduler().scheduleAtFixedRate(Duration.ZERO, Duration.ofSeconds(2), new Runnable() {
+        processorRef.tell(new Flush(true));
+        Duration duration = Duration.ofSeconds(2);
+        this.flusher = getContext().getSystem().scheduler().scheduleAtFixedRate(duration, duration, new Runnable() {
 
             @Override
             public void run() {
