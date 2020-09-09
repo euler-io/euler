@@ -33,7 +33,13 @@ public class PooledExecution extends AbstractBehavior<TaskCommand> {
     public Receive<TaskCommand> createReceive() {
         ReceiveBuilder<TaskCommand> builder = newReceiveBuilder();
         builder.onMessage(JobTaskToProcess.class, this::onJobTaskToProcess);
+        builder.onMessage(Flush.class, this::onFlush);
         return builder.build();
+    }
+
+    public Behavior<TaskCommand> onFlush(Flush msg) {
+//        router.unsafeUpcast().tell(new Broadcast(msg));
+        return Behaviors.same();
     }
 
     private Behavior<TaskCommand> superviseTaskBehavior(Task t) {
@@ -65,7 +71,19 @@ public class PooledExecution extends AbstractBehavior<TaskCommand> {
             ReceiveBuilder<TaskCommand> builder = newReceiveBuilder();
             builder.onMessage(JobTaskToProcess.class, this::onJobTaskToProcess);
             builder.onMessage(InternalJobTaskFailed.class, this::onInternalJobTaskFailed);
+            builder.onMessage(Flush.class, this::onFlush);
+            builder.onAnyMessage((m) -> {
+                System.out.println(m);
+                return Behaviors.same();
+            });
             return builder.build();
+        }
+
+        public Behavior<TaskCommand> onFlush(Flush msg) {
+            if (taskRef != null) {
+                taskRef.tell(msg);
+            }
+            return Behaviors.same();
         }
 
         private Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) {

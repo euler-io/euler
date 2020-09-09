@@ -40,7 +40,18 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
         builder.onMessage(JobTaskToProcess.class, this::onJobTaskToProcess);
         builder.onMessage(InternalAdaptedProcessorCommand.class, this::onInternalAdaptedProcessorCommand);
         builder.onMessage(InternalJobTaskFailed.class, this::onInternalJobTaskFailed);
+        builder.onMessage(Flush.class, this::onFlush);
         return builder.build();
+    }
+
+    public Behavior<TaskCommand> onFlush(Flush msg) {
+        for (Task task : tasks) {
+            if (task.isFlushable() && mapping.containsKey(task.name())) {
+                ActorRef<TaskCommand> taskRef = getTaskRef(task);
+                taskRef.tell(msg);
+            }
+        }
+        return Behaviors.same();
     }
 
     private Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) {
@@ -49,7 +60,7 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
         for (Task task : this.tasks) {
             if (task.accept(msg)) {
                 tasksAccepted++;
-                ActorRef<TaskCommand> ref = getTaskRef(task, msg);
+                ActorRef<TaskCommand> ref = getTaskRefOrSpawn(task, msg);
                 ref.tell(adaptedMsg);
             }
         }
@@ -61,7 +72,11 @@ public class ConcurrentExecution extends AbstractBehavior<TaskCommand> {
         return this;
     }
 
-    private ActorRef<TaskCommand> getTaskRef(Task task, JobTaskToProcess msg) {
+    private ActorRef<TaskCommand> getTaskRef(Task task) {
+        return mapping.get(task.name());
+    }
+
+    private ActorRef<TaskCommand> getTaskRefOrSpawn(Task task, JobTaskToProcess msg) {
         ActorRef<TaskCommand> ref = mapping.computeIfAbsent(task.name(), (k) -> getContext().spawn(superviseTaskBehavior(task), k));
         getContext().watchWith(ref, new InternalJobTaskFailed(msg, task.name()));
         return ref;

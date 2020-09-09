@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.euler.testing.WillFailBehavior;
@@ -68,6 +69,30 @@ public class PooledTaskTest extends AkkaTest {
         ref.tell(msg);
 
         probe.expectMessageClass(JobTaskFailed.class);
+    }
+
+    @Test
+    @Ignore
+    public void testWhenFlushAllTasksReceiveFlush() throws Exception {
+        TestProbe<TaskCommand> probe = testKit.createTestProbe();
+
+        Task task = Tasks.foward("task", probe.ref());
+
+        Task pooledTask = new PooledTask("pooled-task", 2, task);
+        ActorRef<TaskCommand> ref = testKit.spawn(pooledTask.behavior());
+
+        TestProbe<ProcessorCommand> starterProbe = testKit.createTestProbe();
+
+        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, starterProbe.ref());
+        ref.tell(msg);
+        ref.tell(msg);
+
+        probe.expectMessageClass(JobTaskToProcess.class);
+        probe.expectMessageClass(JobTaskToProcess.class);
+
+        ref.tell(new Flush());
+        probe.expectMessageClass(Flush.class);
+        probe.expectMessageClass(Flush.class);
     }
 
 }

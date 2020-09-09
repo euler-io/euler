@@ -32,6 +32,11 @@ public class ConcurrentTask implements Task {
         return Arrays.stream(this.tasks).anyMatch(t -> t.accept(msg));
     }
 
+    @Override
+    public boolean isFlushable() {
+        return Arrays.stream(this.tasks).anyMatch(t -> t.isFlushable());
+    }
+
     public Task[] getTasks() {
         return tasks;
     }

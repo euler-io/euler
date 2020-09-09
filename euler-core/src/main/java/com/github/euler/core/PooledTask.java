@@ -33,4 +33,9 @@ public class PooledTask implements Task {
         return size;
     }
 
+    @Override
+    public boolean isFlushable() {
+        return task.isFlushable();
+    }
+
 }
