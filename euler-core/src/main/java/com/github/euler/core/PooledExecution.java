@@ -1,6 +1,8 @@
 package com.github.euler.core;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -8,25 +10,26 @@ import akka.actor.typed.SupervisorStrategy;
 import akka.actor.typed.javadsl.AbstractBehavior;
 import akka.actor.typed.javadsl.ActorContext;
 import akka.actor.typed.javadsl.Behaviors;
-import akka.actor.typed.javadsl.PoolRouter;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
-import akka.actor.typed.javadsl.Routers;
 
 public class PooledExecution extends AbstractBehavior<TaskCommand> {
-
-    private static final String ROUTER = "router";
 
     public static Behavior<TaskCommand> create(int size, Task task) {
         return Behaviors.setup((ctx) -> new PooledExecution(ctx, size, task));
     }
 
-    private ActorRef<TaskCommand> router;
+    private List<ActorRef<TaskCommand>> pool;
+    private int position;
+    private int size;
+    private Task task;
 
     public PooledExecution(ActorContext<TaskCommand> context, int size, Task task) {
         super(context);
-        PoolRouter<TaskCommand> pool = Routers.pool(size, superviseTaskBehavior(task)).withRoundRobinRouting();
-        router = getContext().spawn(pool, ROUTER);
+        pool = new ArrayList<ActorRef<TaskCommand>>(size);
+        this.size = size;
+        this.task = task;
+        position = 0;
     }
 
     @Override
@@ -38,7 +41,9 @@ public class PooledExecution extends AbstractBehavior<TaskCommand> {
     }
 
     public Behavior<TaskCommand> onFlush(Flush msg) {
-//        router.unsafeUpcast().tell(new Broadcast(msg));
+        for (ActorRef<TaskCommand> taskRef : this.pool) {
+            taskRef.tell(msg);
+        }
         return Behaviors.same();
     }
 
@@ -48,8 +53,22 @@ public class PooledExecution extends AbstractBehavior<TaskCommand> {
     }
 
     private Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) {
-        router.tell(msg);
+        ActorRef<TaskCommand> taskRef = getNextTaskRef();
+        taskRef.tell(msg);
         return Behaviors.same();
+    }
+
+    private ActorRef<TaskCommand> getNextTaskRef() {
+        if (pool.size() - 1 < position) {
+            pool.add(getContext().spawn(superviseTaskBehavior(task), task.name() + "-" + position));
+        }
+        ActorRef<TaskCommand> taskRef = pool.get(position);
+        if (position + 1 == size) {
+            position = 0;
+        } else {
+            position++;
+        }
+        return taskRef;
     }
 
     private static class MiddleManagement extends AbstractBehavior<TaskCommand> {

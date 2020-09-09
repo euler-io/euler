@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.github.euler.testing.WillFailBehavior;
@@ -72,7 +71,6 @@ public class PooledTaskTest extends AkkaTest {
     }
 
     @Test
-    @Ignore
     public void testWhenFlushAllTasksReceiveFlush() throws Exception {
         TestProbe<TaskCommand> probe = testKit.createTestProbe();
 
