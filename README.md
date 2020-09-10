@@ -3,7 +3,7 @@ Euler File Processing API ![Release](https://github.com/euler-io/euler/workflows
 =========================
 Euler is a Java API built for processing files using concurrent and scalable infrastructure provided by [Akka](https://akka.io/). The main purpose is to extract data from unstructured content such as texts and images using a customizable and plugable task pipeline.
 
-You can use Euler as a Java API (programatically or via config file) or as a HTTP API. Other languages support are planned in the near future.
+You can use Euler as a Java API (programatically or via config file) or as a [HTTP API](https://github.com/euler-io/euler-api). Other languages support are planned in the near future.
 
 Documentation
 -------------
