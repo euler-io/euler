@@ -1,10 +1,11 @@
 name: Release
 
-# Run workflow on commits to the `master` branch
+# Run workflow on commits to the `master` and `dev` branches
 on:
   push:
     branches:
       - master
+      - dev
 
 jobs:
   release:
