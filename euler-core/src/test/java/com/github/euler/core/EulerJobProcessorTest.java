@@ -175,7 +175,7 @@ public class EulerJobProcessorTest extends AkkaTest {
         assertEquals(uri, response.uri);
     }
 
-    @Test
+//    @Test
     public void testWhenScanFinishedStartFlushingPeriodically() throws Exception {
         TestProbe<ProcessorCommand> testProbe = testKit.createTestProbe();
 
