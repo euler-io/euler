@@ -67,10 +67,14 @@ public class EulerConfigConverter {
         ConfigContext.Builder builder = ConfigContext.builder();
         for (Entry<String, ConfigValue> e : configObject.entrySet()) {
             String path = e.getKey();
-            ConfigValue value = e.getValue();
-            ContextConfigConverter converter = converters.get(path);
-            ConfigContext converted = converter.convert(value, builder.build(), new TypesConfigConverter(typeConverters));
-            builder.putAll(converted);
+            if (converters.containsKey(path)) {
+                ConfigValue value = e.getValue();
+                ContextConfigConverter converter = converters.get(path);
+                ConfigContext converted = converter.convert(value, builder.build(), new TypesConfigConverter(typeConverters));
+                builder.putAll(converted);
+            } else {
+                throw new IllegalArgumentException(ContextConfigConverter.class.getSimpleName() + " not found for path '" + path + "'.");
+            }
         }
 
         return builder.build();
