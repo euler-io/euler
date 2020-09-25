@@ -16,7 +16,9 @@ public class StreamFactoryContextConfigConverter implements ContextConfigConvert
 
     @Override
     public ConfigContext convert(ConfigValue value, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
-        return typeConfigConverter.convert(STREAM_FACTORY, value, configContext);
+        StreamFactory sf = typeConfigConverter.convert(STREAM_FACTORY, value, configContext);
+        ConfigContext ctx = ConfigContext.builder().put(StreamFactory.class, sf).build();
+        return ctx;
     }
 
 }

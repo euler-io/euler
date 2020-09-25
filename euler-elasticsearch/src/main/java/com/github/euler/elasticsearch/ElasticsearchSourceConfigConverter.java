@@ -41,7 +41,7 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
     }
 
     protected Config getDefaultConfig() {
-        URL resource = ElasticsearchSourceConfigConverter.class.getClassLoader().getResource("/elasticsearchsource.conf");
+        URL resource = ElasticsearchSourceConfigConverter.class.getClassLoader().getResource("elasticsearchsource.conf");
         return ConfigFactory.parseURL(resource);
     }
 

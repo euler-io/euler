@@ -21,11 +21,13 @@ public abstract class AbstractElasticsearchTaskConfigConverter extends AbstractT
     }
 
     protected RestHighLevelClient getClient(Config config, ConfigContext ctx) {
-        RestHighLevelClient client = ctx.get(RestHighLevelClient.class);
-        if (client == null) {
-            client = ElasticsearchUtils.initializeClient(config.getConfig("elasticsearch"));
+        if (config.hasPath("elasticsearch")) {
+            return ElasticsearchUtils.initializeClient(config.getConfig("elasticsearch"));
+        } else if (ctx.contains(RestHighLevelClient.class)) {
+            return ctx.get(RestHighLevelClient.class);
+        } else {
+            throw new NullPointerException("A elasticsearch config must be provided or a initialized client through " + ConfigContext.class.getSimpleName());
         }
-        return client;
     }
 
     protected String getIndex(Config config) {
@@ -37,8 +39,7 @@ public abstract class AbstractElasticsearchTaskConfigConverter extends AbstractT
     }
 
     protected Config getDefaultConfig() {
-        URL resource = ElasticsearchSourceConfigConverter.class.getClassLoader().getResource("/elasticsearchtask.conf");
+        URL resource = ElasticsearchSourceConfigConverter.class.getClassLoader().getResource("elasticsearchtask.conf");
         return ConfigFactory.parseURL(resource);
     }
-
 }

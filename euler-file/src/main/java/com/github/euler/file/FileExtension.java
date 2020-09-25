@@ -22,4 +22,9 @@ public class FileExtension implements EulerExtension {
         return Arrays.asList(new BasicFilePropertiesTaskConfigConverter());
     }
 
+    @Override
+    public String getDescription() {
+        return "File Extension";
+    }
+
 }
