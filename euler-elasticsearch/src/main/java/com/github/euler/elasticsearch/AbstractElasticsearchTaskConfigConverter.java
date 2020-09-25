@@ -1,5 +1,7 @@
 package com.github.euler.elasticsearch;
 
+import java.net.URL;
+
 import org.elasticsearch.client.RestHighLevelClient;
 
 import com.github.euler.configuration.AbstractTaskConfigConverter;
@@ -35,7 +37,8 @@ public abstract class AbstractElasticsearchTaskConfigConverter extends AbstractT
     }
 
     protected Config getDefaultConfig() {
-        return ConfigFactory.load("elasticsearchtask.conf");
+        URL resource = ElasticsearchSourceConfigConverter.class.getClassLoader().getResource("/elasticsearchtask.conf");
+        return ConfigFactory.parseURL(resource);
     }
 
 }

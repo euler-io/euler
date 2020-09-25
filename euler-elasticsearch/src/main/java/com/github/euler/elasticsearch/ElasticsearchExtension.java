@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.euler.configuration.EulerExtension;
 import com.github.euler.configuration.TaskConfigConverter;
+import com.github.euler.configuration.TypeConfigConverter;
 
 public class ElasticsearchExtension implements EulerExtension {
 
@@ -13,6 +14,11 @@ public class ElasticsearchExtension implements EulerExtension {
         return Arrays.asList(
                 new ElasticsearchFragmentTaskConfigConverter(),
                 new ElasticsearchMetadataTaskConfigConverter());
+    }
+
+    @Override
+    public List<TypeConfigConverter<?>> typeConverters() {
+        return Arrays.asList(new ElasticsearchSourceConfigConverter());
     }
 
     @Override
