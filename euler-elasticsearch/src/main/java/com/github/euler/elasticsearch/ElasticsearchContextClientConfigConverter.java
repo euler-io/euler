@@ -6,7 +6,7 @@ import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.typesafe.config.Config;
 
-public class ElasticsearchProvidedClientConfigConverter extends AbstractElasticsearchClientConfigConverter {
+public class ElasticsearchContextClientConfigConverter extends AbstractElasticsearchClientConfigConverter {
 
     @Override
     public String configType() {

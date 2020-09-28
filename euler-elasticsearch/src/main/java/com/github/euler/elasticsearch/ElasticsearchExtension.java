@@ -21,7 +21,7 @@ public class ElasticsearchExtension implements EulerExtension {
     public List<TypeConfigConverter<?>> typeConverters() {
         return Arrays.asList(new ElasticsearchSourceConfigConverter(),
                 new ElasticsearchConfigClientConfigConverter(),
-                new ElasticsearchProvidedClientConfigConverter());
+                new ElasticsearchContextClientConfigConverter());
     }
 
     @Override
