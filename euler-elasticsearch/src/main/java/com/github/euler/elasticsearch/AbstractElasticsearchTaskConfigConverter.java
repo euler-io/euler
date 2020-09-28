@@ -6,6 +6,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 
 import com.github.euler.configuration.AbstractTaskConfigConverter;
 import com.github.euler.configuration.ConfigContext;
+import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.tika.FlushConfig;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -20,14 +21,8 @@ public abstract class AbstractElasticsearchTaskConfigConverter extends AbstractT
         return new FlushConfig(minActionsToFlush, maxActionsToFlush, minBytesToFlush, maxBytesToFlush);
     }
 
-    protected RestHighLevelClient getClient(Config config, ConfigContext ctx) {
-        if (config.hasPath("elasticsearch")) {
-            return ElasticsearchUtils.initializeClient(config.getConfig("elasticsearch"));
-        } else if (ctx.contains(RestHighLevelClient.class)) {
-            return ctx.get(RestHighLevelClient.class);
-        } else {
-            throw new NullPointerException("A elasticsearch config must be provided or a initialized client through " + ConfigContext.class.getSimpleName());
-        }
+    protected RestHighLevelClient getClient(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {
+        return typeConfigConverter.convert(AbstractElasticsearchClientConfigConverter.TYPE, config.getValue("elasticsearch-client"), ctx);
     }
 
     protected String getIndex(Config config) {

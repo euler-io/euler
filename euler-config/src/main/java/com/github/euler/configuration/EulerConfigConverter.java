@@ -27,14 +27,24 @@ public class EulerConfigConverter {
 
     private final Map<String, ContextConfigConverter> convertersMap = new HashMap<>();
     private final Map<String, TaskConfigConverter> taskConverterMap = new HashMap<>();
+    private final ConfigContext ctx;
     private final List<TypeConfigConverter<?>> typeConverters = new ArrayList<>();
     private final List<EulerExtension> extensions = new ArrayList<>();
 
     public EulerConfigConverter() {
-        this(Thread.currentThread().getContextClassLoader());
+        this(ConfigContext.EMPTY, Thread.currentThread().getContextClassLoader());
     }
 
     public EulerConfigConverter(ClassLoader classLoader) {
+        this(ConfigContext.EMPTY, classLoader);
+    }
+
+    public EulerConfigConverter(ConfigContext ctx) {
+        this(ctx, Thread.currentThread().getContextClassLoader());
+    }
+
+    public EulerConfigConverter(ConfigContext ctx, ClassLoader classLoader) {
+        this.ctx = ctx;
         load(classLoader);
     }
 
@@ -53,7 +63,7 @@ public class EulerConfigConverter {
         return this;
     }
 
-    protected ConfigContext convertContext(Config config) {
+    protected ConfigContext convertContext(Config config, ConfigContext ctx) {
         ConfigObject configObject = config.root();
 
         TasksConfigConverter tasksConverter = new TasksConfigConverter(taskConverterMap);
@@ -65,6 +75,7 @@ public class EulerConfigConverter {
         converters.putAll(convertersMap);
 
         ConfigContext.Builder builder = ConfigContext.builder();
+        builder.putAll(ctx);
         for (Entry<String, ConfigValue> e : configObject.entrySet()) {
             String path = e.getKey();
             if (converters.containsKey(path)) {
@@ -80,18 +91,30 @@ public class EulerConfigConverter {
         return builder.build();
     }
 
-    @SuppressWarnings("unchecked")
+    protected ConfigContext convertContext(Config config) {
+        return convertContext(config, this.ctx);
+    }
+
     public Behavior<JobCommand> create(Config config) {
-        ConfigContext ctx = convertContext(config);
+        return create(config, this.ctx);
+    }
+
+    @SuppressWarnings("unchecked")
+    public Behavior<JobCommand> create(Config config, ConfigContext ctx) {
+        ctx = convertContext(config, ctx);
         List<Task> tasks = (List<Task>) ctx.getRequired(TasksConfigConverter.TASKS);
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
         Behavior<ProcessorCommand> processorBehavior = EulerProcessor.create(tasks.toArray(new Task[tasks.size()]));
         return JobExecution.create(sourceBehavior, processorBehavior);
     }
 
-    @SuppressWarnings("unchecked")
     public <R> R create(Config config, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
-        ConfigContext ctx = convertContext(config);
+        return create(config, this.ctx, func);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <R> R create(Config config, ConfigContext ctx, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
+        ctx = convertContext(config, ctx);
         List<Task> tasks = (List<Task>) ctx.getRequired(TasksConfigConverter.TASKS);
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
         Behavior<ProcessorCommand> processorBehavior = EulerProcessor.create(tasks.toArray(new Task[tasks.size()]));
@@ -99,11 +122,15 @@ public class EulerConfigConverter {
     }
 
     @SuppressWarnings("unchecked")
-    public Euler createEuler(Config config) {
-        ConfigContext ctx = convertContext(config);
+    public Euler createEuler(Config config, ConfigContext ctx) {
+        ctx = convertContext(config, ctx);
         List<Task> tasks = (List<Task>) ctx.getRequired(TasksConfigConverter.TASKS);
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
         return new Euler(sourceBehavior, tasks.toArray(new Task[tasks.size()]));
+    }
+
+    public Euler createEuler(Config config) {
+        return createEuler(config, this.ctx);
     }
 
     public List<EulerExtension> getExtensions() {

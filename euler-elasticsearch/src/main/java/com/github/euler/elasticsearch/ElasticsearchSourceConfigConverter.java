@@ -19,25 +19,21 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
 
     @Override
     public String configType() {
-        return "elasticsearch";
+        return "elasticsearch-client";
     }
 
     @Override
     public Behavior<SourceCommand> convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {
         config = config.withFallback(getDefaultConfig());
-        RestHighLevelClient client = getClient(config, ctx);
+        RestHighLevelClient client = getClient(config, ctx, typeConfigConverter);
         String query = config.getConfig("query").root().render(ConfigRenderOptions.concise());
         int size = config.getInt("size");
         String scroll = config.getString("scroll-keep-alive");
         return PausableSourceExecution.create(new ElasticsearchSource(client, query, size, scroll));
     }
 
-    protected RestHighLevelClient getClient(Config config, ConfigContext ctx) {
-        RestHighLevelClient client = ctx.get(RestHighLevelClient.class);
-        if (client == null) {
-            client = ElasticsearchUtils.initializeClient(config.getConfig("elasticsearch"));
-        }
-        return client;
+    protected RestHighLevelClient getClient(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {
+        return typeConfigConverter.convert(AbstractElasticsearchClientConfigConverter.TYPE, config.getValue("elasticsearch"), ctx);
     }
 
     protected Config getDefaultConfig() {
