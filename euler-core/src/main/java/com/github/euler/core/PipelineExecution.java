@@ -125,7 +125,9 @@ public class PipelineExecution extends AbstractBehavior<TaskCommand> {
 
     private ActorRef<TaskCommand> getOrSpawnTaskRef(Task task, JobTaskToProcess msg) {
         ActorRef<TaskCommand> ref = mapping.computeIfAbsent(task.name(), (k) -> getContext().spawn(superviseTaskBehavior(task), k));
-        getContext().watchWith(ref, new InternalJobTaskFailed(msg, task.name()));
+        // TODO supervision must be reimplemented.
+        // getContext().watchWith(ref, new InternalJobTaskFailed(msg,
+        // task.name()));
         return ref;
     }
 

@@ -17,6 +17,7 @@ import org.xml.sax.SAXException;
 import com.github.euler.common.Batch;
 import com.github.euler.common.BatchListener;
 import com.github.euler.common.CommonContext;
+import com.github.euler.common.CommonMetadata;
 import com.github.euler.common.FragmentHandler;
 import com.github.euler.common.FragmentParserContentHandler;
 import com.github.euler.common.StreamFactory;
@@ -53,15 +54,17 @@ public class FragmentBatch implements Batch {
         String id = response.getId();
         state.itemStored(id, msg);
 
-        if (sf.isEmpty(msg.itemURI)) {
+        URI uri = msg.ctx.context(CommonContext.PARSED_CONTENT_FILE, msg.itemURI);
+        boolean isEmpty = sf.isEmpty(uri);
+        boolean isDirectory = msg.ctx.metadata(CommonMetadata.IS_DIRECTORY, false);
+        if (isEmpty || isDirectory) {
             state.itemParsed(id);
         } else {
             BatchFragmentListener fragmentListener = new BatchFragmentListener(id, listener);
             try {
-                URI uri = msg.ctx.context(CommonContext.PARSED_CONTENT_FILE, msg.itemURI);
                 parse(uri, fragmentListener);
             } catch (IOException | SAXException | TikaException e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException("Error parsing " + uri.toString(), e);
             } finally {
                 state.itemParsed(id);
             }

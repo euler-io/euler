@@ -10,7 +10,7 @@ public class ElasticsearchProvidedClientConfigConverter extends AbstractElastics
 
     @Override
     public String configType() {
-        return "provided";
+        return "context";
     }
 
     @Override

@@ -26,6 +26,11 @@ public class ProcessingContext {
         return this.metadata.get(key);
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T metadata(String key, T defaultValue) {
+        return (T) this.metadata.getOrDefault(key, defaultValue);
+    }
+
     public Map<String, Object> metadata() {
         return metadata;
     }
@@ -100,21 +105,21 @@ public class ProcessingContext {
         Map<String, Object> merged = new HashMap<>(m1);
 
         switch (action) {
-        case OVERWRITE:
-            merged.putAll(m2);
-            break;
-        case MERGE:
-            m2.forEach((k, v) -> putIfAbsentOrMerge(merged, k, v));
-            break;
-        default:
-            m2.forEach(merged::putIfAbsent);
-            break;
+            case OVERWRITE :
+                merged.putAll(m2);
+                break;
+            case MERGE :
+                m2.forEach((k, v) -> putIfAbsentOrMerge(merged, k, v));
+                break;
+            default :
+                m2.forEach(merged::putIfAbsent);
+                break;
         }
 
         return merged;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void putIfAbsentOrMerge(Map<String, Object> payload, String key, Object value) {
         Object current = payload.get(key);
         if (current == null) {
