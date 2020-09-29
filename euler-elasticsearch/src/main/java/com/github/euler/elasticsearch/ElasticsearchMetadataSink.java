@@ -116,7 +116,7 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            stopClient();
+//            stopClient();
         }
     }
 
