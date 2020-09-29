@@ -93,7 +93,7 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
 
     private ProcessingContext buildContext(SearchHit hit) {
         ProcessingContext.Builder builder = ProcessingContext.builder();
-        hit.getSourceAsMap().forEach((k, v) -> builder.metadata(k, v));
+        hit.getSourceAsMap().forEach((k, v) -> builder.context(k, v));
         return builder.build();
     }
 

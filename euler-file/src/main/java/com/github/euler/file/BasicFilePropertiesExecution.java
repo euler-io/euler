@@ -39,15 +39,30 @@ public class BasicFilePropertiesExecution extends AbstractBehavior<TaskCommand> 
     }
 
     private Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) throws IOException {
-        File parent = Paths.get(msg.uri).toFile();
-        File file = Paths.get(msg.itemURI).toFile();
+        File file = getFile(msg);
 
         Builder builder = ProcessingContext.builder();
+        builder.putAll(msg.ctx);
 
         builder.metadata(CommonMetadata.NAME, file.getName());
         builder.metadata(CommonMetadata.SIZE, file.length());
         builder.metadata(CommonMetadata.IS_DIRECTORY, file.isDirectory());
-        builder.metadata(CommonMetadata.PATH, FileUtils.getRelativePath(parent, file));
+        builder.metadata(CommonMetadata.FULL_PATH, file.getAbsolutePath());
+
+        String parentScheme = msg.uri.getScheme();
+        if (parentScheme.equals("file")) {
+            File parent = Paths.get(msg.uri).toFile();
+            String relativePath = FileUtils.getRelativePath(parent, file);
+            builder.metadata(CommonMetadata.PATH, relativePath);
+            builder.metadata(CommonMetadata.RELATIVE_PATH, relativePath);
+        } else {
+            if (msg.ctx.context().containsKey(CommonMetadata.PATH)) {
+                builder.metadata(CommonMetadata.PATH, msg.ctx.context(CommonMetadata.PATH));
+            }
+            if (msg.ctx.context().containsKey(CommonMetadata.RELATIVE_PATH)) {
+                builder.metadata(CommonMetadata.RELATIVE_PATH, msg.ctx.context(CommonMetadata.RELATIVE_PATH));
+            }
+        }
 
         BasicFileAttributes fileAttributes = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
 
@@ -57,6 +72,22 @@ public class BasicFilePropertiesExecution extends AbstractBehavior<TaskCommand> 
         ProcessingContext ctx = builder.build();
         msg.replyTo.tell(new JobTaskFinished(msg, ctx));
         return this;
+    }
+
+    private File getFile(JobTaskToProcess msg) {
+        String scheme = msg.itemURI.getScheme();
+        File file = null;
+        if (scheme.equals("file")) {
+            file = Paths.get(msg.itemURI).toFile();
+        } else if (msg.ctx.metadata().containsKey(CommonMetadata.FULL_PATH)) {
+            file = new File((String) msg.ctx.metadata(CommonMetadata.FULL_PATH));
+        } else if (msg.ctx.context().containsKey(CommonMetadata.FULL_PATH)) {
+            file = new File((String) msg.ctx.context(CommonMetadata.FULL_PATH));
+        } else {
+            throw new NullPointerException("itemURI must be a file scheme or " + CommonMetadata.FULL_PATH + " as context or metadata must be provided.");
+        }
+
+        return file;
     }
 
 }

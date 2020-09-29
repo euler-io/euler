@@ -8,10 +8,17 @@ import akka.actor.typed.Behavior;
 
 public class BasicFilePropertiesTask implements Task {
 
-    private String name;
+    private final String name;
+    private final String[] schemes;
+
+    public BasicFilePropertiesTask(String name, String[] schemes) {
+        super();
+        this.name = name;
+        this.schemes = schemes;
+    }
 
     public BasicFilePropertiesTask(String name) {
-        this.name = name;
+        this(name, new String[]{"file"});
     }
 
     @Override
@@ -26,7 +33,11 @@ public class BasicFilePropertiesTask implements Task {
 
     @Override
     public boolean accept(JobTaskToProcess msg) {
-        return "file".equals(msg.itemURI.getScheme());
+        String itemScheme = msg.itemURI.getScheme();
+        for (String scheme : schemes) {
+            return scheme.equals(itemScheme);
+        }
+        return false;
     }
 
 }

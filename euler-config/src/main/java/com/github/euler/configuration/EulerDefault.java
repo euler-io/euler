@@ -10,7 +10,8 @@ public class EulerDefault implements EulerExtension {
         return Arrays.asList(
                 new PipelineTaskConfigConverter(),
                 new ConcurrentTaskConfigConverter(),
-                new PooledTaskConfigConverter());
+                new PooledTaskConfigConverter(),
+                new BarrierTaskConfigConverter());
     }
 
     @Override

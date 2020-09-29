@@ -154,6 +154,12 @@ public class ProcessingContext {
         public ProcessingContext build() {
             return new ProcessingContext(this.metadata, this.context, this.action);
         }
+        
+        public Builder putAll(ProcessingContext ctx) {
+            this.metadata.putAll(ctx.metadata);
+            this.context.putAll(ctx.context);
+            return this;
+        }
 
         public Builder metadata(String key, Object value) {
             this.metadata.put(key, value);
