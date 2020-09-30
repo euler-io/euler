@@ -26,6 +26,8 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.euler.common.CommonContext;
+import com.github.euler.common.CommonMetadata;
 import com.github.euler.core.AbstractPausableSource;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.core.SourceListener;
@@ -85,7 +87,7 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
         try {
             URI itemURI = buildURI(hit);
             ProcessingContext ctx = buildContext(hit);
-            listener.notifyItemFound(itemURI, itemURI, ctx);
+            listener.notifyItemFound(this.uri, itemURI, ctx);
         } catch (URISyntaxException e) {
             throw new RuntimeException(e);
         }
@@ -94,6 +96,8 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
     private ProcessingContext buildContext(SearchHit hit) {
         ProcessingContext.Builder builder = ProcessingContext.builder();
         hit.getSourceAsMap().forEach((k, v) -> builder.context(k, v));
+        builder.context(CommonContext.INDEX, hit.getIndex());
+        builder.context(CommonContext.ID, hit.getId());
         return builder.build();
     }
 
@@ -102,6 +106,7 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
         String hitIndex = hit.getIndex();
         String hitId = hit.getId();
         String uri = String.format("elasticsearch://%s/%s/%s?index=%s&id=%s", host, hitIndex, hitId, hitIndex, hitId);
+        uri = (String) hit.getSourceAsMap().getOrDefault(CommonMetadata.ITEM_URI, uri);
         return new URI(uri);
     }
 

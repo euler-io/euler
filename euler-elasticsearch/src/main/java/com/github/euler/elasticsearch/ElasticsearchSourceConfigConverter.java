@@ -33,7 +33,7 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
     }
 
     protected RestHighLevelClient getClient(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {
-        return typeConfigConverter.convert(AbstractElasticsearchClientConfigConverter.TYPE, config.getValue("elasticsearch"), ctx);
+        return typeConfigConverter.convert(AbstractElasticsearchClientConfigConverter.TYPE, config.getValue("elasticsearch-client"), ctx);
     }
 
     protected Config getDefaultConfig() {

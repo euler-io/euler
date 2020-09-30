@@ -6,5 +6,6 @@ public interface CommonContext {
     static final String INDEXABLE = CommonContext.class.getName() + ".INDEXABLE";
     static final String INDEX = CommonContext.class.getName() + ".INDEX";
     static final String PARSED_CONTENT_FILE = CommonContext.class.getName() + ".PARSED_CONTENT_FILE";
+    static final String ID = CommonContext.class.getName() + ".ID";
 
 }
