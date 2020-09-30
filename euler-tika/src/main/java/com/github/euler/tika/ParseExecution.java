@@ -84,8 +84,8 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         InputStream in = null;
         Writer out = null;
         try {
-            in = sf.openInputStream(msg.itemURI);
-            out = new OutputStreamWriter(sf.openOutputStream(parsedContent), "utf-8");
+            in = sf.openInputStream(msg.itemURI, msg.ctx);
+            out = new OutputStreamWriter(sf.openOutputStream(parsedContent, msg.ctx), "utf-8");
 
             ProcessingContext parsed = parse(in, out, msg.ctx);
             ProcessingContext ctx = msg.ctx.merge(builder.build()).merge(parsed);
@@ -120,9 +120,9 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         if (resourceName == null) {
             resourceName = "embedded_" + embeddedCounter;
         }
-        
+
         URI tempFile = embeddedContentStrategy.createFile(".tmp");
-        try (OutputStream out = sf.openOutputStream(tempFile)) {
+        try (OutputStream out = sf.openOutputStream(tempFile, ProcessingContext.EMPTY)) {
             IOUtils.copy(in, out);
         } catch (IOException e) {
             throw new RuntimeException(e);

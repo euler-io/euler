@@ -11,6 +11,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import com.github.euler.common.StreamFactory;
+import com.github.euler.core.ProcessingContext;
 
 public class FileStreamFactoryTest {
 
@@ -21,12 +22,12 @@ public class FileStreamFactoryTest {
 
         StreamFactory sf = new FileStreamFactory();
 
-        try (OutputStream out = sf.openOutputStream(uri)) {
+        try (OutputStream out = sf.openOutputStream(uri, ProcessingContext.EMPTY)) {
             IOUtils.write(content, out, "utf-8");
         }
 
         String value = null;
-        try (InputStream in = sf.openInputStream(uri)) {
+        try (InputStream in = sf.openInputStream(uri, ProcessingContext.EMPTY)) {
             value = IOUtils.toString(in, "utf-8");
         }
 

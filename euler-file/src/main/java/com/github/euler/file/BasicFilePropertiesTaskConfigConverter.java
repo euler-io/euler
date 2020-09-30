@@ -21,8 +21,7 @@ public class BasicFilePropertiesTaskConfigConverter extends AbstractTaskConfigCo
     public Task convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter, TasksConfigConverter tasksConfigConverter) {
         config = config.withFallback(getDefaultConfig());
         String name = getName(config, tasksConfigConverter);
-        String[] schemes = config.getStringList("schemes").stream().toArray(s -> new String[s]);
-        return new BasicFilePropertiesTask(name, schemes);
+        return new BasicFilePropertiesTask(name);
     }
 
     protected Config getDefaultConfig() {

@@ -57,8 +57,8 @@ public class ParseTask implements Task {
 
     @Override
     public boolean accept(JobTaskToProcess msg) {
-        boolean isEmpty = sf.isEmpty(msg.itemURI);
-        boolean exists = sf.exists(msg.itemURI);
+        boolean isEmpty = sf.isEmpty(msg.itemURI, msg.ctx);
+        boolean exists = sf.exists(msg.itemURI, msg.ctx);
         boolean isDirectory = msg.ctx.metadata(CommonMetadata.IS_DIRECTORY, false);
         return exists && !isEmpty && !isDirectory;
     }

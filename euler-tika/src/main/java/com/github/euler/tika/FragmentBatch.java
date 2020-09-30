@@ -55,14 +55,14 @@ public class FragmentBatch implements Batch {
         state.itemStored(id, msg);
 
         URI uri = msg.ctx.context(CommonContext.PARSED_CONTENT_FILE, msg.itemURI);
-        boolean isEmpty = sf.isEmpty(uri);
+        boolean isEmpty = sf.isEmpty(uri, msg.ctx);
         boolean isDirectory = msg.ctx.metadata(CommonMetadata.IS_DIRECTORY, false);
         if (isEmpty || isDirectory) {
             state.itemParsed(id);
         } else {
             BatchFragmentListener fragmentListener = new BatchFragmentListener(id, listener);
             try {
-                parse(uri, fragmentListener);
+                parse(uri, msg.ctx, fragmentListener);
             } catch (IOException | SAXException | TikaException e) {
                 throw new RuntimeException("Error parsing " + uri.toString(), e);
             } finally {
@@ -95,9 +95,9 @@ public class FragmentBatch implements Batch {
         }
     }
 
-    protected void parse(URI uri, FragmentHandler fragmentHandler) throws IOException, SAXException, TikaException {
+    protected void parse(URI uri, ProcessingContext ctx, FragmentHandler fragmentHandler) throws IOException, SAXException, TikaException {
         ContentHandler handler = new BodyContentHandler(new FragmentParserContentHandler(fragmentSize, fragmentOverlap, fragmentHandler));
-        try (InputStream in = sf.openInputStream(uri)) {
+        try (InputStream in = sf.openInputStream(uri, ctx)) {
             parser.parse(in, handler, new Metadata(), new ParseContext());
         }
     }

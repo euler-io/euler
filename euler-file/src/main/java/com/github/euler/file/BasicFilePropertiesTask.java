@@ -1,5 +1,6 @@
 package com.github.euler.file;
 
+import com.github.euler.common.CommonMetadata;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.Task;
 import com.github.euler.core.TaskCommand;
@@ -9,16 +10,10 @@ import akka.actor.typed.Behavior;
 public class BasicFilePropertiesTask implements Task {
 
     private final String name;
-    private final String[] schemes;
-
-    public BasicFilePropertiesTask(String name, String[] schemes) {
-        super();
-        this.name = name;
-        this.schemes = schemes;
-    }
 
     public BasicFilePropertiesTask(String name) {
-        this(name, new String[]{"file"});
+        super();
+        this.name = name;
     }
 
     @Override
@@ -34,10 +29,9 @@ public class BasicFilePropertiesTask implements Task {
     @Override
     public boolean accept(JobTaskToProcess msg) {
         String itemScheme = msg.itemURI.getScheme();
-        for (String scheme : schemes) {
-            return scheme.equals(itemScheme);
-        }
-        return false;
+        boolean isPathOnMetadata = msg.ctx.metadata().containsKey(CommonMetadata.FULL_PATH);
+        boolean isPathOnContext = msg.ctx.context().containsKey(CommonMetadata.FULL_PATH);
+        return "file".equals(itemScheme) || isPathOnMetadata || isPathOnContext;
     }
 
 }

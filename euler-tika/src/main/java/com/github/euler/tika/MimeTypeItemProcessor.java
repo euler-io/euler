@@ -35,7 +35,7 @@ public class MimeTypeItemProcessor implements ItemProcessor {
             if (item.ctx.metadata().containsKey(CommonMetadata.NAME)) {
                 metadata.set(Metadata.RESOURCE_NAME_KEY, item.ctx.metadata(CommonMetadata.NAME).toString());
             }
-            try (TikaInputStream tikaInputStream = TikaInputStream.get(sf.openInputStream(item.itemURI))) {
+            try (TikaInputStream tikaInputStream = TikaInputStream.get(sf.openInputStream(item.itemURI, item.ctx))) {
                 MediaType type = detector.detect(tikaInputStream, metadata);
                 type = type.getBaseType();
                 mimeType = type.getType() + "/" + type.getSubtype();
