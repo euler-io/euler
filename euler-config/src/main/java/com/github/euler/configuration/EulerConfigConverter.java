@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
 import java.util.function.BiFunction;
-import java.util.stream.Collectors;
 
 import com.github.euler.core.Euler;
 import com.github.euler.core.EulerProcessor;
@@ -20,8 +19,6 @@ import com.github.euler.core.ProcessorCommand;
 import com.github.euler.core.SourceCommand;
 import com.github.euler.core.Task;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigList;
-import com.typesafe.config.ConfigObject;
 import com.typesafe.config.ConfigValue;
 
 import akka.actor.typed.Behavior;
@@ -66,26 +63,9 @@ public class EulerConfigConverter {
         return this;
     }
 
-    private ConfigContext convertContext(ConfigValue config, ConfigContext ctx) {
-        if (config instanceof ConfigList) {
-            return convertContext((ConfigList) config, ctx);
-        } else if (config instanceof ConfigObject) {
-            return convertContext((ConfigObject) config, ctx);
-        } else {
-            throw new IllegalArgumentException("config must be a ConfigList or a ConfigObject");
-        }
-    }
-
-    protected ConfigContext convertContext(ConfigObject config, ConfigContext ctx) {
-        Collection<Entry<String, ConfigValue>> entries = config.entrySet();
-        return convertContext(entries, ctx);
-    }
-
-    protected ConfigContext convertContext(ConfigList config, ConfigContext ctx) {
-        Collection<Entry<String, ConfigValue>> entries = config.stream()
-                .map(v -> (ConfigObject) v)
-                .flatMap(v -> v.entrySet().stream())
-                .collect(Collectors.toList());
+    protected ConfigContext convertContext(Config config, ConfigContext ctx) {
+        List<Entry<String, ConfigValue>> entries = new ArrayList<Map.Entry<String, ConfigValue>>(config.root().entrySet());
+        Collections.sort(entries, new ConfigEntryComparator());
         return convertContext(entries, ctx);
     }
 
@@ -128,10 +108,6 @@ public class EulerConfigConverter {
     }
 
     public <R> R create(Config config, ConfigContext ctx, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
-        return create(config.root(), ctx, func);
-    }
-
-    public <R> R create(ConfigValue config, ConfigContext ctx, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
         ctx = convertContext(config, this.ctx.merge(ctx));
         return create(ctx, func);
     }
@@ -146,7 +122,7 @@ public class EulerConfigConverter {
 
     @SuppressWarnings("unchecked")
     public Euler createEuler(Config config, ConfigContext ctx) {
-        ctx = convertContext(config.root(), ctx);
+        ctx = convertContext(config, ctx);
         List<Task> tasks = (List<Task>) ctx.getRequired(TasksConfigConverter.TASKS);
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
         return new Euler(sourceBehavior, tasks.toArray(new Task[tasks.size()]));
