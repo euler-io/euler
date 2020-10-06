@@ -39,18 +39,13 @@ public class ProcessingContext {
         return this.context.get(key);
     }
 
-    public Map<String, Object> context() {
-        return context;
-    }
-
     @SuppressWarnings("unchecked")
     public <T> T context(String key, T defaultValue) {
-        if (context.containsKey(key)) {
-            T value = (T) context(key);
-            return value;
-        } else {
-            return defaultValue;
-        }
+        return (T) this.context.getOrDefault(key, defaultValue);
+    }
+
+    public Map<String, Object> context() {
+        return context;
     }
 
     @Override
@@ -105,21 +100,21 @@ public class ProcessingContext {
         Map<String, Object> merged = new HashMap<>(m1);
 
         switch (action) {
-            case OVERWRITE :
-                merged.putAll(m2);
-                break;
-            case MERGE :
-                m2.forEach((k, v) -> putIfAbsentOrMerge(merged, k, v));
-                break;
-            default :
-                m2.forEach(merged::putIfAbsent);
-                break;
+        case OVERWRITE:
+            merged.putAll(m2);
+            break;
+        case MERGE:
+            m2.forEach((k, v) -> putIfAbsentOrMerge(merged, k, v));
+            break;
+        default:
+            m2.forEach(merged::putIfAbsent);
+            break;
         }
 
         return merged;
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void putIfAbsentOrMerge(Map<String, Object> payload, String key, Object value) {
         Object current = payload.get(key);
         if (current == null) {
@@ -154,7 +149,7 @@ public class ProcessingContext {
         public ProcessingContext build() {
             return new ProcessingContext(this.metadata, this.context, this.action);
         }
-        
+
         public Builder putAll(ProcessingContext ctx) {
             this.metadata.putAll(ctx.metadata);
             this.context.putAll(ctx.context);

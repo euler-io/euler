@@ -11,6 +11,8 @@ import com.github.euler.core.ProcessingContext;
 
 public class DateOrSizeModificationCondition extends AbstractBarrierCondition {
 
+    private static final Date EPOCH = new Date(Long.MIN_VALUE);
+
     private final String dateFormat;
     private final SimpleDateFormat sdf;
 
@@ -35,7 +37,7 @@ public class DateOrSizeModificationCondition extends AbstractBarrierCondition {
     }
 
     private boolean isSizeEquals(ProcessingContext ctx) {
-        Long oldSize = ((Integer) ctx.context("size")).longValue();
+        Long oldSize = ((Integer) ctx.context("size", -1)).longValue();
         Long currentSize = ctx.metadata(CommonMetadata.SIZE, 0l);
         return oldSize.equals(currentSize);
     }
@@ -48,9 +50,11 @@ public class DateOrSizeModificationCondition extends AbstractBarrierCondition {
 
     protected long getDateAsLong(ProcessingContext ctx, String key) throws ParseException {
         if (dateFormat.equals("date")) {
-            return ((Date) ctx.context(key)).getTime();
-        } else {
+            return ((Date) ctx.context(key, EPOCH)).getTime();
+        } else if (ctx.context().containsKey(key)) {
             return sdf.parse((String) ctx.context(key)).getTime();
+        } else {
+            return EPOCH.getTime();
         }
     }
 
