@@ -31,7 +31,15 @@ public class BarrierExecution extends AbstractBehavior<TaskCommand> {
     public Receive<TaskCommand> createReceive() {
         ReceiveBuilder<TaskCommand> builder = newReceiveBuilder();
         builder.onMessage(JobTaskToProcess.class, this::onJobTaskToProcess);
+        builder.onMessage(Flush.class, this::onFlush);
         return builder.build();
+    }
+
+    public Behavior<TaskCommand> onFlush(Flush msg) {
+        if (this.taskRef != null) {
+            this.taskRef.tell(msg);
+        }
+        return Behaviors.same();
     }
 
     protected Behavior<TaskCommand> onJobTaskToProcess(JobTaskToProcess msg) throws IOException {

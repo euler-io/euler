@@ -19,7 +19,7 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
 
     @Override
     public String configType() {
-        return "elasticsearch-client";
+        return "elasticsearch";
     }
 
     @Override
@@ -29,7 +29,9 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
         String query = config.getConfig("query").root().render(ConfigRenderOptions.concise());
         int size = config.getInt("size");
         String scroll = config.getString("scroll-keep-alive");
-        return PausableSourceExecution.create(new ElasticsearchSource(client, query, size, scroll));
+        String[] sourceIncludes = config.getStringList("_source.includes").stream().toArray(s -> new String[s]);
+        String[] sourceExcludes = config.getStringList("_source.excludes").stream().toArray(s -> new String[s]);
+        return PausableSourceExecution.create(new ElasticsearchSource(client, query, size, scroll, sourceIncludes, sourceExcludes));
     }
 
     protected RestHighLevelClient getClient(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {

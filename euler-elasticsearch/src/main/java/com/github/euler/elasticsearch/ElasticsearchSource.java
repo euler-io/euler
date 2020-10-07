@@ -42,16 +42,24 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
     private final String query;
     private final int size;
     private final String scrollKeepAlive;
+    private final String[] sourceIncludes;
+    private final String[] sourceExcludes;
 
     private URI uri;
     private SearchResponse response;
 
-    protected ElasticsearchSource(RestHighLevelClient client, String query, int size, String scrollKeepAlive) {
+    protected ElasticsearchSource(RestHighLevelClient client, String query, int size, String scrollKeepAlive, String[] sourceIncludes, String[] sourceExcludes) {
         super();
         this.client = client;
         this.query = query;
         this.size = size;
         this.scrollKeepAlive = scrollKeepAlive;
+        this.sourceIncludes = sourceIncludes;
+        this.sourceExcludes = sourceExcludes;
+    }
+
+    protected ElasticsearchSource(RestHighLevelClient client, String query, int size, String scrollKeepAlive) {
+        this(client, query, size, scrollKeepAlive, new String[] { "*" }, new String[0]);
     }
 
     private QueryBuilder parseQuery(String jsonQuery) {
@@ -122,6 +130,7 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
         SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
         searchSourceBuilder.size(this.size);
         searchSourceBuilder.query(this.parseQuery(this.query));
+        searchSourceBuilder.fetchSource(sourceIncludes, sourceExcludes);
         req.scroll(this.scrollKeepAlive);
         return client.search(req, RequestOptions.DEFAULT);
     }
