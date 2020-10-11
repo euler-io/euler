@@ -132,6 +132,7 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
         searchSourceBuilder.query(this.parseQuery(this.query));
         searchSourceBuilder.fetchSource(sourceIncludes, sourceExcludes);
         req.scroll(this.scrollKeepAlive);
+        req.source(searchSourceBuilder);
         return client.search(req, RequestOptions.DEFAULT);
     }
 

@@ -32,11 +32,11 @@ class ItemProcessorExecution extends AbstractBehavior<TaskCommand> {
         return Behaviors.same();
     }
 
-    protected ProcessingContext process(URI parentURI, URI itemURI, ProcessingContext ctx) {
+    protected ProcessingContext process(URI parentURI, URI itemURI, ProcessingContext ctx) throws IOException {
         return process(new Item(parentURI, itemURI, ctx));
     }
 
-    protected ProcessingContext process(Item item) {
+    protected ProcessingContext process(Item item) throws IOException {
         return this.itemProcessor.process(item);
     }
 }

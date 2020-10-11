@@ -14,7 +14,8 @@ public class ElasticsearchExtension implements EulerExtension {
     public List<TaskConfigConverter> taskConverters() {
         return Arrays.asList(
                 new ElasticsearchFragmentTaskConfigConverter(),
-                new ElasticsearchMetadataTaskConfigConverter());
+                new ElasticsearchMetadataTaskConfigConverter(),
+                new ElasticsearchDeleteParentChildTaskConfigConverter());
     }
 
     @Override

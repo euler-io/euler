@@ -71,7 +71,7 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
     }
 
     protected String generateId(URI uri, ProcessingContext ctx) {
-        return DigestUtils.md5Hex(uri.toString()).toLowerCase();
+        return DigestUtils.md5Hex(uri.normalize().toString()).toLowerCase();
     }
 
     protected void add(IndexRequest req) {
