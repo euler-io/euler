@@ -21,4 +21,9 @@ public class TikaExtension implements EulerExtension {
                 new ParseTaskConfigConverter());
     }
 
+    @Override
+    public String getDescription() {
+        return "Tika Extension";
+    }
+
 }

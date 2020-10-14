@@ -14,12 +14,18 @@ public class FileExtension implements EulerExtension {
         return Arrays.asList(
                 new FileSourceConfigConverter(),
                 new FileStorageStrategyConfigConverter(),
-                new FileStreamFactoryConfigConverter());
+                new FileStreamFactoryConfigConverter(),
+                new ExistsInFileSystemConditionConfigConverter());
     }
 
     @Override
     public List<TaskConfigConverter> taskConverters() {
         return Arrays.asList(new BasicFilePropertiesTaskConfigConverter());
+    }
+
+    @Override
+    public String getDescription() {
+        return "File Extension";
     }
 
 }

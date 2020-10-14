@@ -1,5 +1,6 @@
 package com.github.euler.elasticsearch;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -18,8 +19,9 @@ public class ElasticsearchFragmentSink extends ElasticsearchMetadataSink impleme
         super(client, index, flushConfig);
     }
 
-    protected Map<String, Object> buildSource(ProcessingContext ctx) {
-        Map<String, Object> metadata = new HashMap<>(super.buildSource(ctx));
+    @Override
+    protected Map<String, Object> buildSource(URI uri, ProcessingContext ctx) {
+        Map<String, Object> metadata = new HashMap<>(super.buildSource(uri, ctx));
         metadata.put("join_field", "item");
         return metadata;
     }

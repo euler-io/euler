@@ -21,7 +21,7 @@ public class ElasticsearchMetadataTaskConfigConverter extends AbstractElasticsea
         config = config.withFallback(getDefaultConfig());
         String name = getName(config, tasksConfigConverter);
 
-        RestHighLevelClient client = getClient(config, ctx);
+        RestHighLevelClient client = getClient(config, ctx, typeConfigConverter);
         Builder builder = ElasticsearchMetadataTask.builder(name, client);
         builder.setFlushConfig(getFlushConfig(config));
         builder.setIndex(getIndex(config));

@@ -5,14 +5,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
+import com.github.euler.core.ProcessingContext;
+
 public interface StreamFactory {
 
-    InputStream openInputStream(URI uri) throws IOException;
+    InputStream openInputStream(URI uri, ProcessingContext ctx) throws IOException;
 
-    OutputStream openOutputStream(URI uri) throws IOException;
+    OutputStream openOutputStream(URI uri, ProcessingContext ctx) throws IOException;
 
-    boolean exists(URI uri);
+    boolean exists(URI uri, ProcessingContext ctx);
 
-    boolean isEmpty(URI uri);
+    boolean isEmpty(URI uri, ProcessingContext ctx);
 
 }

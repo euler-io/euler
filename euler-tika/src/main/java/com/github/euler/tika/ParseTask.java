@@ -6,6 +6,7 @@ import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 
+import com.github.euler.common.CommonMetadata;
 import com.github.euler.common.StorageStrategy;
 import com.github.euler.common.StreamFactory;
 import com.github.euler.core.JobTaskToProcess;
@@ -56,7 +57,10 @@ public class ParseTask implements Task {
 
     @Override
     public boolean accept(JobTaskToProcess msg) {
-        return sf.exists(msg.itemURI) && !sf.isEmpty(msg.itemURI);
+        boolean isEmpty = sf.isEmpty(msg.itemURI, msg.ctx);
+        boolean exists = sf.exists(msg.itemURI, msg.ctx);
+        boolean isDirectory = msg.ctx.metadata(CommonMetadata.IS_DIRECTORY, false);
+        return exists && !isEmpty && !isDirectory;
     }
 
     public static Builder builder(String name, StreamFactory streamFactory, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy) {

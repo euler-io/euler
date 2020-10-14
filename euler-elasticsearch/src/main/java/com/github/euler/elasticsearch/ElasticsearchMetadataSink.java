@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.euler.common.CommonContext;
+import com.github.euler.common.CommonMetadata;
 import com.github.euler.common.SizeUtils;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.tika.EmptyResponse;
@@ -49,10 +50,12 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
             this.index = this.globalIndex;
         }
 
-        Map<String, Object> metadata = buildSource(ctx);
+        Map<String, Object> metadata = buildSource(uri, ctx);
 
         IndexRequest req = new IndexRequest(index);
-        String id = generateId(uri, ctx);
+
+        String id = ctx.context(CommonContext.ID, () -> generateId(uri, ctx));
+
         req.id(id);
         req.source(metadata);
         add(req);
@@ -60,13 +63,14 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
         return flush(id, false);
     }
 
-    protected Map<String, Object> buildSource(ProcessingContext ctx) {
+    protected Map<String, Object> buildSource(URI uri, ProcessingContext ctx) {
         Map<String, Object> metadata = new HashMap<>(ctx.metadata());
+        metadata.put(CommonMetadata.ITEM_URI, uri.normalize().toString());
         return metadata;
     }
 
     protected String generateId(URI uri, ProcessingContext ctx) {
-        return DigestUtils.md5Hex(uri.toString()).toLowerCase();
+        return DigestUtils.md5Hex(uri.normalize().toString()).toLowerCase();
     }
 
     protected void add(IndexRequest req) {
@@ -115,18 +119,6 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
             flush();
         } catch (IOException e) {
             throw new RuntimeException(e);
-        } finally {
-            stopClient();
-        }
-    }
-
-    private void stopClient() {
-        if (client != null) {
-            try {
-                client.close();
-            } catch (IOException e) {
-                LOGGER.error("Error closing {}.", client.getClass().getSimpleName(), e);
-            }
         }
     }
 

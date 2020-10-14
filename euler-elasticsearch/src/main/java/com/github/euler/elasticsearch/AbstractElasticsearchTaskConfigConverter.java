@@ -1,9 +1,12 @@
 package com.github.euler.elasticsearch;
 
+import java.net.URL;
+
 import org.elasticsearch.client.RestHighLevelClient;
 
 import com.github.euler.configuration.AbstractTaskConfigConverter;
 import com.github.euler.configuration.ConfigContext;
+import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.tika.FlushConfig;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -18,12 +21,8 @@ public abstract class AbstractElasticsearchTaskConfigConverter extends AbstractT
         return new FlushConfig(minActionsToFlush, maxActionsToFlush, minBytesToFlush, maxBytesToFlush);
     }
 
-    protected RestHighLevelClient getClient(Config config, ConfigContext ctx) {
-        RestHighLevelClient client = ctx.get(RestHighLevelClient.class);
-        if (client == null) {
-            client = ElasticsearchUtils.initializeClient(config.getConfig("elasticsearch"));
-        }
-        return client;
+    protected RestHighLevelClient getClient(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {
+        return typeConfigConverter.convert(AbstractElasticsearchClientConfigConverter.TYPE, config.getValue("elasticsearch-client"), ctx);
     }
 
     protected String getIndex(Config config) {
@@ -35,7 +34,7 @@ public abstract class AbstractElasticsearchTaskConfigConverter extends AbstractT
     }
 
     protected Config getDefaultConfig() {
-        return ConfigFactory.load("elasticsearchtask.conf");
+        URL resource = ElasticsearchSourceConfigConverter.class.getClassLoader().getResource("elasticsearchtask.conf");
+        return ConfigFactory.parseURL(resource);
     }
-
 }

@@ -28,7 +28,7 @@ public class ElasticsearchFragmentTaskConfigConverter extends AbstractElasticsea
         String name = getName(config, tasksConfigConverter);
         StreamFactory streamFactory = ctx.getRequired(StreamFactory.class);
 
-        RestHighLevelClient client = getClient(config, ctx);
+        RestHighLevelClient client = getClient(config, ctx, typeConfigConverter);
         Builder builder = ElasticsearchContentTask.builder(name, streamFactory, client);
         builder.setParser(ctx.get(Parser.class, new AutoDetectParser()));
         builder.setFragmentSize(config.getInt(FRAGMENT_SIZE));

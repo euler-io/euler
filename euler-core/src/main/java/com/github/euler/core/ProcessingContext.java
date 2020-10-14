@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class ProcessingContext {
 
@@ -26,6 +27,11 @@ public class ProcessingContext {
         return this.metadata.get(key);
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T metadata(String key, T defaultValue) {
+        return (T) this.metadata.getOrDefault(key, defaultValue);
+    }
+
     public Map<String, Object> metadata() {
         return metadata;
     }
@@ -34,18 +40,22 @@ public class ProcessingContext {
         return this.context.get(key);
     }
 
-    public Map<String, Object> context() {
-        return context;
+    @SuppressWarnings("unchecked")
+    public <T> T context(String key, T defaultValue) {
+        return (T) this.context.getOrDefault(key, defaultValue);
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T context(String key, T defaultValue) {
-        if (context.containsKey(key)) {
-            T value = (T) context(key);
-            return value;
+    public <T> T context(String key, Supplier<T> defaultValueSupplier) {
+        if (this.context.containsKey(key)) {
+            return (T) this.context.get(key);
         } else {
-            return defaultValue;
+            return defaultValueSupplier.get();
         }
+    }
+
+    public Map<String, Object> context() {
+        return context;
     }
 
     @Override
@@ -148,6 +158,12 @@ public class ProcessingContext {
 
         public ProcessingContext build() {
             return new ProcessingContext(this.metadata, this.context, this.action);
+        }
+
+        public Builder putAll(ProcessingContext ctx) {
+            this.metadata.putAll(ctx.metadata);
+            this.context.putAll(ctx.context);
+            return this;
         }
 
         public Builder metadata(String key, Object value) {

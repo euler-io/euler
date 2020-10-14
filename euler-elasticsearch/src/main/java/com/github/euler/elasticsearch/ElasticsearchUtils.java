@@ -46,7 +46,7 @@ public class ElasticsearchUtils {
 
         String ca;
         try {
-            ca = config.getString("ssl.certificateAuthorities");
+            ca = config.getString("ssl.certificate-authorities");
         } catch (ConfigException.Missing e) {
             ca = null;
         }

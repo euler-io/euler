@@ -19,6 +19,14 @@ public class ConfigContext {
         return new Builder();
     }
 
+    public boolean containsKey(String key) {
+        return ctx.containsKey(key);
+    }
+
+    public boolean contains(Class<?> clazz) {
+        return ctx.containsKey(clazz.getName());
+    }
+
     public Object get(String key) {
         return ctx.get(key);
     }
@@ -67,7 +75,7 @@ public class ConfigContext {
             return this;
         }
 
-        public Builder put(Class<?> clazz, Object value) {
+        public <T> Builder put(Class<T> clazz, T value) {
             put(clazz.getName(), value);
             return this;
         }

@@ -3,6 +3,7 @@ package com.github.euler.configuration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -44,7 +45,10 @@ public class TypesConfigConverter {
             break;
         }
         Map<String, TypeConfigConverter<?>> configMap = typeConverterMap.get(type);
-        return (T) configMap.get(configType).convert(config, configContext, this);
+        Objects.requireNonNull(configMap, () -> "Could not find any configuration for type: " + type + ".");
+        TypeConfigConverter<?> typeConfigConverter = configMap.get(configType);
+        Objects.requireNonNull(typeConfigConverter, () -> "Could not find any configuration of " + configType + " for type: " + type + ".");
+        return (T) typeConfigConverter.convert(config, configContext, this);
     }
 
 }
