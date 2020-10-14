@@ -65,7 +65,7 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
 
     protected Map<String, Object> buildSource(URI uri, ProcessingContext ctx) {
         Map<String, Object> metadata = new HashMap<>(ctx.metadata());
-        metadata.put(CommonMetadata.ITEM_URI, uri.toString());
+        metadata.put(CommonMetadata.ITEM_URI, uri.normalize().toString());
         return metadata;
     }
 

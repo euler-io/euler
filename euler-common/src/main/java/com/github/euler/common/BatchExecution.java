@@ -26,7 +26,7 @@ public class BatchExecution extends AbstractBehavior<TaskCommand> implements Bat
     private final Batch batch;
     private final BatchState state;
 
-    public BatchExecution(ActorContext<TaskCommand> context, Batch batch) {
+    private BatchExecution(ActorContext<TaskCommand> context, Batch batch) {
         super(context);
         this.batch = batch;
         this.state = new BatchState();

@@ -59,7 +59,7 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
     }
 
     protected ElasticsearchSource(RestHighLevelClient client, String query, int size, String scrollKeepAlive) {
-        this(client, query, size, scrollKeepAlive, new String[] { "*" }, new String[0]);
+        this(client, query, size, scrollKeepAlive, new String[]{"*"}, new String[0]);
     }
 
     private QueryBuilder parseQuery(String jsonQuery) {
@@ -115,7 +115,7 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
         String hitId = hit.getId();
         String uri = String.format("elasticsearch://%s/%s/%s?index=%s&id=%s", host, hitIndex, hitId, hitIndex, hitId);
         uri = (String) hit.getSourceAsMap().getOrDefault(CommonMetadata.ITEM_URI, uri);
-        return new URI(uri);
+        return new URI(uri).normalize();
     }
 
     private SearchResponse doScroll(SearchResponse lastResponse) throws IOException {
@@ -137,7 +137,11 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
     }
 
     private String getIndex() {
-        return this.uri.getPath().substring(1);
+        String path = this.uri.getPath();
+        if (path == null) {
+            throw new NullPointerException("Index not provided in uri: " + this.uri.toString());
+        }
+        return path.substring(1);
     }
 
     @Override

@@ -14,7 +14,8 @@ public class FileExtension implements EulerExtension {
         return Arrays.asList(
                 new FileSourceConfigConverter(),
                 new FileStorageStrategyConfigConverter(),
-                new FileStreamFactoryConfigConverter());
+                new FileStreamFactoryConfigConverter(),
+                new ExistsInFileSystemConditionConfigConverter());
     }
 
     @Override

@@ -53,14 +53,16 @@ public class BatchBarrierExecution extends AbstractBehavior<TaskCommand> {
     private void flush() {
         if (!this.buffer.isEmpty()) {
             List<JobTaskToProcess> msgs = new ArrayList<>(this.buffer);
+            this.buffer.clear();
             List<Boolean> blocked = condition.block(msgs);
+            ActorRef<TaskCommand> ref = getTaskRef();
             for (int i = 0; i < blocked.size(); i++) {
                 JobTaskToProcess msg = msgs.get(i);
                 if (blocked.get(i)) {
                     ProcessingContext ctx = ProcessingContext.builder().context("blocked-by", condition.getClass().getName()).build();
                     msg.replyTo.tell(new JobTaskFinished(msg, ctx));
                 } else {
-                    getTaskRef().tell(msg);
+                    ref.tell(msg);
                 }
             }
         }
