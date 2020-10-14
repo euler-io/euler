@@ -54,8 +54,7 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
 
         IndexRequest req = new IndexRequest(index);
 
-        String id = generateId(uri, ctx);
-        id = ctx.context(CommonContext.ID, id);
+        String id = ctx.context(CommonContext.ID, () -> generateId(uri, ctx));
 
         req.id(id);
         req.source(metadata);

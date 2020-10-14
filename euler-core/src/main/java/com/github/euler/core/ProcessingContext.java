@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 public class ProcessingContext {
 
@@ -42,6 +43,15 @@ public class ProcessingContext {
     @SuppressWarnings("unchecked")
     public <T> T context(String key, T defaultValue) {
         return (T) this.context.getOrDefault(key, defaultValue);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T context(String key, Supplier<T> defaultValueSupplier) {
+        if (this.context.containsKey(key)) {
+            return (T) this.context.get(key);
+        } else {
+            return defaultValueSupplier.get();
+        }
     }
 
     public Map<String, Object> context() {

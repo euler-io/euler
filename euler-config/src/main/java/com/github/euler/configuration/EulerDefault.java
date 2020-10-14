@@ -11,7 +11,8 @@ public class EulerDefault implements EulerExtension {
                 new PipelineTaskConfigConverter(),
                 new ConcurrentTaskConfigConverter(),
                 new PooledTaskConfigConverter(),
-                new BarrierTaskConfigConverter());
+                new BarrierTaskConfigConverter(),
+                new BatchBarrierTaskConfigConverter());
     }
 
     @Override
