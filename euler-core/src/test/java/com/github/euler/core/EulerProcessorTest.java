@@ -3,10 +3,11 @@ package com.github.euler.core;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
+import java.time.Duration;
 
 import org.junit.Test;
 
-import com.github.euler.testing.WillFailBehavior;
+import com.github.euler.testing.WillFailItemProcessor;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -95,8 +96,12 @@ public class EulerProcessorTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenTaskFailsReturnJobItemProcessed() throws Exception {
-        Task task = Tasks.accept("will-fail", () -> WillFailBehavior.create());
+    public void testWhenTaskFailsWithTimeoutReturnJobItemProcessed() throws Exception {
+        Task task = new TaskBuilder()
+                .name("will-fail")
+                .processor(new WillFailItemProcessor())
+                .timeout(Duration.ofSeconds(1))
+                .build();
 
         ActorRef<ProcessorCommand> ref = testKit.spawn(EulerProcessor.create(task));
 

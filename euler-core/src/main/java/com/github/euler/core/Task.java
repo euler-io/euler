@@ -1,5 +1,7 @@
 package com.github.euler.core;
 
+import java.time.Duration;
+
 import akka.actor.typed.Behavior;
 
 public interface Task {
@@ -12,6 +14,10 @@ public interface Task {
 
     default boolean isFlushable() {
         return false;
+    }
+
+    default Duration getTimeout() {
+        return Duration.ZERO;
     }
 
 }

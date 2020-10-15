@@ -4,9 +4,10 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import akka.actor.Cancellable;
 import akka.actor.typed.ActorRef;
 
-public class PipelineExecutionState {
+public class PipelineExecutionState implements TasksExecutionState {
 
     private Map<URI, State> mapping = new HashMap<>();
 
@@ -48,6 +49,12 @@ public class PipelineExecutionState {
 
     public void finish(URI itemURI) {
         mapping.remove(itemURI);
+    }
+
+    @Override
+    public void processingStartedWithTimeout(JobTaskToProcess msg, Cancellable cancellable) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

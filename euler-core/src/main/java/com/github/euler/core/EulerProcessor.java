@@ -1,8 +1,10 @@
 package com.github.euler.core;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
+import akka.actor.Cancellable;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.SupervisorStrategy;
@@ -71,27 +73,55 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         for (Task task : tasks) {
             JobTaskToProcess jttp = new JobTaskToProcess(msg, getContext().getSelf());
             if (task.accept(jttp)) {
-                ActorRef<TaskCommand> taskRef = getOrSpawnTaskRef(task, msg);
+                ActorRef<TaskCommand> taskRef = getOrSpawnTaskRef(task);
                 taskRef.tell(jttp);
+                Duration taskTimeoutDuration = task.getTimeout();
+                if (!taskTimeoutDuration.isNegative() && !taskTimeoutDuration.isZero()) {
+                    TaskTimeout runnable = new TaskTimeout(getContext().getSelf(), jttp, task.name(), taskTimeoutDuration);
+                    Cancellable cancellable = getContext().getSystem().scheduler().scheduleOnce(taskTimeoutDuration, runnable, getContext().getExecutionContext());
+                    state.processingStartedWithTimeout(msg, cancellable);
+                }
             }
         }
+    }
+
+    private class TaskTimeout implements Runnable {
+
+        private final ActorRef<ProcessorCommand> processorRef;
+        private final JobTaskToProcess msg;
+        private final String taskName;
+        private final Duration timeout;
+
+        private TaskTimeout(ActorRef<ProcessorCommand> processorRef, JobTaskToProcess msg, String taskName, Duration timeout) {
+            super();
+            this.processorRef = processorRef;
+            this.msg = msg;
+            this.taskName = taskName;
+            this.timeout = timeout;
+        }
+
+        @Override
+        public void run() {
+            getContext().getLog().warn("Task {} timed out after {} ms.", taskName, timeout.toMillis());
+            processorRef.tell(new InternalJobTaskFailed(msg, taskName));
+        }
+
     }
 
     private ActorRef<TaskCommand> getTaskRef(Task task) {
         return mapping.get(task.name());
     }
 
-    private ActorRef<TaskCommand> getOrSpawnTaskRef(Task task, JobItemToProcess msg) {
+    private ActorRef<TaskCommand> getOrSpawnTaskRef(Task task) {
         return mapping.computeIfAbsent(task.name(), (key) -> {
             Behavior<TaskCommand> behavior = superviseTaskBehavior(task);
             ActorRef<TaskCommand> ref = getContext().spawn(behavior, key);
-            getContext().watchWith(ref, new InternalJobTaskFailed(msg, task.name()));
             return ref;
         });
     }
 
     private Behavior<TaskCommand> superviseTaskBehavior(Task t) {
-        Behavior<TaskCommand> behavior = Behaviors.supervise(t.behavior()).onFailure(SupervisorStrategy.stop());
+        Behavior<TaskCommand> behavior = Behaviors.supervise(t.behavior()).onFailure(SupervisorStrategy.restart());
         return behavior;
     }
 
@@ -115,8 +145,8 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
 
         public final String taskName;
 
-        public InternalJobTaskFailed(JobItemToProcess msg, String taskName) {
-            super(msg);
+        public InternalJobTaskFailed(JobTaskToProcess msg, String taskName) {
+            super(msg, ProcessingContext.EMPTY);
             this.taskName = taskName;
         }
 

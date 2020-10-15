@@ -39,7 +39,12 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private void start() {
-        processorRef = getContext().spawn(processorBehavior, "euler-processor");
+        processorRef = getContext().spawn(supervisedProcessorBehavior(), "euler-processor");
+        getContext().watchWith(processorRef, new InternalProcessorFailed());
+    }
+
+    protected Behavior<ProcessorCommand> supervisedProcessorBehavior() {
+        return Behaviors.supervise(this.processorBehavior).onFailure(SupervisorStrategy.stop());
     }
 
     @Override
@@ -50,6 +55,7 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
         builder.onMessage(JobItemProcessed.class, this::onJobItemProcessed);
         builder.onMessage(ScanFinished.class, this::onScanFinished);
         builder.onMessage(ScanFailed.class, this::onScanFailed);
+        builder.onMessage(InternalProcessorFailed.class, this::onInternalProcessorFailed);
         return builder.build();
     }
 
@@ -89,9 +95,15 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private Behavior<EulerCommand> onScanFailed(ScanFailed msg) {
+        getContext().getLog().warn("Scan of uri {} failed.", msg.uri);
         state.onMessage(msg);
         startFlush();
         return checkFinished(msg.uri);
+    }
+
+    private Behavior<EulerCommand> onInternalProcessorFailed(InternalProcessorFailed msg) {
+        getContext().getLog().warn("Processor failed.");
+        return Behaviors.stopped();
     }
 
     private void startFlush() {
@@ -117,6 +129,10 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
             return Behaviors.stopped();
         }
         return Behaviors.same();
+    }
+
+    private class InternalProcessorFailed implements EulerCommand {
+
     }
 
 }
