@@ -6,8 +6,6 @@ import java.net.URI;
 
 import org.junit.Test;
 
-import com.github.euler.testing.WillFailBehavior;
-
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.javadsl.AbstractBehavior;
@@ -53,21 +51,6 @@ public class PooledTaskTest extends AkkaTest {
             return builder.build();
         }
 
-    }
-
-    @Test
-    public void testWhenTaskFailReplyToProcessorWithJobTaskFailed() throws Exception {
-        Task task = Tasks.accept("task", () -> WillFailBehavior.create());
-
-        Task pooledTask = new PooledTask("concurrent-task", 1, task);
-
-        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
-        ActorRef<TaskCommand> ref = testKit.spawn(pooledTask.behavior());
-
-        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item"), ProcessingContext.EMPTY, probe.ref());
-        ref.tell(msg);
-
-        probe.expectMessageClass(JobTaskFailed.class);
     }
 
     @Test

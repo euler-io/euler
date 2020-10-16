@@ -1,5 +1,7 @@
 package com.github.euler.core;
 
+import java.time.Duration;
+
 import akka.actor.typed.Behavior;
 
 public class PooledTask implements Task {
@@ -36,6 +38,11 @@ public class PooledTask implements Task {
     @Override
     public boolean isFlushable() {
         return task.isFlushable();
+    }
+
+    @Override
+    public Duration getTimeout() {
+        return task.getTimeout();
     }
 
 }

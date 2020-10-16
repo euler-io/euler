@@ -3,12 +3,12 @@ package com.github.euler.core;
 import static org.junit.Assert.assertEquals;
 
 import java.net.URI;
+import java.time.Duration;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.github.euler.testing.WillFailBehavior;
 import com.github.euler.testing.WillFailExecution;
+import com.github.euler.testing.WillFailItemProcessor;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -77,10 +77,12 @@ public class PipelineTaskTest extends AkkaTest {
     }
 
     @Test
-    @Ignore
-    // TODO supervision must be reimplemented.
-    public void testWhenTaskFailReplyToProcessorWithJobTaskFinished() throws Exception {
-        Task task1 = Tasks.accept("task", () -> WillFailBehavior.create());
+    public void testWhenTaskFailWithTimeoutReplyToProcessorWithJobTaskFinished() throws Exception {
+        Task task1 = new TaskBuilder()
+                .name("task-0")
+                .processor(new WillFailItemProcessor())
+                .timeout(Duration.ofSeconds(1))
+                .build();
         Task task2 = Tasks.fixed("task-1", ProcessingContext.builder().metadata("key2", "value2").build());
         Task pipelineTask = new PipelineTask("pipeline-task", task1, task2);
 
@@ -92,6 +94,33 @@ public class PipelineTaskTest extends AkkaTest {
 
         JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
         assertEquals(0, response.ctx.metadata().size());
+    }
+
+    @Test
+    public void testWhenTaskFailWithTimeoutNextItemWillFinish() throws Exception {
+        Task task1 = new TaskBuilder()
+                .name("task-0")
+                .processor(new WillFailItemProcessor(1))
+                .timeout(Duration.ofSeconds(1))
+                .build();
+        Task task2 = Tasks.fixed("task-1", ProcessingContext.builder().metadata("key2", "value2").build());
+        Task pipelineTask = new PipelineTask("pipeline-task", task1, task2);
+
+        TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
+        ActorRef<TaskCommand> ref = testKit.spawn(pipelineTask.behavior());
+
+        JobTaskToProcess msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item-1"), ProcessingContext.EMPTY, probe.ref());
+        ref.tell(msg);
+
+        JobTaskFinished response = probe.expectMessageClass(JobTaskFinished.class);
+        assertEquals(0, response.ctx.metadata().size());
+
+        msg = new JobTaskToProcess(new URI("file:///some/path"), new URI("file:///some/path/item-2"), ProcessingContext.EMPTY, probe.ref());
+        ref.tell(msg);
+
+        response = probe.expectMessageClass(JobTaskFinished.class);
+        assertEquals(1, response.ctx.metadata().size());
+        assertEquals("value2", response.ctx.metadata("key2"));
     }
 
     @Test

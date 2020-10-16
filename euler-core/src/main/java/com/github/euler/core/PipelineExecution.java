@@ -9,7 +9,7 @@ import akka.actor.typed.javadsl.Behaviors;
 import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
-public class PipelineExecution extends TasksExecution {
+public class PipelineExecution extends HeterogeneousTasksExecution {
 
     public static Behavior<TaskCommand> create(Task[] tasks) {
         return Behaviors.setup((context) -> new PipelineExecution(context, tasks));
@@ -33,10 +33,8 @@ public class PipelineExecution extends TasksExecution {
         ReceiveBuilder<TaskCommand> builder = newReceiveBuilder();
         builder.onMessage(JobTaskToProcess.class, this::onJobTaskToProcess);
         builder.onMessage(InternalAdaptedProcessorCommand.class, this::onInternalAdaptedProcessorCommand);
-        // builder.onMessage(InternalJobTaskFailed.class,
-        // this::onInternalJobTaskFailed);
         builder.onMessage(Flush.class, this::onFlush);
-        builder.onMessage(TaskTimedout.class, this::onTaskTimedout);
+        builder.onMessage(TaskTimeout.class, this::onTaskTimeout);
         return builder.build();
     }
 
@@ -55,7 +53,7 @@ public class PipelineExecution extends TasksExecution {
         return Behaviors.same();
     }
 
-    public Behavior<TaskCommand> onTaskTimedout(TaskTimedout msg) {
+    public Behavior<TaskCommand> onTaskTimeout(TaskTimeout msg) {
         onFail(msg.uri, msg.itemURI, msg.ctx);
         return Behaviors.same();
     }
@@ -94,22 +92,10 @@ public class PipelineExecution extends TasksExecution {
         sendToNextOrFinish(new JobTaskToProcess(msg.uri, msg.itemURI, ctx, responseAdapter));
     }
 
-    // private Behavior<TaskCommand>
-    // onInternalJobTaskFailed(InternalJobTaskFailed msg) {
-    // mapping.remove(msg.taskName);
-    // ActorRef<ProcessorCommand> replyTo = state.getReplyTo(msg.itemURI);
-    // ProcessingContext ctx = state.getProcessingContext(msg.itemURI);
-    // replyTo.tell(new JobTaskFinished(msg.uri, msg.itemURI, ctx));
-    // state.finish(msg.itemURI);
-    // return Behaviors.same();
-    // }
-
     private void sendToNextOrFinish(JobTaskToProcess msg) {
         Task task = getNextTask(msg);
         if (task != null) {
-            // ActorRef<TaskCommand> taskRef = getOrSpawnTaskRef(task);
             JobTaskToProcess adaptedMsg = new JobTaskToProcess(msg.uri, msg.itemURI, msg.ctx, responseAdapter);
-            // taskRef.tell(adaptedMsg);
             sendToTask(task, adaptedMsg);
         } else {
             ActorRef<ProcessorCommand> replyTo = state.getReplyTo(msg.itemURI);
@@ -130,26 +116,6 @@ public class PipelineExecution extends TasksExecution {
         }
         return task;
     }
-
-    // private ActorRef<TaskCommand> getTaskRef(Task task) {
-    // return mapping.get(task.name());
-    // }
-
-    // private ActorRef<TaskCommand> getOrSpawnTaskRef(Task task,
-    // JobTaskToProcess msg) {
-    // ActorRef<TaskCommand> ref = mapping.computeIfAbsent(task.name(), (k) ->
-    // getContext().spawn(superviseTaskBehavior(task), k));
-    // TODO supervision must be reimplemented.
-    // getContext().watchWith(ref, new InternalJobTaskFailed(msg,
-    // task.name()));
-    // return ref;
-    // }
-
-    // private Behavior<TaskCommand> superviseTaskBehavior(Task t) {
-    // Behavior<TaskCommand> behavior =
-    // Behaviors.supervise(t.behavior()).onFailure(SupervisorStrategy.restart());
-    // return behavior;
-    // }
 
     private static class InternalAdaptedProcessorCommand implements TaskCommand {
 

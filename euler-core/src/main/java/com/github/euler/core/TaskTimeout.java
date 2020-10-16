@@ -4,7 +4,7 @@ import java.net.URI;
 
 import akka.actor.typed.ActorRef;
 
-public class TaskTimedout implements TaskCommand {
+public class TaskTimeout implements TaskCommand {
 
     public final URI uri;
     public final URI itemURI;
@@ -12,7 +12,7 @@ public class TaskTimedout implements TaskCommand {
     public final ProcessingContext ctx;
     public final String taskName;
 
-    public TaskTimedout(URI uri, URI itemURI, ActorRef<ProcessorCommand> replyTo, ProcessingContext ctx, String taskName) {
+    public TaskTimeout(URI uri, URI itemURI, ActorRef<ProcessorCommand> replyTo, ProcessingContext ctx, String taskName) {
         super();
         this.uri = uri;
         this.itemURI = itemURI;
@@ -21,7 +21,7 @@ public class TaskTimedout implements TaskCommand {
         this.taskName = taskName;
     }
 
-    public TaskTimedout(JobTaskToProcess msg, String taskName) {
+    public TaskTimeout(JobTaskToProcess msg, String taskName) {
         this.uri = msg.uri;
         this.itemURI = msg.itemURI;
         this.replyTo = msg.replyTo;
