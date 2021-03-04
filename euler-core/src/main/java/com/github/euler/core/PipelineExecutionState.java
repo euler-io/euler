@@ -4,9 +4,10 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import akka.actor.Cancellable;
 import akka.actor.typed.ActorRef;
 
-public class PipelineExecutionState {
+public class PipelineExecutionState implements TasksExecutionState {
 
     private Map<URI, State> mapping = new HashMap<>();
 
@@ -14,6 +15,7 @@ public class PipelineExecutionState {
         int position = 0;
         ActorRef<ProcessorCommand> replyTo;
         ProcessingContext ctx;
+        Cancellable timeoutCancellable;
     }
 
     public int getPosition(URI itemURI) {
@@ -47,7 +49,19 @@ public class PipelineExecutionState {
     }
 
     public void finish(URI itemURI) {
-        mapping.remove(itemURI);
+        State state = mapping.remove(itemURI);
+        if (state.timeoutCancellable != null && !state.timeoutCancellable.isCancelled()) {
+            state.timeoutCancellable.cancel();
+        }
+    }
+    
+    public boolean isActive(URI itemURI) {
+        return mapping.containsKey(itemURI);
+    }
+
+    @Override
+    public void processingStartedWithTimeout(JobTaskToProcess msg, Cancellable cancellable) {
+        mapping.get(msg.itemURI).timeoutCancellable = cancellable;
     }
 
 }

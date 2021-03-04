@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import akka.actor.Cancellable;
 import akka.actor.typed.ActorRef;
 
 public class EulerProcessorState {
@@ -12,6 +13,7 @@ public class EulerProcessorState {
 
         public final ActorRef<EulerCommand> replyTo;
         public int tasks = 0;
+        public Cancellable cancellable;
 
         public State(ActorRef<EulerCommand> replyTo, int tasks) {
             super();
@@ -41,7 +43,11 @@ public class EulerProcessorState {
     }
 
     private void onJobTaskCommand(URI itemURI) {
-        this.mapping.get(itemURI).tasks--;
+        State state = this.mapping.get(itemURI);
+        state.tasks--;
+        if (state.cancellable != null && !state.cancellable.isCancelled()) {
+            state.cancellable.cancel();
+        }
     }
 
     public ActorRef<EulerCommand> getReplyTo(JobTaskFinished msg) {
@@ -74,6 +80,10 @@ public class EulerProcessorState {
 
     public void finish(JobTaskFinished msg) {
         mapping.remove(msg.itemURI);
+    }
+
+    public void processingStartedWithTimeout(JobItemToProcess msg, Cancellable cancellable) {
+        mapping.get(msg.itemURI).cancellable = cancellable;
     }
 
 }

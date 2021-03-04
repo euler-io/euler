@@ -1,5 +1,6 @@
 package com.github.euler.core;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -43,6 +44,13 @@ public class ConcurrentTask implements Task {
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    @Override
+    public Duration getTimeout() {
+        return Arrays.stream(this.tasks)
+                .map(t -> t.getTimeout())
+                .reduce(Duration.ZERO, (d1, d2) -> d1.plus(d2));
     }
 
     public static class Builder {

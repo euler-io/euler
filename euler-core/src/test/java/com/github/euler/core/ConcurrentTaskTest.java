@@ -8,8 +8,8 @@ import java.time.Duration;
 import org.junit.Test;
 
 import com.github.euler.testing.DelayedExecution;
-import com.github.euler.testing.WillFailBehavior;
 import com.github.euler.testing.WillFailExecution;
+import com.github.euler.testing.WillFailItemProcessor;
 
 import akka.actor.testkit.typed.javadsl.TestProbe;
 import akka.actor.typed.ActorRef;
@@ -73,8 +73,12 @@ public class ConcurrentTaskTest extends AkkaTest {
     }
 
     @Test
-    public void testWhenTaskFailReplyToProcessorWithJobTaskFinished() throws Exception {
-        Task task = Tasks.accept("task", () -> WillFailBehavior.create());
+    public void testWhenTaskFailWithTimeoutReplyToProcessorWithJobTaskFinished() throws Exception {
+        Task task = new TaskBuilder()
+                .name("task")
+                .processor(new WillFailItemProcessor())
+                .timeout(Duration.ofSeconds(1))
+                .build();
         Task concurrentTask = new ConcurrentTask("concurrent-task", task);
 
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();

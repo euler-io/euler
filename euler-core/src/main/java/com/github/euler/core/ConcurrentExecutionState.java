@@ -4,9 +4,10 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+import akka.actor.Cancellable;
 import akka.actor.typed.ActorRef;
 
-class ConcurrentExecutionState {
+class ConcurrentExecutionState implements TasksExecutionState {
 
     private class State {
         ActorRef<ProcessorCommand> replyTo;
@@ -47,6 +48,12 @@ class ConcurrentExecutionState {
 
     public void finish(URI itemURI) {
         mapping.remove(itemURI);
+    }
+
+    @Override
+    public void processingStartedWithTimeout(JobTaskToProcess msg, Cancellable cancellable) {
+        // TODO Auto-generated method stub
+        
     }
 
 }
