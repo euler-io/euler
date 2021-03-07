@@ -36,6 +36,7 @@
         <module>euler-config</module>
         <module>euler-sample</module>
         <module>euler-opencv</module>
+        <module>euler-preview-tasks</module>
     </modules>
 
     <scm>
@@ -128,6 +129,10 @@
                     </plugin>
                 </plugins>
             </build>
+            <properties>
+                <downloadSources>false</downloadSources>
+                <downloadJavadocs>false</downloadJavadocs>
+            </properties>
         </profile>
     </profiles>
 
@@ -138,4 +143,37 @@
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>oss-sonatype-releases</id>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>oss-sonatype-public-releases</id>
+            <url>https://oss.sonatype.org/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>

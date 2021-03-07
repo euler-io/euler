@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.ServiceLoader.Provider;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.github.euler.core.Euler;
+import com.github.euler.core.EulerHooks;
 import com.github.euler.core.EulerProcessor;
 import com.github.euler.core.JobCommand;
 import com.github.euler.core.JobExecution;
@@ -110,6 +110,9 @@ public class EulerConfigConverter {
 
         ConfigContext.Builder builder = ConfigContext.builder();
         builder.putAll(ctx);
+        if (!ctx.contains(EulerHooks.class)) {
+            builder.put(EulerHooks.class, new EulerHooks());
+        }
         for (Entry<String, ConfigValue> e : configEntries) {
             String path = e.getKey();
             if (converters.containsKey(path)) {
@@ -134,44 +137,45 @@ public class EulerConfigConverter {
     }
 
     public Behavior<JobCommand> create(Config config, ConfigContext ctx) {
-        return create(config, ctx, (s, p) -> JobExecution.create(s, p));
+        return create(config, ctx, (s, p, h) -> JobExecution.create(s, p, h));
     }
 
     public Behavior<JobCommand> create(ConfigList config, ConfigContext ctx) {
-        return create(config, ctx, (s, p) -> JobExecution.create(s, p));
+        return create(config, ctx, (s, p, h) -> JobExecution.create(s, p, h));
     }
 
-    public <R> R create(Config config, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
+    public <R> R create(Config config, EulerCreator<R> func) {
         return create(config, this.ctx, func);
     }
 
-    public <R> R create(ConfigList config, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
+    public <R> R create(ConfigList config, EulerCreator<R> func) {
         return create(config, this.ctx, func);
     }
 
-    public <R> R create(Config config, ConfigContext ctx, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
+    public <R> R create(Config config, ConfigContext ctx, EulerCreator<R> func) {
         return create(config.root(), ctx, func);
     }
 
-    public <R> R create(ConfigList config, ConfigContext ctx, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
+    public <R> R create(ConfigList config, ConfigContext ctx, EulerCreator<R> func) {
         return create(config, ctx, func);
     }
 
-    public <R> R create(ConfigValue config, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
+    public <R> R create(ConfigValue config, EulerCreator<R> func) {
         return create(config, ctx, func);
     }
 
-    public <R> R create(ConfigValue config, ConfigContext ctx, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
+    public <R> R create(ConfigValue config, ConfigContext ctx, EulerCreator<R> func) {
         ctx = convertContext(config, this.ctx.merge(ctx));
         return create(ctx, func);
     }
 
     @SuppressWarnings("unchecked")
-    protected <R> R create(ConfigContext ctx, BiFunction<Behavior<SourceCommand>, Behavior<ProcessorCommand>, R> func) {
+    protected <R> R create(ConfigContext ctx, EulerCreator<R> func) {
         List<Task> tasks = (List<Task>) ctx.getRequired(TasksConfigConverter.TASKS);
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
         Behavior<ProcessorCommand> processorBehavior = EulerProcessor.create(tasks.toArray(new Task[tasks.size()]));
-        return func.apply(sourceBehavior, processorBehavior);
+        EulerHooks hooks = ctx.getRequired(EulerHooks.class);
+        return func.create(sourceBehavior, processorBehavior, hooks);
     }
 
     public Euler createEuler(Config config) {
@@ -191,7 +195,8 @@ public class EulerConfigConverter {
         ctx = convertContext(config, ctx);
         List<Task> tasks = (List<Task>) ctx.getRequired(TasksConfigConverter.TASKS);
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
-        return new Euler(sourceBehavior, tasks.toArray(new Task[tasks.size()]));
+        EulerHooks hooks = ctx.getRequired(EulerHooks.class);
+        return new Euler(sourceBehavior, hooks, tasks.toArray(new Task[tasks.size()]));
     }
 
     public List<EulerExtension> getExtensions() {
