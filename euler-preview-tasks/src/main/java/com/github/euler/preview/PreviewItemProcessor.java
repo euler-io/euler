@@ -19,14 +19,17 @@ public class PreviewItemProcessor implements ItemProcessor {
     private final EulerPreview preview;
     private final PreviewContext ctx;
     private final String formatName;
+    private final ScalrConfig resizeConfig;
     private final StreamFactory streamFactory;
     private final StorageStrategy storageStrategy;
 
-    public PreviewItemProcessor(EulerPreview preview, PreviewContext ctx, String formatName, StreamFactory streamFactory, StorageStrategy storageStrategy) {
+    public PreviewItemProcessor(EulerPreview preview, PreviewContext ctx, String formatName, ScalrConfig resizeConfig, StreamFactory streamFactory,
+            StorageStrategy storageStrategy) {
         super();
         this.preview = preview;
         this.ctx = ctx;
         this.formatName = formatName;
+        this.resizeConfig = resizeConfig;
         this.streamFactory = streamFactory;
         this.storageStrategy = storageStrategy;
     }
@@ -34,14 +37,15 @@ public class PreviewItemProcessor implements ItemProcessor {
     @Override
     public ProcessingContext process(Item item) throws IOException {
         MediaType type = getMime(item);
-        URI outFile = storageStrategy.createFile("." + formatName);
+        URI outFile = storageStrategy.createFile("." + formatName.toLowerCase());
 
         InputStream in = null;
         OutputStream out = null;
         try {
             in = streamFactory.openInputStream(item.itemURI, item.ctx);
             out = streamFactory.openOutputStream(outFile, item.ctx);
-            preview.generate(ctx, type, in, new OutputStreamPreviewHandler(out, formatName));
+            ResizePreviewHandler handler = new ResizePreviewHandler(resizeConfig, new OutputStreamPreviewHandler(out, formatName), false);
+            preview.generate(ctx, type, in, handler);
             ProcessingContext.Builder builder = ProcessingContext.builder();
             builder.metadata(PREVIEW_METADATA, outFile.toString());
             return builder.build();

@@ -14,21 +14,24 @@ public class PreviewTask extends AbstractTask {
     private final EulerPreview preview;
     private final PreviewContext previewContext;
     private final String formatName;
+    private final ScalrConfig resizeConfig;
     private final StreamFactory sf;
     private final StorageStrategy storageStrategy;
 
-    public PreviewTask(String name, EulerPreview preview, PreviewContext previewContext, String formatName, StreamFactory sf, StorageStrategy storageStrategy) {
+    public PreviewTask(String name, EulerPreview preview, PreviewContext previewContext, String formatName, ScalrConfig resizeConfig, StreamFactory sf,
+            StorageStrategy storageStrategy) {
         super(name);
         this.preview = preview;
         this.previewContext = previewContext;
         this.formatName = formatName;
+        this.resizeConfig = resizeConfig;
         this.sf = sf;
         this.storageStrategy = storageStrategy;
     }
 
     @Override
     protected ItemProcessor itemProcessor() {
-        return new PreviewItemProcessor(preview, previewContext, formatName, sf, storageStrategy);
+        return new PreviewItemProcessor(preview, previewContext, formatName, resizeConfig, sf, storageStrategy);
     }
 
     @Override

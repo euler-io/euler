@@ -28,7 +28,7 @@ public class PDFBoxPreviewGeneratorConfigConverter extends AbstractPreviewGenera
     }
 
     protected Config getDefaultConfig() {
-        URL resource = PreviewTaskConfigConverter.class.getClassLoader().getResource("pdfpreviewgenerator.conf");
+        URL resource = PDFBoxPreviewGeneratorConfigConverter.class.getClassLoader().getResource("pdfpreviewgenerator.conf");
         return ConfigFactory.parseURL(resource);
     }
 

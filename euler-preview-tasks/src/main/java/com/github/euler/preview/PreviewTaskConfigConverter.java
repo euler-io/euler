@@ -28,7 +28,11 @@ public class PreviewTaskConfigConverter extends AbstractTaskConfigConverter {
             PreviewGenerator g = typesConfigConverter.convert(AbstractPreviewGeneratorConfigConverter.PREVIEW_GENERATOR, c, ctx);
             previewConfig.add(g);
         });
+        ScalrConfig resizeConfig = PreviewUtils.fromConfig(config.getConfig("resize"));
+
         PreviewContext previewContext = new PreviewContext();
+        previewContext.set(PagePreview.class, new PagePreview(0));
+        previewContext.set(ScalrConfig.class, resizeConfig);
 
         String name = getName(config, tasksConfigConverter);
         EulerPreview preview = new EulerPreview(previewConfig);
@@ -36,7 +40,7 @@ public class PreviewTaskConfigConverter extends AbstractTaskConfigConverter {
         StreamFactory streamFactory = ctx.getRequired(StreamFactory.class);
         StorageStrategy storageStrategy = typesConfigConverter.convert("storage-strategy", config.getValue("storage-strategy"), ctx);
 
-        return new PreviewTask(name, preview, previewContext, formatName, streamFactory, storageStrategy);
+        return new PreviewTask(name, preview, previewContext, formatName, resizeConfig, streamFactory, storageStrategy);
     }
 
     protected Config getDefaultConfig() {

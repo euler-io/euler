@@ -4,6 +4,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 
 import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TypesConfigConverter;
+import com.github.euler.core.EulerHooks;
 import com.typesafe.config.Config;
 
 public class ElasticsearchConfigClientConfigConverter extends AbstractElasticsearchClientConfigConverter {
@@ -15,7 +16,11 @@ public class ElasticsearchConfigClientConfigConverter extends AbstractElasticsea
 
     @Override
     public RestHighLevelClient convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
-        return ElasticsearchUtils.initializeClient(config);
+        EulerHooks hooks = configContext.getRequired(EulerHooks.class);
+
+        RestHighLevelClient client = ElasticsearchUtils.initializeClient(config);
+        hooks.registerCloseable(() -> client.close());
+        return client;
     }
 
 }
