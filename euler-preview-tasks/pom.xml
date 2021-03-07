@@ -4,13 +4,13 @@
 
     <groupId>com.github.euler-io</groupId>
     <artifactId>euler-preview-tasks</artifactId>
-    <version>0.6.0</version>
+    <version>0.6.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>com.github.euler-io</groupId>
         <artifactId>euler</artifactId>
-        <version>0.6.0</version>
+        <version>0.6.1-SNAPSHOT</version>
     </parent>
 
     <name>Euler - Preview Tasks</name>
