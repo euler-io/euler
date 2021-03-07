@@ -36,6 +36,7 @@
         <module>euler-config</module>
         <module>euler-sample</module>
         <module>euler-opencv</module>
+        <module>euler-preview-tasks</module>
     </modules>
 
     <scm>
