@@ -129,6 +129,10 @@
                     </plugin>
                 </plugins>
             </build>
+            <properties>
+                <downloadSources>false</downloadSources>
+                <downloadJavadocs>false</downloadJavadocs>
+            </properties>
         </profile>
     </profiles>
 
