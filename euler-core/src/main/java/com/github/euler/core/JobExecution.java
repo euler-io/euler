@@ -46,32 +46,24 @@ public class JobExecution extends AbstractBehavior<JobCommand> {
         return builder.build();
     }
 
-    private Behavior<JobCommand> onJob(Job msg) {
-        try {
-            this.hooks.initialize();
-            this.eulerRef = getContext().spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior), "euler");
-            eulerRef.tell(new JobToProcess(msg.uri, msg.ctx, msg.replyTo));
-            return Behaviors.same();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private Behavior<JobCommand> onJob(Job msg) throws IOException {
+        this.hooks.initialize();
+        this.eulerRef = getContext().spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior), "euler");
+        eulerRef.tell(new JobToProcess(msg.uri, msg.ctx, msg.replyTo));
+        return Behaviors.same();
     }
 
-    private Behavior<JobCommand> onJobProcessed(JobProcessed msg) {
+    private Behavior<JobCommand> onJobProcessed(JobProcessed msg) throws IOException {
         return finishJob();
     }
 
-    private Behavior<JobCommand> onCancelJob(CancelJob msg) {
+    private Behavior<JobCommand> onCancelJob(CancelJob msg) throws IOException {
         return finishJob();
     }
 
-    protected Behavior<JobCommand> finishJob() {
-        try {
-            this.hooks.close();
-            return Behaviors.stopped();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    protected Behavior<JobCommand> finishJob() throws IOException {
+        this.hooks.close();
+        return Behaviors.stopped();
     }
 
 }
