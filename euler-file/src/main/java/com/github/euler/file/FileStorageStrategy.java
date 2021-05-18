@@ -22,6 +22,12 @@ public class FileStorageStrategy implements StorageStrategy {
     @Override
     public URI createFile(URI uri) {
         String baseName = FilenameUtils.getBaseName(FileUtils.toFile(uri).getAbsolutePath());
+        return createFile(baseName, this.suffix);
+    }
+
+    @Override
+    public URI createFile(URI uri, String suffix) {
+        String baseName = FilenameUtils.getBaseName(FileUtils.toFile(uri).getAbsolutePath());
         return createFile(baseName, suffix);
     }
 

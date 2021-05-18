@@ -6,6 +6,8 @@ public interface StorageStrategy {
 
     URI createFile(URI uri);
 
+    URI createFile(URI uri, String suffix);
+
     URI createFile(String suffix);
 
 }

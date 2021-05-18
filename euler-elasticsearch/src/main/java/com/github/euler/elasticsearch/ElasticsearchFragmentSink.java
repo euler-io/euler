@@ -31,7 +31,7 @@ public class ElasticsearchFragmentSink extends ElasticsearchMetadataSink impleme
         Map<String, Object> data = new HashMap<>();
         data.put("content", fragment);
         data.put("size", fragment.length());
-        data.put("index", fragIndex);
+        data.put("fragment-index", fragIndex);
 
         Map<String, Object> joinField = new HashMap<String, Object>(2);
         joinField.put("name", "fragment");

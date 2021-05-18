@@ -37,7 +37,7 @@ public class PreviewItemProcessor implements ItemProcessor {
     @Override
     public ProcessingContext process(Item item) throws IOException {
         MediaType type = getMime(item);
-        URI outFile = storageStrategy.createFile("." + formatName.toLowerCase());
+        URI outFile = storageStrategy.createFile(item.itemURI, "." + formatName.toLowerCase());
 
         InputStream in = null;
         OutputStream out = null;
