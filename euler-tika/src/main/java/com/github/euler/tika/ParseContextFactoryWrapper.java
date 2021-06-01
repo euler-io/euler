@@ -5,6 +5,7 @@ import java.util.regex.Pattern;
 import org.apache.tika.extractor.EmbeddedDocumentExtractor;
 import org.apache.tika.parser.ParseContext;
 
+import com.github.euler.common.CommonMetadata;
 import com.github.euler.core.ProcessingContext;
 
 public class ParseContextFactoryWrapper implements ParseContextFactory {
@@ -35,11 +36,12 @@ public class ParseContextFactoryWrapper implements ParseContextFactory {
     }
 
     public boolean includeEmbedded(ProcessingContext ctx) {
-        Object category = ctx.metadata("category");
-        if (category != null) {
+        String metadataName = CommonMetadata.MIME_TYPE;
+        Object mimeType = ctx.metadata(metadataName);
+        if (mimeType != null) {
 
-            boolean included = this.includeExtractEmbeddedPattern.matcher(category.toString()).matches();
-            boolean excluded = this.excludeExtractEmbeddedPattern.matcher(category.toString()).matches();
+            boolean included = this.includeExtractEmbeddedPattern.matcher(mimeType.toString()).matches();
+            boolean excluded = this.excludeExtractEmbeddedPattern.matcher(mimeType.toString()).matches();
 
             return included && !excluded;
         } else {

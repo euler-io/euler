@@ -50,4 +50,9 @@ public class FileStorageStrategy implements StorageStrategy {
         return createFile("", suffix);
     }
 
+    @Override
+    public URI createFile() {
+        return createFile(this.suffix);
+    }
+
 }

@@ -52,6 +52,7 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
         ReceiveBuilder<EulerCommand> builder = newReceiveBuilder();
         builder.onMessage(JobToProcess.class, this::onJobToProcess);
         builder.onMessage(JobItemFound.class, this::onJobItemFound);
+        builder.onMessage(JobEmbeddedItemFound.class, this::onJobEmbeddedItemFound);
         builder.onMessage(JobItemProcessed.class, this::onJobItemProcessed);
         builder.onMessage(ScanFinished.class, this::onScanFinished);
         builder.onMessage(ScanFailed.class, this::onScanFailed);
@@ -77,6 +78,13 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private Behavior<EulerCommand> onJobItemFound(JobItemFound msg) {
+        ProcessingContext ctx = state.getCtx().merge(msg.ctx);
+        processorRef.tell(new JobItemToProcess(msg, ctx, getContext().getSelf()));
+        state.onMessage(msg);
+        return Behaviors.same();
+    }
+
+    private Behavior<EulerCommand> onJobEmbeddedItemFound(JobEmbeddedItemFound msg) {
         ProcessingContext ctx = state.getCtx().merge(msg.ctx);
         processorRef.tell(new JobItemToProcess(msg, ctx, getContext().getSelf()));
         state.onMessage(msg);

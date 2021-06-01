@@ -27,6 +27,7 @@ import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.core.ProcessingContext.Action;
+import com.github.euler.core.ProcessingContext.Builder;
 import com.github.euler.core.TaskCommand;
 
 import akka.actor.typed.Behavior;
@@ -121,22 +122,24 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
             resourceName = "embedded_" + embeddedCounter;
         }
 
-        URI tempFile = embeddedContentStrategy.createFile(".tmp");
-        try (OutputStream out = sf.openOutputStream(tempFile, ProcessingContext.EMPTY)) {
+        URI embeddedFile = embeddedContentStrategy.createFile();
+        try (OutputStream out = sf.openOutputStream(embeddedFile, ProcessingContext.EMPTY)) {
             IOUtils.copy(in, out);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        ProcessingContext ctx = ProcessingContext.builder()
+        Builder builder = ProcessingContext.builder()
                 .metadata(CommonMetadata.CREATED_DATETIME, metadata.getDate(TikaCoreProperties.CREATED))
                 .metadata(CommonMetadata.LAST_MODIFIED_DATETIME, metadata.getDate(TikaCoreProperties.MODIFIED))
                 .metadata(CommonMetadata.NAME, FilenameUtils.getName(resourceName))
-                .context(CommonContext.TEMPORARY_URI, tempFile)
-                .setAction(Action.OVERWRITE)
+                .context(CommonContext.TEMPORARY_URI, embeddedFile)
+                .setAction(Action.OVERWRITE);
+
+        ProcessingContext ctx = builder
                 .build();
 
-        this.currentMsg.replyTo.tell(new EmbeddedItemFound(this.currentMsg, ctx));
+        this.currentMsg.replyTo.tell(new EmbeddedItemFound(embeddedFile, this.currentMsg, ctx));
     }
 
 }

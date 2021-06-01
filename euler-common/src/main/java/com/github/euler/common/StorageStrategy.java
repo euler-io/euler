@@ -4,6 +4,8 @@ import java.net.URI;
 
 public interface StorageStrategy {
 
+    URI createFile();
+
     URI createFile(URI uri);
 
     URI createFile(URI uri, String suffix);

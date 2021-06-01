@@ -23,10 +23,11 @@ public class ParseTaskConfigConverter extends AbstractTaskConfigConverter {
     public Task convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter, TasksConfigConverter tasksConfigConverter) {
         config = config.withFallback(getDefaultConfig());
         String name = getName(config, tasksConfigConverter);
+        boolean extractEmbedded = config.getBoolean("extract-embedded");
         StreamFactory streamFactory = ctx.getRequired(StreamFactory.class);
         StorageStrategy parsedContentStrategy = typeConfigConverter.convert("storage-strategy", config.getValue("parsed-storage-strategy"), ctx);
         StorageStrategy embeddedContentStrategy = typeConfigConverter.convert("storage-strategy", config.getValue("embedded-storage-strategy"), ctx);
-        return ParseTask.builder(name, streamFactory, parsedContentStrategy, embeddedContentStrategy).build();
+        return ParseTask.builder(name, streamFactory, parsedContentStrategy, embeddedContentStrategy).setExtractEmbedded(extractEmbedded).build();
     }
 
     protected Config getDefaultConfig() {

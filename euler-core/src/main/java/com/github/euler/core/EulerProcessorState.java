@@ -62,6 +62,10 @@ public class EulerProcessorState {
         return this.mapping.get(itemURI).replyTo;
     }
 
+    public ActorRef<EulerCommand> getReplyTo(EmbeddedItemFound msg) {
+        return getReplyTo(msg.parentURI);
+    }
+
     public boolean isProcessed(JobTaskFailed msg) {
         return isProcessed(msg.itemURI);
     }

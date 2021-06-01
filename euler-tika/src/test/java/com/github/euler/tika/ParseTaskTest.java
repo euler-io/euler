@@ -87,7 +87,7 @@ public class ParseTaskTest extends AkkaTest {
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
         ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
 
-        ProcessingContext ctx = ProcessingContext.builder().metadata("category", "application/zip").build();
+        ProcessingContext ctx = ProcessingContext.builder().metadata(CommonMetadata.MIME_TYPE, "application/zip").build();
         JobTaskToProcess msg = new JobTaskToProcess(file.toURI(), file.toURI(), ctx, probe.ref());
         ref.tell(msg);
 
@@ -117,7 +117,7 @@ public class ParseTaskTest extends AkkaTest {
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
         ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
 
-        ProcessingContext ctx = ProcessingContext.builder().metadata("category", "application/zip").build();
+        ProcessingContext ctx = ProcessingContext.builder().metadata(CommonMetadata.MIME_TYPE, "application/zip").build();
         JobTaskToProcess msg = new JobTaskToProcess(file.toURI(), file.toURI(), ctx, probe.ref());
         ref.tell(msg);
 
@@ -139,7 +139,7 @@ public class ParseTaskTest extends AkkaTest {
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
         ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
 
-        ProcessingContext ctx = ProcessingContext.builder().metadata("category", "application/zip").build();
+        ProcessingContext ctx = ProcessingContext.builder().metadata(CommonMetadata.MIME_TYPE, "application/zip").build();
         JobTaskToProcess msg = new JobTaskToProcess(file.toURI(), file.toURI(), ctx, probe.ref());
         ref.tell(msg);
 

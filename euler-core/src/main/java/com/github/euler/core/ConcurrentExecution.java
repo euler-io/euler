@@ -75,10 +75,17 @@ public class ConcurrentExecution extends HeterogeneousTasksExecution {
             onJobTaskFinished((JobTaskFinished) msg.processorCommand);
         } else if (msg.processorCommand instanceof JobTaskFailed) {
             onJobTaskFailed((JobTaskFailed) msg.processorCommand);
+        } else if (msg.processorCommand instanceof EmbeddedItemFound) {
+            onEmbeddedItemFound((EmbeddedItemFound) msg.processorCommand);
         } else {
             throw new IllegalArgumentException("Impossible to handle " + msg.processorCommand.getClass().getName());
         }
         return Behaviors.same();
+    }
+
+    private void onEmbeddedItemFound(EmbeddedItemFound msg) {
+        ActorRef<ProcessorCommand> replyTo = state.getReplyTo(msg.parentURI);
+        replyTo.tell(msg);
     }
 
     private void onJobTaskFinished(JobTaskFinished msg) {

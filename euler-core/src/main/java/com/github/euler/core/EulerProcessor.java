@@ -39,6 +39,7 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
         builder.onMessage(JobTaskFinished.class, this::onJobTaskFinished);
         builder.onMessage(JobTaskFailed.class, this::onJobTaskFailed);
         builder.onMessage(InternalJobTaskFailed.class, this::onInternalJobTaskFailed);
+        builder.onMessage(EmbeddedItemFound.class, this::onEmbeddedItemFound);
         builder.onMessage(Flush.class, this::onFlush);
         return builder.build();
     }
@@ -56,6 +57,12 @@ public class EulerProcessor extends AbstractBehavior<ProcessorCommand> {
     public Behavior<ProcessorCommand> onJobItemToProcess(JobItemToProcess msg) {
         state.onJobItemToProcess(msg);
         distributeToTasks(msg);
+        return Behaviors.same();
+    }
+
+    public Behavior<ProcessorCommand> onEmbeddedItemFound(EmbeddedItemFound msg) {
+        ActorRef<EulerCommand> replyTo = state.getReplyTo(msg);
+        replyTo.tell(new JobEmbeddedItemFound(msg));
         return Behaviors.same();
     }
 
