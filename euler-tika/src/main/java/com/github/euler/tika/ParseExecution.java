@@ -6,13 +6,12 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.util.Map;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
-import org.apache.tika.metadata.TikaMetadataKeys;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
@@ -28,8 +27,8 @@ import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.core.ProcessingContext.Action;
 import com.github.euler.core.ProcessingContext.Builder;
-import com.github.euler.tika.metadata.MetadataParser;
 import com.github.euler.core.TaskCommand;
+import com.github.euler.tika.metadata.MetadataParser;
 
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
@@ -42,11 +41,11 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
 
     public static Behavior<TaskCommand> create(Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy,
             boolean extractEmbedded, int maxDepth, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
-            ParseContextFactory parseContextFactory) {
+            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy) {
         return Behaviors
                 .setup((context) -> new ParseExecution(context, parser, sf, parsedContentStrategy, embeddedContentStrategy, extractEmbedded, maxDepth,
                         includeExtractEmbeddedPattern,
-                        excludeExtractEmbeddedPattern, metadataParser, parseContextFactory));
+                        excludeExtractEmbeddedPattern, metadataParser, parseContextFactory, embeddedNamingStrategy));
     }
 
     private final Parser parser;
@@ -55,13 +54,13 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
     private final StorageStrategy embeddedContentStrategy;
     private final MetadataParser metadataParser;
     private final ParseContextFactory parseContextFactory;
+    private final EmbeddedNamingStrategy embeddedNamingStrategy;
 
     private JobTaskToProcess currentMsg;
-    private int embeddedCounter = 0;
 
     protected ParseExecution(ActorContext<TaskCommand> context, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy,
             boolean extractEmbedded, int maxDepth, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
-            ParseContextFactory parseContextFactory) {
+            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy) {
         super(context);
         this.parser = parser;
         this.sf = sf;
@@ -70,6 +69,7 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         this.metadataParser = metadataParser;
         this.parseContextFactory = new ParseContextFactoryWrapper(parseContextFactory, this, extractEmbedded, maxDepth, includeExtractEmbeddedPattern,
                 excludeExtractEmbeddedPattern);
+        this.embeddedNamingStrategy = embeddedNamingStrategy;
     }
 
     @Override
@@ -108,7 +108,6 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
 
     protected ProcessingContext parse(InputStream in, Writer out, ProcessingContext ctx) throws IOException, SAXException, TikaException {
         Metadata metadata = new Metadata();
-        embeddedCounter = 0;
         ParseContext parseContext = parseContextFactory.create(ctx);
         parser.parse(in, new BodyContentHandler(out), metadata, parseContext);
         return metadataParser.parse(metadata);
@@ -120,10 +119,7 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
 
     @Override
     public void newEmbedded(InputStream in, Metadata metadata) {
-        String resourceName = metadata.get(TikaMetadataKeys.RESOURCE_NAME_KEY);
-        if (resourceName == null) {
-            resourceName = "embedded_" + embeddedCounter;
-        }
+        String name = embeddedNamingStrategy.nameEmbedded(currentMsg.itemURI, currentMsg.ctx, metadata);
 
         URI embeddedFile = embeddedContentStrategy.createFile();
         try (OutputStream out = sf.openOutputStream(embeddedFile, ProcessingContext.EMPTY)) {
@@ -135,17 +131,29 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         Builder builder = ProcessingContext.builder()
                 .metadata(CommonMetadata.CREATED_DATETIME, metadata.getDate(TikaCoreProperties.CREATED))
                 .metadata(CommonMetadata.LAST_MODIFIED_DATETIME, metadata.getDate(TikaCoreProperties.MODIFIED))
-                .metadata(CommonMetadata.NAME, FilenameUtils.getName(resourceName))
+                .metadata(CommonMetadata.NAME, name)
                 .context(CommonContext.TEMPORARY_URI, embeddedFile)
                 .setAction(Action.OVERWRITE);
+
+        setPathAttribute(builder, name, CommonMetadata.RELATIVE_PATH, CommonMetadata.PATH);
 
         Integer depth = currentMsg.ctx.context(CommonContext.EXTRACTION_DEPTH, 0);
         builder.context(CommonContext.EXTRACTION_DEPTH, depth + 1);
 
-        ProcessingContext ctx = builder
-                .build();
+        ProcessingContext ctx = builder.build();
 
         this.currentMsg.replyTo.tell(new EmbeddedItemFound(embeddedFile, this.currentMsg, ctx));
+    }
+
+    private void setPathAttribute(Builder builder, String name, String... attrNames) {
+        Map<String, Object> currMetadata = this.currentMsg.ctx.metadata();
+
+        for (String attrName : attrNames) {
+            if (currMetadata.containsKey(attrName)) {
+                String path = currMetadata.get(attrName) + "#" + name;
+                builder.metadata(attrName, path);
+            }
+        }
     }
 
 }

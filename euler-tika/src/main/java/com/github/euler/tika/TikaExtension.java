@@ -6,14 +6,16 @@ import com.github.euler.configuration.ContextConfigConverter;
 import com.github.euler.configuration.EulerExtension;
 import com.github.euler.configuration.TaskConfigConverter;
 import com.github.euler.configuration.TypeConfigConverter;
+import com.github.euler.tika.embedded.DefaultEmbeddedNamingStrategyConfigConverter;
 import com.github.euler.tika.metadata.DefaultMetadataParserConfigConverter;
-import com.github.euler.tika.metadata.ValueRegexExtractMetadataOperationConfigConverter;
 import com.github.euler.tika.metadata.MultiMetadataParserConfigConverter;
 import com.github.euler.tika.metadata.NameCaseConverterMetadataOperationConfigConverter;
+import com.github.euler.tika.metadata.NameReplaceMetadataOperationConfigConverter;
 import com.github.euler.tika.metadata.ObjectMetadataParserConfigConverter;
 import com.github.euler.tika.metadata.OperationsMetadataParserConfigConverter;
-import com.github.euler.tika.metadata.NameReplaceMetadataOperationConfigConverter;
 import com.github.euler.tika.metadata.StringMetadataFieldParserConfigConverter;
+import com.github.euler.tika.metadata.ValueRegexExtractMetadataOperationConfigConverter;
+import com.github.euler.tika.metadata.ValueReplaceMetadataOperationConfigConverter;
 
 public class TikaExtension implements EulerExtension {
 
@@ -40,7 +42,9 @@ public class TikaExtension implements EulerExtension {
                 new NameReplaceMetadataOperationConfigConverter(),
                 new StringMetadataFieldParserConfigConverter(),
                 new NameCaseConverterMetadataOperationConfigConverter(),
-                new ValueRegexExtractMetadataOperationConfigConverter());
+                new ValueRegexExtractMetadataOperationConfigConverter(),
+                new DefaultEmbeddedNamingStrategyConfigConverter(),
+                new ValueReplaceMetadataOperationConfigConverter());
     }
 
     @Override

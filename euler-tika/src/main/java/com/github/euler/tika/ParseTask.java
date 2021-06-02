@@ -12,6 +12,7 @@ import com.github.euler.common.StreamFactory;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.Task;
 import com.github.euler.core.TaskCommand;
+import com.github.euler.tika.embedded.DefaultEmbeddedNamingStrategy;
 import com.github.euler.tika.metadata.DefaultMetadataParser;
 import com.github.euler.tika.metadata.MetadataParser;
 
@@ -30,10 +31,11 @@ public class ParseTask implements Task {
     private final String excludeExtractEmbeddedPattern;
     private final MetadataParser metadataParser;
     private final ParseContextFactory parseContextFactory;
+    private final EmbeddedNamingStrategy embeddedNamingStrategy;
 
     private ParseTask(String name, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy, boolean extractEmbedded,
             int maxDepth, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
-            ParseContextFactory parseContextFactory) {
+            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy) {
         this.name = name;
         this.parser = parser;
         this.sf = sf;
@@ -45,6 +47,7 @@ public class ParseTask implements Task {
         this.excludeExtractEmbeddedPattern = excludeExtractEmbeddedPattern;
         this.metadataParser = metadataParser;
         this.parseContextFactory = parseContextFactory;
+        this.embeddedNamingStrategy = embeddedNamingStrategy;
     }
 
     @Override
@@ -57,7 +60,7 @@ public class ParseTask implements Task {
         return ParseExecution.create(this.parser, this.sf, this.parsedContentStrategy, this.embeddedContentStrategy, this.extractEmbedded, this.maxDepth,
                 this.includeExtractEmbeddedPattern,
                 this.excludeExtractEmbeddedPattern, this.metadataParser,
-                this.parseContextFactory);
+                this.parseContextFactory, this.embeddedNamingStrategy);
     }
 
     @Override
@@ -81,6 +84,7 @@ public class ParseTask implements Task {
         private StorageStrategy embeddedContentStrategy;
         private MetadataParser metadataParser = new DefaultMetadataParser();
         private ParseContextFactory parseContextFactory = new FixedParseContextFactory(new ParseContext());
+        private EmbeddedNamingStrategy embeddedNamingStrategy = new DefaultEmbeddedNamingStrategy();
         private boolean extractEmbedded = false;
         private int maxDepth = 10;
         private String includeExtractEmbeddedPattern = ".+";
@@ -193,6 +197,15 @@ public class ParseTask implements Task {
             return excludeExtractEmbeddedPattern;
         }
 
+        public EmbeddedNamingStrategy getEmbeddedNamingStrategy() {
+            return embeddedNamingStrategy;
+        }
+
+        public Builder setEmbeddedNamingStrategy(EmbeddedNamingStrategy embeddedNamingStrategy) {
+            this.embeddedNamingStrategy = embeddedNamingStrategy;
+            return this;
+        }
+
         public ParseTask build() {
             Objects.requireNonNull(name, () -> "name cannot be null");
             Objects.requireNonNull(parser, () -> "parser cannot be null");
@@ -205,9 +218,10 @@ public class ParseTask implements Task {
             }
             Objects.requireNonNull(metadataParser, () -> "metadataParser cannot be null");
             Objects.requireNonNull(parseContextFactory, () -> "parseContextFactory cannot be null");
+            Objects.requireNonNull(embeddedNamingStrategy, () -> "embeddedNamingStrategy cannot be null");
             return new ParseTask(name, parser, streamFactory, parsedContentStrategy, embeddedContentStrategy, this.extractEmbedded, this.maxDepth,
                     this.includeExtractEmbeddedPattern,
-                    this.excludeExtractEmbeddedPattern, metadataParser, parseContextFactory);
+                    this.excludeExtractEmbeddedPattern, metadataParser, parseContextFactory, embeddedNamingStrategy);
         }
 
     }

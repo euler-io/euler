@@ -11,6 +11,7 @@ import com.github.euler.common.CommonMetadata;
 import com.github.euler.core.JobTaskFinished;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
+import com.github.euler.core.ProcessingContext.Action;
 import com.github.euler.core.ProcessingContext.Builder;
 import com.github.euler.core.TaskCommand;
 
@@ -42,7 +43,7 @@ public class BasicFilePropertiesExecution extends AbstractBehavior<TaskCommand> 
         File file = getFile(msg);
 
         Builder builder = ProcessingContext.builder();
-        builder.putAll(msg.ctx);
+        builder.setAction(Action.PUT_IF_ABSENT);
 
         builder.metadata(CommonMetadata.NAME, file.getName());
         builder.metadata(CommonMetadata.SIZE, file.length());

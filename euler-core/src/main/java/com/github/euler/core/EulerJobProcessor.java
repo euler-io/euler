@@ -51,8 +51,8 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     public Receive<EulerCommand> createReceive() {
         ReceiveBuilder<EulerCommand> builder = newReceiveBuilder();
         builder.onMessage(JobToProcess.class, this::onJobToProcess);
-        builder.onMessage(JobItemFound.class, this::onJobItemFound);
         builder.onMessage(JobEmbeddedItemFound.class, this::onJobEmbeddedItemFound);
+        builder.onMessage(JobItemFound.class, this::onJobItemFound);
         builder.onMessage(JobItemProcessed.class, this::onJobItemProcessed);
         builder.onMessage(ScanFinished.class, this::onScanFinished);
         builder.onMessage(ScanFailed.class, this::onScanFailed);

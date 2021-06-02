@@ -9,6 +9,7 @@ import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TasksConfigConverter;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.core.Task;
+import com.github.euler.tika.embedded.AbstractEmbeddedNamingStrategyConfigConverter;
 import com.github.euler.tika.metadata.AbstractMetadataParserConfigConverter;
 import com.github.euler.tika.metadata.MetadataParser;
 import com.typesafe.config.Config;
@@ -31,10 +32,13 @@ public class ParseTaskConfigConverter extends AbstractTaskConfigConverter {
         StorageStrategy parsedContentStrategy = typeConfigConverter.convert("storage-strategy", config.getValue("parsed-storage-strategy"), ctx);
         StorageStrategy embeddedContentStrategy = typeConfigConverter.convert("storage-strategy", config.getValue("embedded-storage-strategy"), ctx);
         MetadataParser metadataParser = typeConfigConverter.convert(AbstractMetadataParserConfigConverter.TYPE, config.getValue("metadata-parser"), ctx);
+        EmbeddedNamingStrategy embeddedNamingStrategy = typeConfigConverter.convert(AbstractEmbeddedNamingStrategyConfigConverter.TYPE, config.getValue("embedded-naming-strategy"),
+                ctx);
         return ParseTask.builder(name, streamFactory, parsedContentStrategy, embeddedContentStrategy)
                 .setExtractEmbedded(extractEmbedded)
                 .setMaxDepth(maxDepth)
                 .setMetadataParser(metadataParser)
+                .setEmbeddedNamingStrategy(embeddedNamingStrategy)
                 .build();
     }
 
