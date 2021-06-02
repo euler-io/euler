@@ -1,4 +1,4 @@
-package com.github.euler.tika;
+package com.github.euler.tika.metadata;
 
 import org.apache.tika.metadata.Metadata;
 

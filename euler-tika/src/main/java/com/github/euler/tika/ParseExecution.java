@@ -28,6 +28,7 @@ import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.core.ProcessingContext.Action;
 import com.github.euler.core.ProcessingContext.Builder;
+import com.github.euler.tika.metadata.MetadataParser;
 import com.github.euler.core.TaskCommand;
 
 import akka.actor.typed.Behavior;
@@ -40,10 +41,11 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 public class ParseExecution extends AbstractBehavior<TaskCommand> implements EmbeddedItemListener {
 
     public static Behavior<TaskCommand> create(Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy,
-            boolean extractEmbedded, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
+            boolean extractEmbedded, int maxDepth, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
             ParseContextFactory parseContextFactory) {
         return Behaviors
-                .setup((context) -> new ParseExecution(context, parser, sf, parsedContentStrategy, embeddedContentStrategy, extractEmbedded, includeExtractEmbeddedPattern,
+                .setup((context) -> new ParseExecution(context, parser, sf, parsedContentStrategy, embeddedContentStrategy, extractEmbedded, maxDepth,
+                        includeExtractEmbeddedPattern,
                         excludeExtractEmbeddedPattern, metadataParser, parseContextFactory));
     }
 
@@ -58,7 +60,7 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
     private int embeddedCounter = 0;
 
     protected ParseExecution(ActorContext<TaskCommand> context, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy,
-            boolean extractEmbedded, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
+            boolean extractEmbedded, int maxDepth, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
             ParseContextFactory parseContextFactory) {
         super(context);
         this.parser = parser;
@@ -66,7 +68,8 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         this.parsedContentStrategy = parsedContentStrategy;
         this.embeddedContentStrategy = embeddedContentStrategy;
         this.metadataParser = metadataParser;
-        this.parseContextFactory = new ParseContextFactoryWrapper(parseContextFactory, this, extractEmbedded, includeExtractEmbeddedPattern, excludeExtractEmbeddedPattern);
+        this.parseContextFactory = new ParseContextFactoryWrapper(parseContextFactory, this, extractEmbedded, maxDepth, includeExtractEmbeddedPattern,
+                excludeExtractEmbeddedPattern);
     }
 
     @Override
@@ -135,6 +138,9 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
                 .metadata(CommonMetadata.NAME, FilenameUtils.getName(resourceName))
                 .context(CommonContext.TEMPORARY_URI, embeddedFile)
                 .setAction(Action.OVERWRITE);
+
+        Integer depth = currentMsg.ctx.context(CommonContext.EXTRACTION_DEPTH, 0);
+        builder.context(CommonContext.EXTRACTION_DEPTH, depth + 1);
 
         ProcessingContext ctx = builder
                 .build();

@@ -12,6 +12,8 @@ import com.github.euler.common.StreamFactory;
 import com.github.euler.core.JobTaskToProcess;
 import com.github.euler.core.Task;
 import com.github.euler.core.TaskCommand;
+import com.github.euler.tika.metadata.DefaultMetadataParser;
+import com.github.euler.tika.metadata.MetadataParser;
 
 import akka.actor.typed.Behavior;
 
@@ -23,13 +25,14 @@ public class ParseTask implements Task {
     private final StorageStrategy parsedContentStrategy;
     private final StorageStrategy embeddedContentStrategy;
     private boolean extractEmbedded;
+    private int maxDepth;
     private final String includeExtractEmbeddedPattern;
     private final String excludeExtractEmbeddedPattern;
     private final MetadataParser metadataParser;
     private final ParseContextFactory parseContextFactory;
 
     private ParseTask(String name, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy, boolean extractEmbedded,
-            String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
+            int maxDepth, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
             ParseContextFactory parseContextFactory) {
         this.name = name;
         this.parser = parser;
@@ -37,6 +40,7 @@ public class ParseTask implements Task {
         this.parsedContentStrategy = parsedContentStrategy;
         this.embeddedContentStrategy = embeddedContentStrategy;
         this.extractEmbedded = extractEmbedded;
+        this.maxDepth = maxDepth;
         this.includeExtractEmbeddedPattern = includeExtractEmbeddedPattern;
         this.excludeExtractEmbeddedPattern = excludeExtractEmbeddedPattern;
         this.metadataParser = metadataParser;
@@ -50,7 +54,8 @@ public class ParseTask implements Task {
 
     @Override
     public Behavior<TaskCommand> behavior() {
-        return ParseExecution.create(this.parser, this.sf, this.parsedContentStrategy, this.embeddedContentStrategy, this.extractEmbedded, this.includeExtractEmbeddedPattern,
+        return ParseExecution.create(this.parser, this.sf, this.parsedContentStrategy, this.embeddedContentStrategy, this.extractEmbedded, this.maxDepth,
+                this.includeExtractEmbeddedPattern,
                 this.excludeExtractEmbeddedPattern, this.metadataParser,
                 this.parseContextFactory);
     }
@@ -77,6 +82,7 @@ public class ParseTask implements Task {
         private MetadataParser metadataParser = new DefaultMetadataParser();
         private ParseContextFactory parseContextFactory = new FixedParseContextFactory(new ParseContext());
         private boolean extractEmbedded = false;
+        private int maxDepth = 10;
         private String includeExtractEmbeddedPattern = ".+";
         private String excludeExtractEmbeddedPattern = "a^";
 
@@ -170,6 +176,15 @@ public class ParseTask implements Task {
             return extractEmbedded;
         }
 
+        public int getMaxDepth() {
+            return maxDepth;
+        }
+
+        public Builder setMaxDepth(int maxDepth) {
+            this.maxDepth = maxDepth;
+            return this;
+        }
+
         public String getIncludeExtractEmbeddedPattern() {
             return includeExtractEmbeddedPattern;
         }
@@ -190,7 +205,8 @@ public class ParseTask implements Task {
             }
             Objects.requireNonNull(metadataParser, () -> "metadataParser cannot be null");
             Objects.requireNonNull(parseContextFactory, () -> "parseContextFactory cannot be null");
-            return new ParseTask(name, parser, streamFactory, parsedContentStrategy, embeddedContentStrategy, this.extractEmbedded, this.includeExtractEmbeddedPattern,
+            return new ParseTask(name, parser, streamFactory, parsedContentStrategy, embeddedContentStrategy, this.extractEmbedded, this.maxDepth,
+                    this.includeExtractEmbeddedPattern,
                     this.excludeExtractEmbeddedPattern, metadataParser, parseContextFactory);
         }
 
