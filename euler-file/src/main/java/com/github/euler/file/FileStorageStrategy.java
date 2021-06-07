@@ -32,16 +32,19 @@ public class FileStorageStrategy implements StorageStrategy {
     }
 
     public URI createFile(String baseName, String suffix) {
-        String uuid = UUID.randomUUID().toString();
-        File dir = new File(root, uuid.substring(0, 1) + "/" + uuid.substring(1, 2));
+        if (baseName.length() < 2) {
+            String uuid = UUID.randomUUID().toString();
+            baseName = uuid + baseName;
+        }
+        File dir = new File(root, baseName.substring(0, 1) + "/" + baseName.substring(1, 2));
         dir.mkdirs();
-        String name = uuid + "-" + baseName + suffix;
+        String name = baseName + suffix;
         File file = new File(dir, name);
         try {
             file.createNewFile();
             return file.toURI();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Could not create file " + file.getAbsolutePath(), e);
         }
     }
 
@@ -53,6 +56,24 @@ public class FileStorageStrategy implements StorageStrategy {
     @Override
     public URI createFile() {
         return createFile(this.suffix);
+    }
+
+    @Override
+    public URI createFileWithName(String name) {
+        File dir;
+        String baseName = FilenameUtils.getBaseName(name);
+        if (baseName.length() < 2) {
+            baseName = UUID.randomUUID().toString();
+        }
+        dir = new File(root, baseName.substring(0, 1) + "/" + baseName.substring(1, 2));
+        dir.mkdirs();
+        File file = new File(dir, name);
+        try {
+            file.createNewFile();
+            return file.toURI();
+        } catch (IOException e) {
+            throw new RuntimeException("Could not create file " + file.getAbsolutePath(), e);
+        }
     }
 
 }

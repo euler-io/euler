@@ -59,4 +59,11 @@ public class PreviewCacheStorageStrategy implements StorageStrategy {
         return createFile(this.suffix);
     }
 
+    @Override
+    public URI createFileWithName(String name) {
+        File dir = new File(root, name);
+        dir.mkdirs();
+        return dir.toURI();
+    }
+
 }

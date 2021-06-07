@@ -15,7 +15,6 @@ public class DefaultEmbeddedNamingStrategy implements EmbeddedNamingStrategy {
     @Override
     public String nameEmbedded(URI parentURI, ProcessingContext parentContext, Metadata embeddedMetadata) {
         String resourceName = embeddedMetadata.get(TikaMetadataKeys.RESOURCE_NAME_KEY);
-        System.out.println(embeddedMetadata);
         if (resourceName == null) {
             resourceName = "embedded_" + UUID.randomUUID().toString().toLowerCase();
         }

@@ -9,6 +9,7 @@ import java.net.URI;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.tika.exception.EncryptedDocumentException;
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.metadata.TikaCoreProperties;
@@ -107,10 +108,14 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
     }
 
     protected ProcessingContext parse(InputStream in, Writer out, ProcessingContext ctx) throws IOException, SAXException, TikaException {
-        Metadata metadata = new Metadata();
-        ParseContext parseContext = parseContextFactory.create(ctx);
-        parser.parse(in, new BodyContentHandler(out), metadata, parseContext);
-        return metadataParser.parse(metadata);
+        try {
+            Metadata metadata = new Metadata();
+            ParseContext parseContext = parseContextFactory.create(ctx);
+            parser.parse(in, new BodyContentHandler(out), metadata, parseContext);
+            return metadataParser.parse(metadata);
+        } catch (EncryptedDocumentException e) {
+            return ProcessingContext.builder().metadata(CommonMetadata.ENCRYPTED, true).build();
+        }
     }
 
     private URI createParsedContent(URI itemURI) throws IOException {
@@ -121,7 +126,7 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
     public void newEmbedded(InputStream in, Metadata metadata) {
         String name = embeddedNamingStrategy.nameEmbedded(currentMsg.itemURI, currentMsg.ctx, metadata);
 
-        URI embeddedFile = embeddedContentStrategy.createFile();
+        URI embeddedFile = embeddedContentStrategy.createFileWithName(name);
         try (OutputStream out = sf.openOutputStream(embeddedFile, ProcessingContext.EMPTY)) {
             IOUtils.copy(in, out);
         } catch (IOException e) {

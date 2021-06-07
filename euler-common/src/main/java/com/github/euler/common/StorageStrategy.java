@@ -12,4 +12,6 @@ public interface StorageStrategy {
 
     URI createFile(String suffix);
 
+    URI createFileWithName(String name);
+
 }
