@@ -34,11 +34,13 @@ public class ParseTaskConfigConverter extends AbstractTaskConfigConverter {
         MetadataParser metadataParser = typeConfigConverter.convert(AbstractMetadataParserConfigConverter.TYPE, config.getValue("metadata-parser"), ctx);
         EmbeddedNamingStrategy embeddedNamingStrategy = typeConfigConverter.convert(AbstractEmbeddedNamingStrategyConfigConverter.TYPE, config.getValue("embedded-naming-strategy"),
                 ctx);
+        ParseContextFactory parseContextFactory = typeConfigConverter.convert(AbstractParseContextFactory.TYPE, config.getValue("parse-context"), ctx);
         return ParseTask.builder(name, streamFactory, parsedContentStrategy, embeddedContentStrategy)
                 .setExtractEmbedded(extractEmbedded)
                 .setMaxDepth(maxDepth)
                 .setMetadataParser(metadataParser)
                 .setEmbeddedNamingStrategy(embeddedNamingStrategy)
+                .setParseContextFactory(parseContextFactory)
                 .build();
     }
 

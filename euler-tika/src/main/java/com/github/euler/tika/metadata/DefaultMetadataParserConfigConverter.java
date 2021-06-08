@@ -20,8 +20,8 @@ public class DefaultMetadataParserConfigConverter extends AbstractMetadataParser
     @Override
     public MetadataParser convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
         config = config.withFallback(getDefaultConfig());
-        String includePattern = config.getString("include-field-pattern");
-        String excludePattern = config.getString("exclude-field-pattern");
+        String includePattern = config.getString("include-field-regex");
+        String excludePattern = config.getString("exclude-field-regex");
         List<MetadataFieldParser> fieldParsers = config.getList("field-parsers").stream()
                 .map(c -> convertFieldParser(configContext, typeConfigConverter, c))
                 .collect(Collectors.toList());

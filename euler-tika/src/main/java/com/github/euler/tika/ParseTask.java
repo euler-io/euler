@@ -83,7 +83,7 @@ public class ParseTask implements Task {
         private StorageStrategy parsedContentStrategy;
         private StorageStrategy embeddedContentStrategy;
         private MetadataParser metadataParser = new DefaultMetadataParser();
-        private ParseContextFactory parseContextFactory = new FixedParseContextFactory(new ParseContext());
+        private ParseContextFactory parseContextFactory = new DefaultParseContextFactory();
         private EmbeddedNamingStrategy embeddedNamingStrategy = new DefaultEmbeddedNamingStrategy();
         private boolean extractEmbedded = false;
         private int maxDepth = 10;

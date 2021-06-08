@@ -48,7 +48,8 @@ public class TikaExtension implements EulerExtension {
                 new ValueReplaceMetadataOperationConfigConverter(),
                 new DefaultEmbeddedNamingStrategyConfigConverter(),
                 new MimetypeEmbeddedNamingStrategyConfigConverter(),
-                new RFC822EmbeddedNamingStrategyConfigConverter());
+                new RFC822EmbeddedNamingStrategyConfigConverter(),
+                new DefaultParseContextFactoryConfigConverter());
     }
 
     @Override
