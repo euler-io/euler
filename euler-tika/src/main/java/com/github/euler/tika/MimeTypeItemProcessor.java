@@ -15,12 +15,18 @@ import com.github.euler.core.ProcessingContext;
 
 public class MimeTypeItemProcessor implements ItemProcessor {
 
+    private final String field;
     private final StreamFactory sf;
     private final Detector detector;
 
-    public MimeTypeItemProcessor(StreamFactory sf, Detector detector) {
+    public MimeTypeItemProcessor(String field, StreamFactory sf, Detector detector) {
+        this.field = field;
         this.sf = sf;
         this.detector = detector;
+    }
+
+    public MimeTypeItemProcessor(StreamFactory sf, Detector detector) {
+        this(CommonMetadata.MIME_TYPE, sf, detector);
     }
 
     @Override
@@ -44,7 +50,7 @@ public class MimeTypeItemProcessor implements ItemProcessor {
             }
         }
         return ProcessingContext.builder()
-                .metadata(CommonMetadata.MIME_TYPE, mimeType)
+                .metadata(this.field, mimeType)
                 .build();
     }
 

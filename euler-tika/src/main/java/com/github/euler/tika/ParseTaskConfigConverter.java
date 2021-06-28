@@ -26,21 +26,19 @@ public class ParseTaskConfigConverter extends AbstractTaskConfigConverter {
     public Task convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter, TasksConfigConverter tasksConfigConverter) {
         config = config.withFallback(getDefaultConfig());
         String name = getName(config, tasksConfigConverter);
-        boolean extractEmbedded = config.getBoolean("extract-embedded");
-        int maxDepth = config.getInt("max-extraction-depth");
         StreamFactory streamFactory = ctx.getRequired(StreamFactory.class);
         StorageStrategy parsedContentStrategy = typeConfigConverter.convert("storage-strategy", config.getValue("parsed-storage-strategy"), ctx);
-        StorageStrategy embeddedContentStrategy = typeConfigConverter.convert("storage-strategy", config.getValue("embedded-storage-strategy"), ctx);
+        StorageStrategy embeddedContentStrategy = typeConfigConverter.convert("storage-strategy", config.getValue("embedded.storage-strategy"), ctx);
         MetadataParser metadataParser = typeConfigConverter.convert(AbstractMetadataParserConfigConverter.TYPE, config.getValue("metadata-parser"), ctx);
-        EmbeddedNamingStrategy embeddedNamingStrategy = typeConfigConverter.convert(AbstractEmbeddedNamingStrategyConfigConverter.TYPE, config.getValue("embedded-naming-strategy"),
+        EmbeddedNamingStrategy embeddedNamingStrategy = typeConfigConverter.convert(AbstractEmbeddedNamingStrategyConfigConverter.TYPE, config.getValue("embedded.naming-strategy"),
                 ctx);
         ParseContextFactory parseContextFactory = typeConfigConverter.convert(AbstractParseContextFactory.TYPE, config.getValue("parse-context"), ctx);
+        EmbeddedStrategy embeddedStrategy = typeConfigConverter.convert(AbstractEmbeddedStrategeyConfigConverter.TYPE, config.getValue("embedded.parsing-strategy"), ctx);
         return ParseTask.builder(name, streamFactory, parsedContentStrategy, embeddedContentStrategy)
-                .setExtractEmbedded(extractEmbedded)
-                .setMaxDepth(maxDepth)
                 .setMetadataParser(metadataParser)
                 .setEmbeddedNamingStrategy(embeddedNamingStrategy)
                 .setParseContextFactory(parseContextFactory)
+                .setEmbeddedStrategy(embeddedStrategy)
                 .build();
     }
 

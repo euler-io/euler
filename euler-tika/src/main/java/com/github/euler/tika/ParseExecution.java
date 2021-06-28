@@ -41,12 +41,11 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 public class ParseExecution extends AbstractBehavior<TaskCommand> implements EmbeddedItemListener {
 
     public static Behavior<TaskCommand> create(Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy,
-            boolean extractEmbedded, int maxDepth, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
-            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy) {
+            MetadataParser metadataParser,
+            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy, EmbeddedStrategy embeddedStrategy) {
         return Behaviors
-                .setup((context) -> new ParseExecution(context, parser, sf, parsedContentStrategy, embeddedContentStrategy, extractEmbedded, maxDepth,
-                        includeExtractEmbeddedPattern,
-                        excludeExtractEmbeddedPattern, metadataParser, parseContextFactory, embeddedNamingStrategy));
+                .setup((context) -> new ParseExecution(context, parser, sf, parsedContentStrategy, embeddedContentStrategy, metadataParser, parseContextFactory,
+                        embeddedNamingStrategy, embeddedStrategy));
     }
 
     private final Parser parser;
@@ -56,21 +55,22 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
     private final MetadataParser metadataParser;
     private final ParseContextFactory parseContextFactory;
     private final EmbeddedNamingStrategy embeddedNamingStrategy;
+    private final EmbeddedStrategy embeddedStrategy;
 
     private JobTaskToProcess currentMsg;
 
     protected ParseExecution(ActorContext<TaskCommand> context, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy,
-            boolean extractEmbedded, int maxDepth, String includeExtractEmbeddedPattern, String excludeExtractEmbeddedPattern, MetadataParser metadataParser,
-            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy) {
+            MetadataParser metadataParser, ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy, EmbeddedStrategy embeddedStrategy) {
         super(context);
         this.parser = parser;
         this.sf = sf;
         this.parsedContentStrategy = parsedContentStrategy;
         this.embeddedContentStrategy = embeddedContentStrategy;
         this.metadataParser = metadataParser;
-        this.parseContextFactory = new ParseContextFactoryWrapper(parseContextFactory, this, extractEmbedded, maxDepth, includeExtractEmbeddedPattern,
-                excludeExtractEmbeddedPattern);
+        this.parseContextFactory = new ParseContextFactoryWrapper(parseContextFactory, embeddedStrategy);
         this.embeddedNamingStrategy = embeddedNamingStrategy;
+        this.embeddedStrategy = embeddedStrategy;
+        this.embeddedStrategy.setListener(this);
     }
 
     @Override
