@@ -4,13 +4,13 @@
 
     <groupId>com.github.euler-io</groupId>
     <artifactId>euler-tika</artifactId>
-    <version>0.7.3</version>
+    <version>0.7.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>com.github.euler-io</groupId>
         <artifactId>euler</artifactId>
-        <version>0.7.3</version>
+        <version>0.7.4-SNAPSHOT</version>
     </parent>
 
     <name>Euler - Tika</name>
