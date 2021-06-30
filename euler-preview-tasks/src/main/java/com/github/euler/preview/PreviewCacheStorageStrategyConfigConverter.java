@@ -9,6 +9,7 @@ import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigRenderOptions;
 
 public class PreviewCacheStorageStrategyConfigConverter extends AbstractStorageStrategyConfigConverter {
 
@@ -19,12 +20,16 @@ public class PreviewCacheStorageStrategyConfigConverter extends AbstractStorageS
 
     @Override
     public StorageStrategy convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
-        config = config.withFallback(getDefaultConfig());
+        config = getConfig(config);
         File root = new File(config.getString("root"));
         String suffix = config.getString("suffix");
         int width = config.getInt("width");
         int height = config.getInt("height");
         return new PreviewCacheStorageStrategy(root, suffix, width, height);
+    }
+
+    protected Config getConfig(Config config) {
+        return ConfigFactory.parseString(config.root().render(ConfigRenderOptions.concise())).withFallback(getDefaultConfig()).resolve();
     }
 
     private Config getDefaultConfig() {

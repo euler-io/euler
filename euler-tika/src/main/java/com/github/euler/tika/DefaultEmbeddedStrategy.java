@@ -2,6 +2,7 @@ package com.github.euler.tika;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -50,9 +51,9 @@ public class DefaultEmbeddedStrategy extends EmbeddedStrategy {
     }
 
     private List<Pattern> toPattern(List<String> regex) {
-        return regex.stream()
+        return Collections.unmodifiableList(regex.stream()
                 .map(r -> Pattern.compile(r))
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()));
     }
 
     @Override
@@ -118,6 +119,34 @@ public class DefaultEmbeddedStrategy extends EmbeddedStrategy {
     private boolean anyMatches(List<Pattern> patterns, String value) {
         return patterns.stream()
                 .anyMatch(p -> p.matcher(value).matches());
+    }
+
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    public List<Pattern> getIncludeParseEmbeddedPatterns() {
+        return includeParseEmbeddedPatterns;
+    }
+
+    public List<Pattern> getExcludeParseEmbeddedPatterns() {
+        return excludeParseEmbeddedPatterns;
+    }
+
+    public List<Pattern> getIncludeExtractEmbeddedPatterns() {
+        return includeExtractEmbeddedPatterns;
+    }
+
+    public List<Pattern> getExcludeExtractEmbeddedPatterns() {
+        return excludeExtractEmbeddedPatterns;
+    }
+
+    public String getMimeTypeField() {
+        return mimeTypeField;
+    }
+
+    public boolean isOutputName() {
+        return outputName;
     }
 
     public static Builder builder() {

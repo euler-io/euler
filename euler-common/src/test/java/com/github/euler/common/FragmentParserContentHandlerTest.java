@@ -262,7 +262,6 @@ public class FragmentParserContentHandlerTest {
 
         ContentHandler handler = new BodyContentHandler(new FragmentParserContentHandler(1000, 50, listener));
         try (InputStream in = FragmentParserContentHandlerTest.class.getClassLoader().getResourceAsStream("sample-file.txt")) {
-            System.out.println(parser);
             parser.parse(in, handler, new Metadata(), new ParseContext());
         }
 

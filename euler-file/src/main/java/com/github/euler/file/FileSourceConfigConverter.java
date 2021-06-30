@@ -12,6 +12,7 @@ import com.github.euler.core.PausableSourceExecution;
 import com.github.euler.core.SourceCommand;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigRenderOptions;
 
 import akka.actor.typed.Behavior;
 
@@ -24,7 +25,7 @@ public class FileSourceConfigConverter extends AbstractSourceConfigConverter {
 
     @Override
     public Behavior<SourceCommand> convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
-        config = config.withFallback(getDefaultConfig());
+        config = getConfig(config);
         FileSource.Builder builder = FileSource.builder();
         builder.setMaxItemsPerYield(config.getInt("max-items-per-yield"));
         builder.setNotifyDirectories(config.getBoolean("notify-directories"));
@@ -34,6 +35,10 @@ public class FileSourceConfigConverter extends AbstractSourceConfigConverter {
         builder.setRegex(regex);
 
         return PausableSourceExecution.create(builder.build());
+    }
+
+    protected Config getConfig(Config config) {
+        return ConfigFactory.parseString(config.root().render(ConfigRenderOptions.concise())).withFallback(getDefaultConfig()).resolve();
     }
 
     protected Integer getFlags(List<String> flags) {

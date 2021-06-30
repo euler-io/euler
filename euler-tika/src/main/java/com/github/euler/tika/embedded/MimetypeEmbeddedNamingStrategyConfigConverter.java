@@ -9,6 +9,7 @@ import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.tika.EmbeddedNamingStrategy;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigRenderOptions;
 import com.typesafe.config.ConfigValue;
 
 public class MimetypeEmbeddedNamingStrategyConfigConverter extends AbstractEmbeddedNamingStrategyConfigConverter {
@@ -20,7 +21,7 @@ public class MimetypeEmbeddedNamingStrategyConfigConverter extends AbstractEmbed
 
     @Override
     public EmbeddedNamingStrategy convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
-        config = config.withFallback(getDefaultConfig());
+        config = getConfig(config);
         EmbeddedNamingStrategy defaultStrategy = typeConfigConverter.convert(AbstractEmbeddedNamingStrategyConfigConverter.TYPE, config.getValue("default"), configContext);
         Map<String, EmbeddedNamingStrategy> mapping = config.getObject("mapping").entrySet().stream()
                 .collect(Collectors.toMap(e -> e.getKey(), e -> convert(e.getValue(), configContext, typeConfigConverter)));
@@ -29,6 +30,10 @@ public class MimetypeEmbeddedNamingStrategyConfigConverter extends AbstractEmbed
 
     private EmbeddedNamingStrategy convert(ConfigValue value, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
         return typeConfigConverter.convert(AbstractEmbeddedNamingStrategyConfigConverter.TYPE, value, configContext);
+    }
+
+    protected Config getConfig(Config config) {
+        return ConfigFactory.parseString(config.root().render(ConfigRenderOptions.concise())).withFallback(getDefaultConfig()).resolve();
     }
 
     protected Config getDefaultConfig() {

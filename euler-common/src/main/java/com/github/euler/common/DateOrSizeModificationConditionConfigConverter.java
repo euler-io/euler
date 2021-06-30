@@ -9,6 +9,7 @@ import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.core.BarrierCondition;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigRenderOptions;
 
 public class DateOrSizeModificationConditionConfigConverter extends AbstractBarrierConditionConfigConverter {
 
@@ -19,10 +20,14 @@ public class DateOrSizeModificationConditionConfigConverter extends AbstractBarr
 
     @Override
     public BarrierCondition convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
-        config = config.withFallback(getDefaultConfig());
+        config = getConfig(config);
         String dateFormat = config.getString("date-format");
         Locale dateLocale = new Locale(config.getString("date-locale.language"), config.getString("date-locale.country"));
         return new DateOrSizeModificationCondition(dateFormat, dateLocale);
+    }
+
+    protected Config getConfig(Config config) {
+        return ConfigFactory.parseString(config.root().render(ConfigRenderOptions.concise())).withFallback(getDefaultConfig()).resolve();
     }
 
     protected Config getDefaultConfig() {

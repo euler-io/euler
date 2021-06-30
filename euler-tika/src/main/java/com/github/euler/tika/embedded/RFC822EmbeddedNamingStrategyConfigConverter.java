@@ -7,6 +7,7 @@ import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.tika.EmbeddedNamingStrategy;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigRenderOptions;
 
 public class RFC822EmbeddedNamingStrategyConfigConverter extends AbstractEmbeddedNamingStrategyConfigConverter {
 
@@ -17,9 +18,13 @@ public class RFC822EmbeddedNamingStrategyConfigConverter extends AbstractEmbedde
 
     @Override
     public EmbeddedNamingStrategy convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
-        config = config.withFallback(getDefaultConfig());
+        config = getConfig(config);
         String identifierRegex = config.getString("identifier-regex");
         return new RFC822EmbeddedNamingStrategy(identifierRegex);
+    }
+
+    protected Config getConfig(Config config) {
+        return ConfigFactory.parseString(config.root().render(ConfigRenderOptions.concise())).withFallback(getDefaultConfig()).resolve();
     }
 
     protected Config getDefaultConfig() {

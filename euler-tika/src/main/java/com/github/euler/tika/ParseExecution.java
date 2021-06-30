@@ -67,7 +67,7 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         this.parsedContentStrategy = parsedContentStrategy;
         this.embeddedContentStrategy = embeddedContentStrategy;
         this.metadataParser = metadataParser;
-        this.parseContextFactory = new ParseContextFactoryWrapper(parseContextFactory, embeddedStrategy);
+        this.parseContextFactory = new ParseContextFactoryWrapper(parser, parseContextFactory, embeddedStrategy);
         this.embeddedNamingStrategy = embeddedNamingStrategy;
         this.embeddedStrategy = embeddedStrategy;
         this.embeddedStrategy.setListener(this);

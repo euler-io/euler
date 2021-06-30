@@ -24,7 +24,7 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
 
     @Override
     public Behavior<SourceCommand> convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {
-        config = config.withFallback(getDefaultConfig());
+        config = getConfig(config);
         RestHighLevelClient client = getClient(config, ctx, typeConfigConverter);
         String query = config.getConfig("query").root().render(ConfigRenderOptions.concise());
         int size = config.getInt("size");
@@ -32,6 +32,10 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
         String[] sourceIncludes = config.getStringList("_source.includes").stream().toArray(s -> new String[s]);
         String[] sourceExcludes = config.getStringList("_source.excludes").stream().toArray(s -> new String[s]);
         return PausableSourceExecution.create(new ElasticsearchSource(client, query, size, scroll, sourceIncludes, sourceExcludes));
+    }
+
+    protected Config getConfig(Config config) {
+        return ConfigFactory.parseString(config.root().render(ConfigRenderOptions.concise())).withFallback(getDefaultConfig()).resolve();
     }
 
     protected RestHighLevelClient getClient(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {

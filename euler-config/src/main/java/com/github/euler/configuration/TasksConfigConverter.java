@@ -2,6 +2,7 @@ package com.github.euler.configuration;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.github.euler.core.Task;
@@ -63,6 +64,7 @@ public class TasksConfigConverter implements ContextConfigConverter {
             return null;
         }
         TaskConfigConverter converter = taskConverterMap.get(type);
+        Objects.requireNonNull(converter, () -> "Converter not found for task " + type);
         return converter.convert(config, configContext, typeConfigConverter, this);
     }
 

@@ -113,12 +113,13 @@ public class EulerConfigConverter {
         if (!ctx.contains(EulerHooks.class)) {
             builder.put(EulerHooks.class, new EulerHooks());
         }
+        TypesConfigConverter typesConfigConverter = new TypesConfigConverter(typeConverters);
         for (Entry<String, ConfigValue> e : configEntries) {
             String path = e.getKey();
             if (converters.containsKey(path)) {
                 ConfigValue value = e.getValue();
                 ContextConfigConverter converter = converters.get(path);
-                ConfigContext converted = converter.convert(value, builder.build(), new TypesConfigConverter(typeConverters));
+                ConfigContext converted = converter.convert(value, builder.build(), typesConfigConverter);
                 builder.putAll(converted);
             } else {
                 throw new IllegalArgumentException(ContextConfigConverter.class.getSimpleName() + " not found for path '" + path + "'.");

@@ -8,6 +8,7 @@ import com.github.euler.configuration.TypesConfigConverter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigRenderOptions;
 
 public class DefaultEmbeddedStrategyConfigConverter extends AbstractEmbeddedStrategeyConfigConverter {
 
@@ -18,7 +19,7 @@ public class DefaultEmbeddedStrategyConfigConverter extends AbstractEmbeddedStra
 
     @Override
     public EmbeddedStrategy convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
-        config = config.withFallback(getDefaultConfig());
+        config = getConfig(config);
         int maxDepth = config.getInt("max-depth");
         List<String> includeParseEmbeddedRegex = getListOrString("parse.include-regex", config);
         List<String> excludeParseEmbeddedRegex = getListOrString("parse.exclude-regex", config);
@@ -28,6 +29,10 @@ public class DefaultEmbeddedStrategyConfigConverter extends AbstractEmbeddedStra
         boolean outputName = config.getBoolean("output-name");
         return new DefaultEmbeddedStrategy(maxDepth, includeParseEmbeddedRegex, excludeParseEmbeddedRegex, includeExtractEmbeddedRegex, excludeExtractEmbeddedRegex, mimeTypeField,
                 outputName);
+    }
+
+    protected Config getConfig(Config config) {
+        return ConfigFactory.parseString(config.root().render(ConfigRenderOptions.concise())).withFallback(getDefaultConfig()).resolve();
     }
 
     private List<String> getListOrString(String path, Config config) {
