@@ -6,6 +6,9 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -86,6 +89,10 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         URI parsedContent = createParsedContent(msg.itemURI);
         builder.context(CommonContext.PARSED_CONTENT_FILE, parsedContent);
 
+        if (msg.ctx.context(CommonContext.ID) != null) {
+            builder.metadata(CommonMetadata.PARENTS, msg.ctx.metadata(CommonMetadata.PARENTS, List.of()));
+        }
+
         InputStream in = null;
         Writer out = null;
         try {
@@ -144,6 +151,13 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
 
         Integer depth = currentMsg.ctx.context(CommonContext.EXTRACTION_DEPTH, 0);
         builder.context(CommonContext.EXTRACTION_DEPTH, depth + 1);
+
+        String parentId = (String) currentMsg.ctx.context(CommonContext.ID);
+        if (parentId != null) {
+            List<String> parents = new ArrayList<>(currentMsg.ctx.metadata(CommonMetadata.PARENTS, List.of()));
+            parents.add(parentId);
+            builder.metadata(CommonMetadata.PARENTS, Collections.unmodifiableList(parents));
+        }
 
         ProcessingContext ctx = builder.build();
 
