@@ -25,7 +25,8 @@ public class PreviewCacheStorageStrategyConfigConverter extends AbstractStorageS
         String suffix = config.getString("suffix");
         int width = config.getInt("width");
         int height = config.getInt("height");
-        return new PreviewCacheStorageStrategy(root, suffix, width, height);
+        String format = config.getString("format");
+        return new PreviewCacheStorageStrategy(root, suffix, width, height, format);
     }
 
     protected Config getConfig(Config config) {

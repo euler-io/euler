@@ -10,7 +10,11 @@ public class PreviewExtension implements EulerExtension {
 
     @Override
     public List<TypeConfigConverter<?>> typeConverters() {
-        return List.of(new ImagePreviewGeneratorConfigConverter(), new PDFBoxPreviewGeneratorConfigConverter(), new JODConverterPreviewGeneratorConfigConverter());
+        return List.of(
+                new ImagePreviewGeneratorConfigConverter(),
+                new PDFBoxPreviewGeneratorConfigConverter(),
+                new JODConverterPreviewGeneratorConfigConverter(),
+                new PreviewCacheStorageStrategyConfigConverter());
     }
 
     @Override

@@ -2,7 +2,9 @@ package com.github.euler.preview;
 
 import java.io.File;
 import java.net.URI;
+import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -12,18 +14,21 @@ import com.github.euler.file.FileUtils;
 
 public class PreviewCacheStorageStrategy implements StorageStrategy {
 
+    private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("\\$\\{(\\w+)\\}");
+
     private final File root;
     private final String suffix;
-
     private final int width;
     private final int height;
+    private final String format;
 
-    public PreviewCacheStorageStrategy(File root, String suffix, int width, int height) {
+    public PreviewCacheStorageStrategy(File root, String suffix, int width, int height, String format) {
         super();
         this.root = root;
         this.suffix = suffix;
         this.width = width;
         this.height = height;
+        this.format = format;
     }
 
     @Override
@@ -48,10 +53,23 @@ public class PreviewCacheStorageStrategy implements StorageStrategy {
     }
 
     public URI createFile(String baseName, String hash, String suffix) {
-        String fileName = baseName + "-" + height + "x" + width + "-" + hash + suffix;
+        String fileName = format(baseName, hash, this.suffix);
         File dir = new File(root, fileName);
-        dir.mkdirs();
+        dir.getParentFile().mkdirs();
         return dir.toURI();
+    }
+
+    protected String format(String fileName, String hash, String extension) {
+        Map<String, String> params = Map.of("fileName", fileName,
+                "hash", hash,
+                "height", Integer.toString(height),
+                "width", Integer.toString(width),
+                "page", "0",
+                "extension", extension);
+        return PLACEHOLDER_PATTERN.matcher(format).replaceAll(r -> {
+            String key = r.group(1);
+            return params.getOrDefault(key, "undefined");
+        });
     }
 
     @Override
