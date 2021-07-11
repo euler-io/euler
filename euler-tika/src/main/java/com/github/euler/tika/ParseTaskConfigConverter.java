@@ -33,12 +33,12 @@ public class ParseTaskConfigConverter extends AbstractTaskConfigConverter {
         EmbeddedNamingStrategy embeddedNamingStrategy = typeConfigConverter.convert(AbstractEmbeddedNamingStrategyConfigConverter.TYPE, config.getValue("embedded.naming-strategy"),
                 ctx);
         ParseContextFactory parseContextFactory = typeConfigConverter.convert(AbstractParseContextFactory.TYPE, config.getValue("parse-context"), ctx);
-        EmbeddedStrategy embeddedStrategy = typeConfigConverter.convert(AbstractEmbeddedStrategeyConfigConverter.TYPE, config.getValue("embedded.parsing-strategy"), ctx);
+        EmbeddedStrategyFactory embeddedStrategyFactory = typeConfigConverter.convert(AbstractEmbeddedStrategyFactoryConfigConverter.TYPE, config.getValue("embedded.parsing-strategy"), ctx);
         return ParseTask.builder(name, streamFactory, parsedContentStrategy, embeddedContentStrategy)
                 .setMetadataParser(metadataParser)
                 .setEmbeddedNamingStrategy(embeddedNamingStrategy)
                 .setParseContextFactory(parseContextFactory)
-                .setEmbeddedStrategy(embeddedStrategy)
+                .setEmbeddedStrategy(embeddedStrategyFactory)
                 .build();
     }
 

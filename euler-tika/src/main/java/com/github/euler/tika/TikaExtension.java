@@ -52,7 +52,7 @@ public class TikaExtension implements EulerExtension {
                 new MimetypeEmbeddedNamingStrategyConfigConverter(),
                 new RFC822EmbeddedNamingStrategyConfigConverter(),
                 new DefaultParseContextFactoryConfigConverter(),
-                new DefaultEmbeddedStrategyConfigConverter());
+                new DefaultEmbeddedStrategyFactoryConfigConverter());
     }
 
     @Override

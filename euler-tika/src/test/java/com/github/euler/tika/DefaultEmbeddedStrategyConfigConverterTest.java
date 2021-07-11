@@ -14,8 +14,8 @@ public class DefaultEmbeddedStrategyConfigConverterTest {
     public void testEmptyConvert() {
         Config config = ConfigFactory.parseString("{type: default}");
         ConfigContext configContext = ConfigContext.EMPTY;
-        DefaultEmbeddedStrategyConfigConverter converter = new DefaultEmbeddedStrategyConfigConverter();
-        DefaultEmbeddedStrategy converted = (DefaultEmbeddedStrategy) converter.convert(config, configContext, null);
+        DefaultEmbeddedStrategyFactoryConfigConverter converter = new DefaultEmbeddedStrategyFactoryConfigConverter();
+        DefaultEmbeddedStrategy converted = (DefaultEmbeddedStrategy) converter.convert(config, configContext, null).newEmbeddedStrategy(null);
         assertEquals(10, converted.getMaxDepth());
     }
 
@@ -23,8 +23,8 @@ public class DefaultEmbeddedStrategyConfigConverterTest {
     public void testNotEmptyConvert() {
         Config config = ConfigFactory.parseString("{type: default, max-depth: 5}");
         ConfigContext configContext = ConfigContext.EMPTY;
-        DefaultEmbeddedStrategyConfigConverter converter = new DefaultEmbeddedStrategyConfigConverter();
-        DefaultEmbeddedStrategy converted = (DefaultEmbeddedStrategy) converter.convert(config, configContext, null);
+        DefaultEmbeddedStrategyFactoryConfigConverter converter = new DefaultEmbeddedStrategyFactoryConfigConverter();
+        DefaultEmbeddedStrategy converted = (DefaultEmbeddedStrategy) converter.convert(config, configContext, null).newEmbeddedStrategy(null);
         assertEquals(5, converted.getMaxDepth());
     }
 

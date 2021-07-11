@@ -20,7 +20,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import com.github.euler.common.CommonContext;
-import com.github.euler.common.CommonMetadata;
 import com.github.euler.core.ProcessingContext;
 
 public class DefaultEmbeddedStrategy extends EmbeddedStrategy {
@@ -147,114 +146,6 @@ public class DefaultEmbeddedStrategy extends EmbeddedStrategy {
 
     public boolean isOutputName() {
         return outputName;
-    }
-
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-
-        private int maxDepth = 10;
-        private List<String> includeParseEmbeddedRegex = List.of(".+");
-        private List<String> excludeParseEmbeddedRegex = List.of("a^");
-        private List<String> includeExtractEmbeddedRegex = List.of("a^");
-        private List<String> excludeExtractEmbeddedRegex = List.of("a^");
-        private String mimeTypeField = CommonMetadata.MIME_TYPE;
-        private boolean outputName = false;
-
-        private Builder() {
-            super();
-        }
-
-        public int getMaxDepth() {
-            return maxDepth;
-        }
-
-        public Builder setMaxDepth(int maxDepth) {
-            this.maxDepth = maxDepth;
-            return this;
-        }
-
-        public List<String> getIncludeParseEmbeddedRegex() {
-            return includeParseEmbeddedRegex;
-        }
-
-        public Builder setIncludeParseEmbeddedRegex(List<String> includeParseEmbeddedRegex) {
-            this.includeParseEmbeddedRegex = includeParseEmbeddedRegex;
-            return this;
-        }
-
-        public Builder setIncludeParseEmbeddedRegex(String includeParseEmbeddedRegex) {
-            this.includeParseEmbeddedRegex = List.of(includeParseEmbeddedRegex);
-            return this;
-        }
-
-        public List<String> getExcludeParseEmbeddedRegex() {
-            return excludeParseEmbeddedRegex;
-        }
-
-        public Builder setExcludeParseEmbeddedRegex(List<String> excludeParseEmbeddedRegex) {
-            this.excludeParseEmbeddedRegex = excludeParseEmbeddedRegex;
-            return this;
-        }
-
-        public Builder setExcludeParseEmbeddedRegex(String excludeParseEmbeddedRegex) {
-            this.excludeParseEmbeddedRegex = List.of(excludeParseEmbeddedRegex);
-            return this;
-        }
-
-        public List<String> getIncludeExtractEmbeddedRegex() {
-            return includeExtractEmbeddedRegex;
-        }
-
-        public Builder setIncludeExtractEmbeddedRegex(List<String> includeExtractEmbeddedRegex) {
-            this.includeExtractEmbeddedRegex = includeExtractEmbeddedRegex;
-            return this;
-        }
-
-        public Builder setIncludeExtractEmbeddedRegex(String includeExtractEmbeddedRegex) {
-            this.includeExtractEmbeddedRegex = List.of(includeExtractEmbeddedRegex);
-            return this;
-        }
-
-        public List<String> getExcludeExtractEmbeddedRegex() {
-            return excludeExtractEmbeddedRegex;
-        }
-
-        public Builder setExcludeExtractEmbeddedRegex(List<String> excludeExtractEmbeddedRegex) {
-            this.excludeExtractEmbeddedRegex = excludeExtractEmbeddedRegex;
-            return this;
-        }
-
-        public Builder setExcludeExtractEmbeddedRegex(String excludeExtractEmbeddedRegex) {
-            this.excludeExtractEmbeddedRegex = List.of(excludeExtractEmbeddedRegex);
-            return this;
-        }
-
-        public String getMimeTypeField() {
-            return mimeTypeField;
-        }
-
-        public Builder setMimeTypeField(String mimeTypeField) {
-            this.mimeTypeField = mimeTypeField;
-            return this;
-        }
-
-        public boolean isOutputName() {
-            return outputName;
-        }
-
-        public Builder setOutputName(boolean outputName) {
-            this.outputName = outputName;
-            return this;
-        }
-
-        public DefaultEmbeddedStrategy build() {
-            return new DefaultEmbeddedStrategy(maxDepth, includeParseEmbeddedRegex, excludeParseEmbeddedRegex, includeExtractEmbeddedRegex, excludeExtractEmbeddedRegex,
-                    mimeTypeField, outputName);
-        }
-
     }
 
 }

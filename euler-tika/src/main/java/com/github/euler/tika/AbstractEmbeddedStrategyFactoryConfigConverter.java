@@ -2,11 +2,11 @@ package com.github.euler.tika;
 
 import com.github.euler.configuration.TypeConfigConverter;
 
-public abstract class AbstractEmbeddedStrategeyConfigConverter implements TypeConfigConverter<EmbeddedStrategy> {
+public abstract class AbstractEmbeddedStrategyFactoryConfigConverter implements TypeConfigConverter<EmbeddedStrategyFactory> {
 
     public static final String TYPE = "embedded-strategy";
 
-    public AbstractEmbeddedStrategeyConfigConverter() {
+    public AbstractEmbeddedStrategyFactoryConfigConverter() {
         super();
     }
 

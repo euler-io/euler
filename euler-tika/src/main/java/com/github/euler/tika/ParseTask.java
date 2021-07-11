@@ -27,10 +27,10 @@ public class ParseTask implements Task {
     private final MetadataParser metadataParser;
     private final ParseContextFactory parseContextFactory;
     private final EmbeddedNamingStrategy embeddedNamingStrategy;
-    private final EmbeddedStrategy embeddedStrategy;
+    private final EmbeddedStrategyFactory embeddedStrategyFactory;
 
     private ParseTask(String name, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy, MetadataParser metadataParser,
-            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy, EmbeddedStrategy embeddedStrategy) {
+            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy, EmbeddedStrategyFactory embeddedStrategyFactory) {
         this.name = name;
         this.parser = parser;
         this.sf = sf;
@@ -39,7 +39,7 @@ public class ParseTask implements Task {
         this.metadataParser = metadataParser;
         this.parseContextFactory = parseContextFactory;
         this.embeddedNamingStrategy = embeddedNamingStrategy;
-        this.embeddedStrategy = embeddedStrategy;
+        this.embeddedStrategyFactory = embeddedStrategyFactory;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class ParseTask implements Task {
     @Override
     public Behavior<TaskCommand> behavior() {
         return ParseExecution.create(this.parser, this.sf, this.parsedContentStrategy, this.embeddedContentStrategy, this.metadataParser,
-                this.parseContextFactory, this.embeddedNamingStrategy, this.embeddedStrategy);
+                this.parseContextFactory, this.embeddedNamingStrategy, this.embeddedStrategyFactory);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class ParseTask implements Task {
         private MetadataParser metadataParser = new DefaultMetadataParser();
         private ParseContextFactory parseContextFactory = new DefaultParseContextFactory();
         private EmbeddedNamingStrategy embeddedNamingStrategy = new DefaultEmbeddedNamingStrategy();
-        private EmbeddedStrategy embeddedStrategy = DefaultEmbeddedStrategy.builder().build();
+        private EmbeddedStrategyFactory embeddedStrategyFactory = DefaultEmbeddedStrategyFactory.builder().build();
 
         private Builder(String name, StreamFactory streamFactory, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy) {
             super();
@@ -157,12 +157,12 @@ public class ParseTask implements Task {
             return this;
         }
 
-        public EmbeddedStrategy getEmbeddedStrategy() {
-            return embeddedStrategy;
+        public EmbeddedStrategyFactory getEmbeddedStrategy() {
+            return embeddedStrategyFactory;
         }
 
-        public Builder setEmbeddedStrategy(EmbeddedStrategy embeddedStrategy) {
-            this.embeddedStrategy = embeddedStrategy;
+        public Builder setEmbeddedStrategy(EmbeddedStrategyFactory embeddedStrategyFactory) {
+            this.embeddedStrategyFactory = embeddedStrategyFactory;
             return this;
         }
 
@@ -174,9 +174,9 @@ public class ParseTask implements Task {
             Objects.requireNonNull(metadataParser, () -> "metadataParser cannot be null");
             Objects.requireNonNull(parseContextFactory, () -> "parseContextFactory cannot be null");
             Objects.requireNonNull(embeddedNamingStrategy, () -> "embeddedNamingStrategy cannot be null");
-            Objects.requireNonNull(embeddedStrategy, () -> "embeddedStrategy cannot be null");
+            Objects.requireNonNull(embeddedStrategyFactory, () -> "embeddedStrategyFactory cannot be null");
             return new ParseTask(name, parser, streamFactory, parsedContentStrategy, embeddedContentStrategy, metadataParser, parseContextFactory, embeddedNamingStrategy,
-                    embeddedStrategy);
+                    embeddedStrategyFactory);
         }
 
     }

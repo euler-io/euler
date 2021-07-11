@@ -10,7 +10,7 @@ import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
 
-public class DefaultEmbeddedStrategyConfigConverter extends AbstractEmbeddedStrategeyConfigConverter {
+public class DefaultEmbeddedStrategyFactoryConfigConverter extends AbstractEmbeddedStrategyFactoryConfigConverter {
 
     @Override
     public String configType() {
@@ -18,7 +18,7 @@ public class DefaultEmbeddedStrategyConfigConverter extends AbstractEmbeddedStra
     }
 
     @Override
-    public EmbeddedStrategy convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
+    public EmbeddedStrategyFactory convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
         config = getConfig(config);
         int maxDepth = config.getInt("max-depth");
         List<String> includeParseEmbeddedRegex = getListOrString("parse.include-regex", config);
@@ -27,7 +27,8 @@ public class DefaultEmbeddedStrategyConfigConverter extends AbstractEmbeddedStra
         List<String> excludeExtractEmbeddedRegex = getListOrString("extract.exclude-regex", config);
         String mimeTypeField = config.getString("mime-type-field");
         boolean outputName = config.getBoolean("output-name");
-        return new DefaultEmbeddedStrategy(maxDepth, includeParseEmbeddedRegex, excludeParseEmbeddedRegex, includeExtractEmbeddedRegex, excludeExtractEmbeddedRegex, mimeTypeField,
+        return new DefaultEmbeddedStrategyFactory(maxDepth, includeParseEmbeddedRegex, excludeParseEmbeddedRegex, includeExtractEmbeddedRegex, excludeExtractEmbeddedRegex,
+                mimeTypeField,
                 outputName);
     }
 
@@ -44,7 +45,7 @@ public class DefaultEmbeddedStrategyConfigConverter extends AbstractEmbeddedStra
     }
 
     protected Config getDefaultConfig() {
-        URL resource = DefaultEmbeddedStrategyConfigConverter.class.getClassLoader().getResource("defaultembeddedstrategy.conf");
+        URL resource = DefaultEmbeddedStrategyFactoryConfigConverter.class.getClassLoader().getResource("defaultembeddedstrategy.conf");
         return ConfigFactory.parseURL(resource);
     }
 

@@ -45,10 +45,10 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
 
     public static Behavior<TaskCommand> create(Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy,
             MetadataParser metadataParser,
-            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy, EmbeddedStrategy embeddedStrategy) {
+            ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy, EmbeddedStrategyFactory embeddedStrategyFactory) {
         return Behaviors
                 .setup((context) -> new ParseExecution(context, parser, sf, parsedContentStrategy, embeddedContentStrategy, metadataParser, parseContextFactory,
-                        embeddedNamingStrategy, embeddedStrategy));
+                        embeddedNamingStrategy, embeddedStrategyFactory));
     }
 
     private final Parser parser;
@@ -58,22 +58,22 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
     private final MetadataParser metadataParser;
     private final ParseContextFactory parseContextFactory;
     private final EmbeddedNamingStrategy embeddedNamingStrategy;
-    private final EmbeddedStrategy embeddedStrategy;
+    private final EmbeddedStrategyFactory embeddedStrategyFactory;
 
     private JobTaskToProcess currentMsg;
 
     protected ParseExecution(ActorContext<TaskCommand> context, Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy,
-            MetadataParser metadataParser, ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy, EmbeddedStrategy embeddedStrategy) {
+            MetadataParser metadataParser, ParseContextFactory parseContextFactory, EmbeddedNamingStrategy embeddedNamingStrategy,
+            EmbeddedStrategyFactory embeddedStrategyFactory) {
         super(context);
         this.parser = parser;
         this.sf = sf;
         this.parsedContentStrategy = parsedContentStrategy;
         this.embeddedContentStrategy = embeddedContentStrategy;
         this.metadataParser = metadataParser;
-        this.parseContextFactory = new ParseContextFactoryWrapper(parser, parseContextFactory, embeddedStrategy);
+        this.parseContextFactory = parseContextFactory;
         this.embeddedNamingStrategy = embeddedNamingStrategy;
-        this.embeddedStrategy = embeddedStrategy;
-        this.embeddedStrategy.setListener(this);
+        this.embeddedStrategyFactory = embeddedStrategyFactory;
     }
 
     @Override
@@ -117,7 +117,9 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
     protected ProcessingContext parse(InputStream in, Writer out, ProcessingContext ctx) throws IOException, SAXException, TikaException {
         try {
             Metadata metadata = new Metadata();
-            ParseContext parseContext = parseContextFactory.create(ctx);
+            EmbeddedStrategy embeddedStrategy = embeddedStrategyFactory.newEmbeddedStrategy(this);
+            ParseContextFactoryWrapper wrapper = new ParseContextFactoryWrapper(parser, parseContextFactory, embeddedStrategy);
+            ParseContext parseContext = wrapper.create(ctx);
             parser.parse(in, new BodyContentHandler(out), metadata, parseContext);
             return metadataParser.parse(metadata);
         } catch (EncryptedDocumentException e) {

@@ -78,13 +78,13 @@ public class ParseTaskTest extends AkkaTest {
 
         File root = Files.createTempDirectory("dir").toFile();
         File tmp = Files.createTempDirectory("tmp").toFile();
-        EmbeddedStrategy embeddedStrategy = DefaultEmbeddedStrategy.builder()
+        EmbeddedStrategyFactory embeddedStrategyFactory = DefaultEmbeddedStrategyFactory.builder()
                 .setIncludeExtractEmbeddedRegex(".+")
                 .setExcludeExtractEmbeddedRegex("a^")
                 .build();
         Task task = ParseTask
                 .builder("task", new FileStreamFactory(), new FileStorageStrategy(root, ".txt"), new FileStorageStrategy(tmp, ".tmp"))
-                .setEmbeddedStrategy(embeddedStrategy)
+                .setEmbeddedStrategy(embeddedStrategyFactory)
                 .build();
         TestProbe<ProcessorCommand> probe = testKit.createTestProbe();
         ActorRef<TaskCommand> ref = testKit.spawn(task.behavior());
