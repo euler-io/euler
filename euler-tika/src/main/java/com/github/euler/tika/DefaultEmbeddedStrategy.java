@@ -2,10 +2,8 @@ package com.github.euler.tika;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.apache.tika.exception.TikaException;
 import org.apache.tika.metadata.Metadata;
@@ -36,23 +34,17 @@ public class DefaultEmbeddedStrategy extends EmbeddedStrategy {
     private final String mimeTypeField;
     private final boolean outputName;
 
-    public DefaultEmbeddedStrategy(int maxDepth, List<String> includeParseEmbeddedRegex, List<String> excludeParseEmbeddedRegex,
-            List<String> includeExtractEmbeddedRegex, List<String> excludeExtractEmbeddedRegex,
+    public DefaultEmbeddedStrategy(int maxDepth, List<Pattern> includeParseEmbeddedPatterns, List<Pattern> excludeParseEmbeddedPatterns,
+            List<Pattern> includeExtractEmbeddedPatterns, List<Pattern> excludeExtractEmbeddedPatterns,
             String mimeTypeField, boolean outputName) {
         super();
         this.maxDepth = maxDepth;
-        this.includeParseEmbeddedPatterns = toPattern(includeParseEmbeddedRegex);
-        this.excludeParseEmbeddedPatterns = toPattern(excludeParseEmbeddedRegex);
-        this.includeExtractEmbeddedPatterns = toPattern(includeExtractEmbeddedRegex);
-        this.excludeExtractEmbeddedPatterns = toPattern(excludeExtractEmbeddedRegex);
+        this.includeParseEmbeddedPatterns = includeParseEmbeddedPatterns;
+        this.excludeParseEmbeddedPatterns = excludeParseEmbeddedPatterns;
+        this.includeExtractEmbeddedPatterns = includeExtractEmbeddedPatterns;
+        this.excludeExtractEmbeddedPatterns = excludeExtractEmbeddedPatterns;
         this.mimeTypeField = mimeTypeField;
         this.outputName = outputName;
-    }
-
-    private List<Pattern> toPattern(List<String> regex) {
-        return Collections.unmodifiableList(regex.stream()
-                .map(r -> Pattern.compile(r))
-                .collect(Collectors.toList()));
     }
 
     @Override

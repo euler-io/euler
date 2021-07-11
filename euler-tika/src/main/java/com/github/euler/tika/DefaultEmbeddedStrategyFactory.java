@@ -1,16 +1,19 @@
 package com.github.euler.tika;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.github.euler.common.CommonMetadata;
 
 public class DefaultEmbeddedStrategyFactory implements EmbeddedStrategyFactory {
 
     private final int maxDepth;
-    private final List<String> includeParseEmbeddedRegex;
-    private final List<String> excludeParseEmbeddedRegex;
-    private final List<String> includeExtractEmbeddedRegex;
-    private final List<String> excludeExtractEmbeddedRegex;
+    private final List<Pattern> includeParseEmbeddedPatterns;
+    private final List<Pattern> excludeParseEmbeddedPatterns;
+    private final List<Pattern> includeExtractEmbeddedPatterns;
+    private final List<Pattern> excludeExtractEmbeddedPatterns;
     private final String mimeTypeField;
     private final boolean outputName;
 
@@ -19,18 +22,24 @@ public class DefaultEmbeddedStrategyFactory implements EmbeddedStrategyFactory {
             String mimeTypeField, boolean outputName) {
         super();
         this.maxDepth = maxDepth;
-        this.includeParseEmbeddedRegex = includeParseEmbeddedRegex;
-        this.excludeParseEmbeddedRegex = excludeParseEmbeddedRegex;
-        this.includeExtractEmbeddedRegex = includeExtractEmbeddedRegex;
-        this.excludeExtractEmbeddedRegex = excludeExtractEmbeddedRegex;
+        this.includeParseEmbeddedPatterns = toPattern(includeParseEmbeddedRegex);
+        this.excludeParseEmbeddedPatterns = toPattern(excludeParseEmbeddedRegex);
+        this.includeExtractEmbeddedPatterns = toPattern(includeExtractEmbeddedRegex);
+        this.excludeExtractEmbeddedPatterns = toPattern(excludeExtractEmbeddedRegex);
         this.mimeTypeField = mimeTypeField;
         this.outputName = outputName;
     }
 
+    private List<Pattern> toPattern(List<String> regex) {
+        return Collections.unmodifiableList(regex.stream()
+                .map(r -> Pattern.compile(r))
+                .collect(Collectors.toList()));
+    }
+
     @Override
     public EmbeddedStrategy newEmbeddedStrategy(EmbeddedItemListener listener) {
-        DefaultEmbeddedStrategy strategy = new DefaultEmbeddedStrategy(maxDepth, includeParseEmbeddedRegex, excludeParseEmbeddedRegex, includeExtractEmbeddedRegex,
-                excludeExtractEmbeddedRegex, mimeTypeField,
+        DefaultEmbeddedStrategy strategy = new DefaultEmbeddedStrategy(maxDepth, includeParseEmbeddedPatterns, excludeParseEmbeddedPatterns, includeExtractEmbeddedPatterns,
+                excludeExtractEmbeddedPatterns, mimeTypeField,
                 outputName);
         strategy.setListener(listener);
         return strategy;
