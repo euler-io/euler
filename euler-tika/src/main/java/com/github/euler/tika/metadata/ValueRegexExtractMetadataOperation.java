@@ -9,12 +9,12 @@ import java.util.stream.Collectors;
 
 public class ValueRegexExtractMetadataOperation implements MetadataOperation {
 
-    private final Pattern patternName;
+    private final Pattern namePattern;
     private final Pattern pattern;
 
     public ValueRegexExtractMetadataOperation(String nameRegex, String regex) {
         super();
-        this.patternName = Pattern.compile(nameRegex);
+        this.namePattern = Pattern.compile(nameRegex);
         this.pattern = Pattern.compile(regex);
     }
 
@@ -24,7 +24,7 @@ public class ValueRegexExtractMetadataOperation implements MetadataOperation {
 
     @Override
     public Object runOnValue(String name, Object value) {
-        if (patternName.matcher(name).matches()) {
+        if (namePattern.matcher(name).matches()) {
             if (value instanceof String) {
                 return extract(value.toString())
                         .toArray(s -> new String[s]);
