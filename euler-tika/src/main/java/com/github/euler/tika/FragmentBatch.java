@@ -27,7 +27,7 @@ import com.github.euler.core.ProcessingContext;
 
 public class FragmentBatch implements Batch {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FragmentBatch.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final Parser parser;
     private final StreamFactory sf;
@@ -54,10 +54,11 @@ public class FragmentBatch implements Batch {
         String id = response.getId();
         state.itemStored(id, msg);
 
+        boolean parseError = msg.ctx.context(CommonContext.PARSE_ERROR, false);
         URI uri = msg.ctx.context(CommonContext.PARSED_CONTENT_FILE, msg.itemURI);
         boolean isEmpty = sf.isEmpty(uri, msg.ctx);
         boolean isDirectory = msg.ctx.metadata(CommonMetadata.IS_DIRECTORY, false);
-        if (isEmpty || isDirectory) {
+        if (isEmpty || isDirectory || parseError) {
             state.itemParsed(id);
         } else {
             BatchFragmentListener fragmentListener = new BatchFragmentListener(id, listener);
@@ -99,6 +100,8 @@ public class FragmentBatch implements Batch {
         ContentHandler handler = new BodyContentHandler(new FragmentParserContentHandler(fragmentSize, fragmentOverlap, fragmentHandler));
         try (InputStream in = sf.openInputStream(uri, ctx)) {
             parser.parse(in, handler, new Metadata(), new ParseContext());
+        } catch (Exception e) {
+            LOGGER.warn("Error parsing " + uri, e);
         }
     }
 

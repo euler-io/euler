@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URI;
 import java.util.ArrayList;
@@ -124,6 +126,15 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
             return metadataParser.parse(metadata);
         } catch (EncryptedDocumentException e) {
             return ProcessingContext.builder().metadata(CommonMetadata.ENCRYPTED, true).build();
+        } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            return ProcessingContext.builder()
+                    .context(CommonContext.PARSE_ERROR, true)
+                    .metadata(CommonMetadata.PARSE_ERROR, true)
+                    .metadata(CommonMetadata.PARSE_ERROR_STACK, sw.toString())
+                    .build();
         }
     }
 

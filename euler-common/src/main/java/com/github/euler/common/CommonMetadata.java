@@ -13,6 +13,8 @@ public interface CommonMetadata {
     final static String MIME_TYPE = "mime_type";
     final static String ITEM_URI = "item_uri";
     static final String ENCRYPTED = "encrypted";
+    static final String PARSE_ERROR = "parse_error";
+    static final String PARSE_ERROR_STACK = "parse_error_stack";
     static final String PARENTS = "parents";
 
 }
