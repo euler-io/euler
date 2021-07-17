@@ -3,7 +3,12 @@ package com.github.euler.preview;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.euler.common.CommonMetadata;
 import com.github.euler.common.StorageStrategy;
@@ -14,7 +19,11 @@ import com.github.euler.core.ProcessingContext;
 
 public class PreviewItemProcessor implements ItemProcessor {
 
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
     public static final String PREVIEW_METADATA = "preview";
+    public static final String PREVIEW_ERROR_METADATA = "preview-error";
+    public static final String PREVIEW_ERROR_STACK_METADATA = "preview-error-stack";
 
     private final EulerPreview preview;
     private final PreviewContext ctx;
@@ -49,6 +58,15 @@ public class PreviewItemProcessor implements ItemProcessor {
             ProcessingContext.Builder builder = ProcessingContext.builder();
             builder.metadata(PREVIEW_METADATA, outFile.toString());
             return builder.build();
+        } catch (Exception e) {
+            LOGGER.warn("An error ocurred while generating the preview for " + item.itemURI, e);
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+            return ProcessingContext.builder()
+                    .metadata(PREVIEW_ERROR_METADATA, true)
+                    .metadata(PREVIEW_ERROR_STACK_METADATA, sw)
+                    .build();
         } finally {
             if (in != null) {
                 in.close();

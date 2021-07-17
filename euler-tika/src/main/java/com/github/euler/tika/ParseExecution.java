@@ -21,6 +21,8 @@ import org.apache.tika.metadata.TikaCoreProperties;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.Parser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import com.github.euler.common.CommonContext;
@@ -44,6 +46,8 @@ import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class ParseExecution extends AbstractBehavior<TaskCommand> implements EmbeddedItemListener {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     public static Behavior<TaskCommand> create(Parser parser, StreamFactory sf, StorageStrategy parsedContentStrategy, StorageStrategy embeddedContentStrategy,
             MetadataParser metadataParser,
@@ -100,8 +104,7 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         try {
             in = sf.openInputStream(msg.itemURI, msg.ctx);
             out = new OutputStreamWriter(sf.openOutputStream(parsedContent, msg.ctx), "utf-8");
-
-            ProcessingContext parsed = parse(in, out, msg.ctx);
+            ProcessingContext parsed = parse(msg.itemURI, in, out, msg.ctx);
             ProcessingContext ctx = msg.ctx.merge(builder.build()).merge(parsed);
             msg.replyTo.tell(new JobTaskFinished(msg, ctx));
         } finally {
@@ -116,7 +119,7 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         return this;
     }
 
-    protected ProcessingContext parse(InputStream in, Writer out, ProcessingContext ctx) throws IOException, SAXException, TikaException {
+    protected ProcessingContext parse(URI itemURI, InputStream in, Writer out, ProcessingContext ctx) throws IOException, SAXException, TikaException {
         try {
             Metadata metadata = new Metadata();
             EmbeddedStrategy embeddedStrategy = embeddedStrategyFactory.newEmbeddedStrategy(this);
@@ -127,6 +130,7 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
         } catch (EncryptedDocumentException e) {
             return ProcessingContext.builder().metadata(CommonMetadata.ENCRYPTED, true).build();
         } catch (Exception e) {
+            LOGGER.warn("An error ocurred while parsing " + itemURI, e);
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
