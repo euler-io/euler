@@ -1,11 +1,11 @@
 package com.github.euler.tika;
 
-import java.io.IOException;
-
 import org.apache.tika.detect.Detector;
 import org.apache.tika.io.TikaInputStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.mime.MediaType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.euler.common.CommonMetadata;
 import com.github.euler.common.StreamFactory;
@@ -14,6 +14,8 @@ import com.github.euler.core.ItemProcessor;
 import com.github.euler.core.ProcessingContext;
 
 public class MimeTypeItemProcessor implements ItemProcessor {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final String field;
     private final StreamFactory sf;
@@ -45,8 +47,8 @@ public class MimeTypeItemProcessor implements ItemProcessor {
                 MediaType type = detector.detect(tikaInputStream, metadata);
                 type = type.getBaseType();
                 mimeType = type.getType() + "/" + type.getSubtype();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            } catch (Throwable e) {
+                LOGGER.warn("An error occurred while detecting mime type for {}: {}", item.itemURI, e.getMessage());
             }
         }
         return ProcessingContext.builder()

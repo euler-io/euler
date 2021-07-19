@@ -59,13 +59,13 @@ public class PreviewItemProcessor implements ItemProcessor {
             builder.metadata(PREVIEW_METADATA, outFile.toString());
             return builder.build();
         } catch (Exception e) {
-            LOGGER.warn("An error ocurred while generating the preview for " + item.itemURI, e);
+            LOGGER.warn("An error ocurred while generating the preview for {}: {}", item.itemURI, e.getMessage());
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
             return ProcessingContext.builder()
                     .metadata(PREVIEW_ERROR_METADATA, true)
-                    .metadata(PREVIEW_ERROR_STACK_METADATA, sw)
+                    .metadata(PREVIEW_ERROR_STACK_METADATA, sw.toString())
                     .build();
         } finally {
             if (in != null) {

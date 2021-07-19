@@ -129,8 +129,8 @@ public class ParseExecution extends AbstractBehavior<TaskCommand> implements Emb
             return metadataParser.parse(metadata);
         } catch (EncryptedDocumentException e) {
             return ProcessingContext.builder().metadata(CommonMetadata.ENCRYPTED, true).build();
-        } catch (Exception e) {
-            LOGGER.warn("An error ocurred while parsing " + itemURI, e);
+        } catch (Throwable e) {
+            LOGGER.warn("An error ocurred while parsing {}: {}", itemURI, e.getMessage());
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);

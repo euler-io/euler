@@ -3,6 +3,7 @@ package com.github.euler.core;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import akka.actor.Cancellable;
 import akka.actor.typed.ActorRef;
@@ -39,6 +40,7 @@ public class PipelineExecutionState implements TasksExecutionState {
 
     public ProcessingContext mergeContext(URI itemURI, ProcessingContext ctx) {
         State state = mapping.get(itemURI);
+        Objects.requireNonNull(state, () -> "State for " + itemURI + " is invalid.");
         ProcessingContext merged = state.ctx.merge(ctx);
         state.ctx = merged;
         return merged;
@@ -54,7 +56,7 @@ public class PipelineExecutionState implements TasksExecutionState {
             state.timeoutCancellable.cancel();
         }
     }
-    
+
     public boolean isActive(URI itemURI) {
         return mapping.containsKey(itemURI);
     }

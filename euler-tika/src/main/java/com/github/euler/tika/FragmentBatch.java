@@ -65,7 +65,7 @@ public class FragmentBatch implements Batch {
             try {
                 parse(uri, msg.ctx, fragmentListener);
             } catch (IOException | SAXException | TikaException e) {
-                throw new RuntimeException("Error parsing " + uri.toString(), e);
+                LOGGER.warn("Error parsing {} for {}.", uri, e.getMessage());
             } finally {
                 state.itemParsed(id);
             }
@@ -100,8 +100,6 @@ public class FragmentBatch implements Batch {
         ContentHandler handler = new BodyContentHandler(new FragmentParserContentHandler(fragmentSize, fragmentOverlap, fragmentHandler));
         try (InputStream in = sf.openInputStream(uri, ctx)) {
             parser.parse(in, handler, new Metadata(), new ParseContext());
-        } catch (Exception e) {
-            LOGGER.warn("Error parsing " + uri, e);
         }
     }
 

@@ -2,6 +2,9 @@ package com.github.euler.core;
 
 import java.net.URI;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.ActorContext;
@@ -10,6 +13,8 @@ import akka.actor.typed.javadsl.Receive;
 import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class PipelineExecution extends HeterogeneousTasksExecution {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     public static Behavior<TaskCommand> create(Task[] tasks) {
         return Behaviors.setup((context) -> new PipelineExecution(context, tasks));
@@ -88,6 +93,7 @@ public class PipelineExecution extends HeterogeneousTasksExecution {
     }
 
     private void onFail(URI uri, URI itemURI, ProcessingContext ctx) {
+        LOGGER.warn("{} failed,", itemURI);
         ActorRef<ProcessorCommand> replyTo = state.getReplyTo(itemURI);
         ctx = state.mergeContext(itemURI, ctx);
         replyTo.tell(new JobTaskFinished(uri, itemURI, ctx));
