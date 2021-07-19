@@ -4,13 +4,13 @@
 
     <groupId>com.github.euler-io</groupId>
     <artifactId>euler-common</artifactId>
-    <version>0.8.4</version>
+    <version>0.8.5-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>com.github.euler-io</groupId>
         <artifactId>euler</artifactId>
-        <version>0.8.4</version>
+        <version>0.8.5-SNAPSHOT</version>
     </parent>
 
     <name>Euler - Common</name>
