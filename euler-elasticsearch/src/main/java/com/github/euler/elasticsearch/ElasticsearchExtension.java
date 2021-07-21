@@ -7,6 +7,9 @@ import com.github.euler.configuration.ContextConfigConverter;
 import com.github.euler.configuration.EulerExtension;
 import com.github.euler.configuration.TaskConfigConverter;
 import com.github.euler.configuration.TypeConfigConverter;
+import com.github.euler.elasticsearch.req.InsertRequestFactoryConfigConverter;
+import com.github.euler.elasticsearch.req.UpdateRequestFactoryConfigConverter;
+import com.github.euler.elasticsearch.req.UpsertRequestFactoryConfigConverter;
 
 public class ElasticsearchExtension implements EulerExtension {
 
@@ -23,7 +26,10 @@ public class ElasticsearchExtension implements EulerExtension {
         return Arrays.asList(new ElasticsearchSourceConfigConverter(),
                 new ElasticsearchConfigClientConfigConverter(),
                 new ElasticsearchContextClientConfigConverter(),
-                new ExistsInIndexConditionConfigConverter());
+                new ExistsInIndexConditionConfigConverter(),
+                new InsertRequestFactoryConfigConverter(),
+                new UpdateRequestFactoryConfigConverter(),
+                new UpsertRequestFactoryConfigConverter());
     }
 
     @Override

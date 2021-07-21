@@ -7,13 +7,15 @@ import org.elasticsearch.client.RestHighLevelClient;
 import com.github.euler.common.AbstractBatchTask;
 import com.github.euler.common.CommonContext;
 import com.github.euler.core.JobTaskToProcess;
+import com.github.euler.elasticsearch.req.ElasticSearchRequestFactory;
+import com.github.euler.elasticsearch.req.InsertRequestFactory;
 import com.github.euler.tika.FlushConfig;
 import com.github.euler.tika.MetadataBatch;
 
 public class ElasticsearchMetadataTask extends AbstractBatchTask {
 
-    private ElasticsearchMetadataTask(String name, String index, RestHighLevelClient client, FlushConfig flushConfig) {
-        super(name, () -> new MetadataBatch(new ElasticsearchMetadataSink(client, index, flushConfig)));
+    private ElasticsearchMetadataTask(String name, String index, RestHighLevelClient client, FlushConfig flushConfig, ElasticSearchRequestFactory<?> requestFactory) {
+        super(name, () -> new MetadataBatch(new ElasticsearchMetadataSink(client, index, flushConfig, requestFactory)));
     }
 
     @Override
@@ -31,6 +33,7 @@ public class ElasticsearchMetadataTask extends AbstractBatchTask {
         private String index = null;
         private RestHighLevelClient client;
         private FlushConfig flushConfig = new FlushConfig();
+        private ElasticSearchRequestFactory<?> requestFactory = new InsertRequestFactory();
 
         private Builder(String name, RestHighLevelClient client) {
             super();
@@ -74,11 +77,21 @@ public class ElasticsearchMetadataTask extends AbstractBatchTask {
             return this;
         }
 
+        public ElasticSearchRequestFactory<?> getRequestFactory() {
+            return requestFactory;
+        }
+
+        public Builder setRequestFactory(ElasticSearchRequestFactory<?> requestFactory) {
+            this.requestFactory = requestFactory;
+            return this;
+        }
+
         public ElasticsearchMetadataTask build() {
             Objects.requireNonNull(name, () -> "name is required");
             Objects.requireNonNull(client, () -> "client is required");
             Objects.requireNonNull(flushConfig, () -> "flushConfig is required");
-            return new ElasticsearchMetadataTask(name, index, client, flushConfig);
+            Objects.requireNonNull(requestFactory, () -> "requestFactory is required");
+            return new ElasticsearchMetadataTask(name, index, client, flushConfig, requestFactory);
         }
     }
 

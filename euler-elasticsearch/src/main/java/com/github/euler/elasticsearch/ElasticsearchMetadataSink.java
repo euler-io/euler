@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.elasticsearch.action.DocWriteRequest;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
@@ -18,6 +18,7 @@ import com.github.euler.common.CommonContext;
 import com.github.euler.common.CommonMetadata;
 import com.github.euler.common.SizeUtils;
 import com.github.euler.core.ProcessingContext;
+import com.github.euler.elasticsearch.req.ElasticSearchRequestFactory;
 import com.github.euler.tika.EmptyResponse;
 import com.github.euler.tika.FlushConfig;
 import com.github.euler.tika.MetadataBatchSink;
@@ -29,16 +30,18 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
 
     private final RestHighLevelClient client;
     private final FlushConfig flushConfig;
+    private final ElasticSearchRequestFactory<?> requestFactory;
 
     private BulkRequest bulkRequest;
     private String globalIndex;
     private String index;
 
-    public ElasticsearchMetadataSink(RestHighLevelClient client, String index, FlushConfig flushConfig) {
+    public ElasticsearchMetadataSink(RestHighLevelClient client, String index, FlushConfig flushConfig, ElasticSearchRequestFactory<?> requestFactory) {
         super();
         this.client = client;
         this.globalIndex = index;
         this.flushConfig = flushConfig;
+        this.requestFactory = requestFactory;
         this.bulkRequest = new BulkRequest();
     }
 
@@ -51,13 +54,9 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
         }
 
         Map<String, Object> metadata = buildSource(uri, ctx);
-
-        IndexRequest req = new IndexRequest(index);
-
         String id = ctx.context(CommonContext.ID, () -> generateId(uri, ctx));
 
-        req.id(id);
-        req.source(metadata);
+        DocWriteRequest<?> req = requestFactory.create(id, id, metadata);
         add(req);
 
         return flush(id, false);
@@ -73,7 +72,7 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
         return DigestUtils.md5Hex(uri.normalize().toString()).toLowerCase();
     }
 
-    protected void add(IndexRequest req) {
+    protected void add(DocWriteRequest<?> req) {
         bulkRequest.add(req);
     }
 

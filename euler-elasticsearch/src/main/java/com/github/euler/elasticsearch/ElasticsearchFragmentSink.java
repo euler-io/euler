@@ -9,6 +9,7 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 
 import com.github.euler.core.ProcessingContext;
+import com.github.euler.elasticsearch.req.InsertRequestFactory;
 import com.github.euler.tika.FlushConfig;
 import com.github.euler.tika.FragmentBatchSink;
 import com.github.euler.tika.SinkResponse;
@@ -16,7 +17,7 @@ import com.github.euler.tika.SinkResponse;
 public class ElasticsearchFragmentSink extends ElasticsearchMetadataSink implements FragmentBatchSink {
 
     public ElasticsearchFragmentSink(RestHighLevelClient client, String index, FlushConfig flushConfig) {
-        super(client, index, flushConfig);
+        super(client, index, flushConfig, new InsertRequestFactory());
     }
 
     @Override

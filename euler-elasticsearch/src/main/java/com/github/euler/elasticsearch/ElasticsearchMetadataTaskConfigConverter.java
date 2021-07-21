@@ -7,6 +7,8 @@ import com.github.euler.configuration.TasksConfigConverter;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.core.Task;
 import com.github.euler.elasticsearch.ElasticsearchMetadataTask.Builder;
+import com.github.euler.elasticsearch.req.AbstractElasticSearchRequestFactoryConfigConverter;
+import com.github.euler.elasticsearch.req.ElasticSearchRequestFactory;
 import com.typesafe.config.Config;
 
 public class ElasticsearchMetadataTaskConfigConverter extends AbstractElasticsearchTaskConfigConverter {
@@ -17,14 +19,17 @@ public class ElasticsearchMetadataTaskConfigConverter extends AbstractElasticsea
     }
 
     @Override
-    public Task convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter, TasksConfigConverter tasksConfigConverter) {
-        config = config.withFallback(getDefaultConfig());
+    public Task convert(Config config, ConfigContext ctx, TypesConfigConverter typesConfigConverter, TasksConfigConverter tasksConfigConverter) {
+        config = getConfig(config);
         String name = getName(config, tasksConfigConverter);
 
-        RestHighLevelClient client = getClient(config, ctx, typeConfigConverter);
+        RestHighLevelClient client = getClient(config, ctx, typesConfigConverter);
         Builder builder = ElasticsearchMetadataTask.builder(name, client);
         builder.setFlushConfig(getFlushConfig(config));
         builder.setIndex(getIndex(config));
+
+        ElasticSearchRequestFactory<?> requestFactory = typesConfigConverter.convert(AbstractElasticSearchRequestFactoryConfigConverter.TYPE, config.getValue("request-type"), ctx);
+        builder.setRequestFactory(requestFactory);
 
         return builder.build();
     }

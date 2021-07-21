@@ -24,7 +24,7 @@ public class ElasticsearchFragmentTaskConfigConverter extends AbstractElasticsea
 
     @Override
     public Task convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter, TasksConfigConverter tasksConfigConverter) {
-        config = config.withFallback(getDefaultConfig());
+        config = getConfig(config);
         String name = getName(config, tasksConfigConverter);
         StreamFactory streamFactory = ctx.getRequired(StreamFactory.class);
 

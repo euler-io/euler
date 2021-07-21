@@ -10,6 +10,7 @@ import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.tika.FlushConfig;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.ConfigRenderOptions;
 
 public abstract class AbstractElasticsearchTaskConfigConverter extends AbstractTaskConfigConverter {
 
@@ -31,6 +32,10 @@ public abstract class AbstractElasticsearchTaskConfigConverter extends AbstractT
         } else {
             return null;
         }
+    }
+
+    protected Config getConfig(Config config) {
+        return ConfigFactory.parseString(config.root().render(ConfigRenderOptions.concise())).withFallback(getDefaultConfig()).resolve();
     }
 
     protected Config getDefaultConfig() {
