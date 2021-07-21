@@ -24,7 +24,7 @@ public class CommonExtension implements EulerExtension {
 
     @Override
     public List<TaskConfigConverter> taskConverters() {
-        return Arrays.asList(new IdCalculatorTaskConfigConverter());
+        return Arrays.asList(new IdCalculatorTaskConfigConverter(), new ContextTaskConfigConverter());
     }
 
 }
