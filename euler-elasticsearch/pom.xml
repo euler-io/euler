@@ -4,13 +4,13 @@
 
     <groupId>com.github.euler-io</groupId>
     <artifactId>euler-elasticsearch</artifactId>
-    <version>0.8.6</version>
+    <version>0.8.7-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>com.github.euler-io</groupId>
         <artifactId>euler</artifactId>
-        <version>0.8.6</version>
+        <version>0.8.7-SNAPSHOT</version>
     </parent>
 
     <name>Euler - Elasticsearch</name>
