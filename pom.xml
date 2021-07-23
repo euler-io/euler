@@ -4,7 +4,7 @@
 
     <groupId>com.github.euler-io</groupId>
     <artifactId>euler</artifactId>
-    <version>0.8.7-SNAPSHOT</version>
+    <version>0.8.7</version>
     <packaging>pom</packaging>
 
     <name>Euler - Parent</name>
@@ -43,7 +43,7 @@
         <url>https://github.com/euler-io/euler</url>
         <connection>scm:git:ssh://git@github.com/euler-io/euler.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/euler-io/euler.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>0.8.7</tag>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
