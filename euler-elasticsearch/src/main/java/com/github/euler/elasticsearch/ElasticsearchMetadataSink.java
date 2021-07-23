@@ -47,16 +47,12 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
 
     @Override
     public SinkResponse store(URI uri, ProcessingContext ctx) {
-        if (ctx.context().containsKey(CommonContext.INDEX)) {
-            this.index = (String) ctx.context(CommonContext.INDEX);
-        } else {
-            this.index = this.globalIndex;
-        }
+        this.index = ctx.context(CommonContext.INDEX, this.globalIndex);
 
         Map<String, Object> metadata = buildSource(uri, ctx);
         String id = ctx.context(CommonContext.ID, () -> generateId(uri, ctx));
 
-        DocWriteRequest<?> req = requestFactory.create(id, id, metadata);
+        DocWriteRequest<?> req = requestFactory.create(this.index, id, metadata);
         add(req);
 
         return flush(id, false);
