@@ -5,9 +5,14 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.apache.tika.detect.Detector;
+import org.apache.tika.parser.AutoDetectParser;
+
 import com.github.euler.common.CommonMetadata;
 
 public class DefaultEmbeddedStrategyFactory implements EmbeddedStrategyFactory {
+
+    private final Detector detector;
 
     private final int maxDepth;
     private final List<Pattern> includeParseEmbeddedPatterns;
@@ -17,10 +22,11 @@ public class DefaultEmbeddedStrategyFactory implements EmbeddedStrategyFactory {
     private final String mimeTypeField;
     private final boolean outputName;
 
-    public DefaultEmbeddedStrategyFactory(int maxDepth, List<String> includeParseEmbeddedRegex, List<String> excludeParseEmbeddedRegex,
+    public DefaultEmbeddedStrategyFactory(Detector detector, int maxDepth, List<String> includeParseEmbeddedRegex, List<String> excludeParseEmbeddedRegex,
             List<String> includeExtractEmbeddedRegex, List<String> excludeExtractEmbeddedRegex,
             String mimeTypeField, boolean outputName) {
         super();
+        this.detector = detector;
         this.maxDepth = maxDepth;
         this.includeParseEmbeddedPatterns = toPattern(includeParseEmbeddedRegex);
         this.excludeParseEmbeddedPatterns = toPattern(excludeParseEmbeddedRegex);
@@ -38,7 +44,8 @@ public class DefaultEmbeddedStrategyFactory implements EmbeddedStrategyFactory {
 
     @Override
     public EmbeddedStrategy newEmbeddedStrategy(EmbeddedItemListener listener) {
-        DefaultEmbeddedStrategy strategy = new DefaultEmbeddedStrategy(maxDepth, includeParseEmbeddedPatterns, excludeParseEmbeddedPatterns, includeExtractEmbeddedPatterns,
+        DefaultEmbeddedStrategy strategy = new DefaultEmbeddedStrategy(detector, maxDepth, includeParseEmbeddedPatterns, excludeParseEmbeddedPatterns,
+                includeExtractEmbeddedPatterns,
                 excludeExtractEmbeddedPatterns, mimeTypeField,
                 outputName);
         strategy.setListener(listener);
@@ -51,6 +58,7 @@ public class DefaultEmbeddedStrategyFactory implements EmbeddedStrategyFactory {
 
     public static class Builder {
 
+        private Detector detector;
         private int maxDepth = 10;
         private List<String> includeParseEmbeddedRegex = List.of(".+");
         private List<String> excludeParseEmbeddedRegex = List.of("a^");
@@ -61,6 +69,7 @@ public class DefaultEmbeddedStrategyFactory implements EmbeddedStrategyFactory {
 
         private Builder() {
             super();
+            this.detector = new AutoDetectParser().getDetector();
         }
 
         public int getMaxDepth() {
@@ -146,8 +155,18 @@ public class DefaultEmbeddedStrategyFactory implements EmbeddedStrategyFactory {
             return this;
         }
 
+        public Detector getDetector() {
+            return detector;
+        }
+
+        public Builder setDetector(Detector detector) {
+            this.detector = detector;
+            return this;
+        }
+
         public DefaultEmbeddedStrategyFactory build() {
-            return new DefaultEmbeddedStrategyFactory(maxDepth, includeParseEmbeddedRegex, excludeParseEmbeddedRegex, includeExtractEmbeddedRegex, excludeExtractEmbeddedRegex,
+            return new DefaultEmbeddedStrategyFactory(detector, maxDepth, includeParseEmbeddedRegex, excludeParseEmbeddedRegex, includeExtractEmbeddedRegex,
+                    excludeExtractEmbeddedRegex,
                     mimeTypeField, outputName);
         }
 

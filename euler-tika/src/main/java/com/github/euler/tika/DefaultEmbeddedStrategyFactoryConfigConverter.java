@@ -3,6 +3,8 @@ package com.github.euler.tika;
 import java.net.URL;
 import java.util.List;
 
+import org.apache.tika.detect.Detector;
+
 import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.typesafe.config.Config;
@@ -18,8 +20,9 @@ public class DefaultEmbeddedStrategyFactoryConfigConverter extends AbstractEmbed
     }
 
     @Override
-    public EmbeddedStrategyFactory convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
+    public EmbeddedStrategyFactory convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {
         config = getConfig(config);
+        Detector detector = ctx.getRequired(Detector.class);
         int maxDepth = config.getInt("max-depth");
         List<String> includeParseEmbeddedRegex = getListOrString("parse.include-regex", config);
         List<String> excludeParseEmbeddedRegex = getListOrString("parse.exclude-regex", config);
@@ -27,7 +30,8 @@ public class DefaultEmbeddedStrategyFactoryConfigConverter extends AbstractEmbed
         List<String> excludeExtractEmbeddedRegex = getListOrString("extract.exclude-regex", config);
         String mimeTypeField = config.getString("mime-type-field");
         boolean outputName = config.getBoolean("output-name");
-        return new DefaultEmbeddedStrategyFactory(maxDepth, includeParseEmbeddedRegex, excludeParseEmbeddedRegex, includeExtractEmbeddedRegex, excludeExtractEmbeddedRegex,
+        return new DefaultEmbeddedStrategyFactory(detector, maxDepth, includeParseEmbeddedRegex, excludeParseEmbeddedRegex, includeExtractEmbeddedRegex,
+                excludeExtractEmbeddedRegex,
                 mimeTypeField,
                 outputName);
     }
