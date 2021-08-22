@@ -4,11 +4,13 @@ import java.net.URL;
 
 import org.elasticsearch.client.RestHighLevelClient;
 
+import com.github.euler.configuration.AbstractResumeStrategyConfigConverter;
 import com.github.euler.configuration.AbstractSourceConfigConverter;
 import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.core.PausableSourceExecution;
 import com.github.euler.core.SourceCommand;
+import com.github.euler.core.resume.ResumeStrategy;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
@@ -31,7 +33,9 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
         String scroll = config.getString("scroll-keep-alive");
         String[] sourceIncludes = config.getStringList("_source.includes").stream().toArray(s -> new String[s]);
         String[] sourceExcludes = config.getStringList("_source.excludes").stream().toArray(s -> new String[s]);
-        return PausableSourceExecution.create(new ElasticsearchSource(client, query, size, scroll, sourceIncludes, sourceExcludes));
+        ElasticsearchSource source = new ElasticsearchSource(client, query, size, scroll, sourceIncludes, sourceExcludes);
+        ResumeStrategy resumeStrategy = typeConfigConverter.convert(AbstractResumeStrategyConfigConverter.TYPE, config.getValue("resume-strategy"), ctx);
+        return PausableSourceExecution.create(source, resumeStrategy);
     }
 
     protected Config getConfig(Config config) {

@@ -3,6 +3,12 @@ package com.github.euler.core;
 import java.net.URI;
 import java.time.Duration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.github.euler.core.source.DefaultSourceNotificationStrategy;
+import com.github.euler.core.source.SourceNotificationStrategy;
+
 import akka.actor.Cancellable;
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
@@ -15,25 +21,36 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
 
-    public static Behavior<EulerCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior) {
-        return Behaviors.setup(ctx -> new EulerJobProcessor(ctx, sourceBehavior, processorBehavior));
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
+
+    public static Behavior<EulerCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior,
+            SourceNotificationStrategy sourceNotificationStrategy) {
+        return Behaviors.setup(ctx -> new EulerJobProcessor(ctx, sourceBehavior, processorBehavior, sourceNotificationStrategy));
     }
 
-    private Behavior<SourceCommand> sourceBehaviour;
+    public static Behavior<EulerCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior) {
+        return create(sourceBehavior, processorBehavior, new DefaultSourceNotificationStrategy());
+    }
+
+    private final Behavior<SourceCommand> sourceBehaviour;
     private ActorRef<SourceCommand> sourceRef;
 
-    private Behavior<ProcessorCommand> processorBehavior;
+    private final Behavior<ProcessorCommand> processorBehavior;
     private ActorRef<ProcessorCommand> processorRef;
 
     private final EulerState state;
     private Cancellable flusher;
 
-    private EulerJobProcessor(ActorContext<EulerCommand> ctx, Behavior<SourceCommand> sourceBehaviour, Behavior<ProcessorCommand> processorBehavior) {
+    private final SourceNotificationStrategy sourceNotificationStrategy;
+
+    private EulerJobProcessor(ActorContext<EulerCommand> ctx, Behavior<SourceCommand> sourceBehaviour, Behavior<ProcessorCommand> processorBehavior,
+            SourceNotificationStrategy sourceNotificationStrategy) {
         super(ctx);
         this.sourceBehaviour = sourceBehaviour;
         this.processorBehavior = processorBehavior;
         this.state = new EulerState();
         this.flusher = null;
+        this.sourceNotificationStrategy = sourceNotificationStrategy;
 
         start();
     }
@@ -78,6 +95,7 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private Behavior<EulerCommand> onJobItemFound(JobItemFound msg) {
+        startFlush();
         ProcessingContext ctx = state.getCtx().merge(msg.ctx);
         processorRef.tell(new JobItemToProcess(msg, ctx, getContext().getSelf()));
         state.onMessage(msg);
@@ -98,14 +116,14 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
 
     private Behavior<EulerCommand> onScanFinished(ScanFinished msg) {
         state.onMessage(msg);
-        startFlush();
+        processorRef.tell(new Flush(true));
         return checkFinished(msg.uri);
     }
 
     private Behavior<EulerCommand> onScanFailed(ScanFailed msg) {
         getContext().getLog().warn("Scan of uri {} failed.", msg.uri);
         state.onMessage(msg);
-        startFlush();
+        processorRef.tell(new Flush(true));
         return checkFinished(msg.uri);
     }
 
@@ -115,16 +133,17 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
     }
 
     private void startFlush() {
-        processorRef.tell(new Flush(true));
-        Duration duration = Duration.ofSeconds(2);
-        this.flusher = getContext().getSystem().scheduler().scheduleAtFixedRate(duration, duration, new Runnable() {
+        if (this.flusher == null) {
+            Duration duration = Duration.ofSeconds(2);
+            this.flusher = getContext().getSystem().scheduler().scheduleAtFixedRate(duration, duration, new Runnable() {
 
-            @Override
-            public void run() {
-                processorRef.tell(new Flush(true));
-            }
+                @Override
+                public void run() {
+                    processorRef.tell(new Flush(true));
+                }
 
-        }, getContext().getExecutionContext());
+            }, getContext().getExecutionContext());
+        }
     }
 
     private Behavior<EulerCommand> checkFinished(URI uri) {
@@ -135,8 +154,22 @@ public class EulerJobProcessor extends AbstractBehavior<EulerCommand> {
                 flusher.cancel();
             }
             return Behaviors.stopped();
+        } else if (!state.isDiscoveryFinishedOrFailed()) {
+            notifySource();
         }
         return Behaviors.same();
+    }
+
+    private void notifySource() {
+        int pendingItems = this.state.getPendingItems();
+        int totalProcessedItems = this.state.getTotalProcessedItems();
+        int totalItems = this.state.getTotalItems();
+        int totalEmbeddedItems = this.state.getTotalEmbeddedItems();
+        if (this.sourceNotificationStrategy.notificationRequested(pendingItems, totalProcessedItems, totalItems, totalEmbeddedItems)) {
+            ProcessingStatus status = new ProcessingStatus(pendingItems, totalProcessedItems, totalItems, totalEmbeddedItems);
+            LOGGER.info("Notifying source at {} with status {}", this.sourceRef.path(), status);
+            this.sourceRef.tell(status);
+        }
     }
 
     private class InternalProcessorFailed implements EulerCommand {

@@ -10,6 +10,9 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import com.github.euler.core.source.DefaultSourceNotificationStrategy;
+import com.github.euler.core.source.SourceNotificationStrategy;
+
 import akka.actor.typed.ActorSystem;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AskPattern;
@@ -21,15 +24,17 @@ public class Euler implements AutoCloseable {
     private final Behavior<SourceCommand> sourceBehavior;
     private final Task[] tasks;
     private final EulerHooks hooks;
+    private final SourceNotificationStrategy sns;
 
-    public Euler(Behavior<SourceCommand> sourceBehavior, EulerHooks hooks, Task... tasks) {
+    public Euler(Behavior<SourceCommand> sourceBehavior, EulerHooks hooks, SourceNotificationStrategy sns, Task... tasks) {
         this.sourceBehavior = sourceBehavior;
         this.hooks = hooks;
+        this.sns = sns;
         this.tasks = tasks;
     }
 
     public Euler(Behavior<SourceCommand> sourceBehavior, Task... tasks) {
-        this(sourceBehavior, new EulerHooks(), tasks);
+        this(sourceBehavior, new EulerHooks(), new DefaultSourceNotificationStrategy(), tasks);
     }
 
     public CompletableFuture<JobProcessed> process(URI uri, Duration duration) {
@@ -41,7 +46,7 @@ public class Euler implements AutoCloseable {
             throw new IllegalStateException("System already started");
         }
         Behavior<ProcessorCommand> processorBehavior = EulerProcessor.create(tasks);
-        system = ActorSystem.create(JobExecution.create(sourceBehavior, processorBehavior, hooks), "euler-" + UUID.randomUUID().toString());
+        system = ActorSystem.create(JobExecution.create(sourceBehavior, processorBehavior, hooks, sns), "euler-" + UUID.randomUUID().toString());
 
         CompletionStage<JobCommand> result = AskPattern.ask(system, (replyTo) -> new Job(uri, replyTo), duration, system.scheduler());
         CompletionStage<JobProcessed> completionStage = result.thenCompose((r) -> {

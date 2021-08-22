@@ -2,6 +2,9 @@ package com.github.euler.core;
 
 import java.io.IOException;
 
+import com.github.euler.core.source.DefaultSourceNotificationStrategy;
+import com.github.euler.core.source.SourceNotificationStrategy;
+
 import akka.actor.typed.ActorRef;
 import akka.actor.typed.Behavior;
 import akka.actor.typed.javadsl.AbstractBehavior;
@@ -12,29 +15,29 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class JobExecution extends AbstractBehavior<JobCommand> {
 
-    public static Behavior<JobCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior) {
-        return Behaviors.setup((context) -> new JobExecution(context, sourceBehavior, processorBehavior));
+    public static Behavior<JobCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior, EulerHooks hooks,
+            SourceNotificationStrategy sourceNotificationStrategy) {
+        return Behaviors.setup((context) -> new JobExecution(context, sourceBehavior, processorBehavior, hooks, sourceNotificationStrategy));
     }
 
-    public static Behavior<JobCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior, EulerHooks hooks) {
-        return Behaviors.setup((context) -> new JobExecution(context, sourceBehavior, processorBehavior, hooks));
+    public static Behavior<JobCommand> create(Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior) {
+        return create(sourceBehavior, processorBehavior, new EulerHooks(), new DefaultSourceNotificationStrategy());
     }
 
     private final Behavior<SourceCommand> sourceBehavior;
     private final Behavior<ProcessorCommand> processorBehavior;
     private final EulerHooks hooks;
+    private final SourceNotificationStrategy sourceNotificationStrategy;
 
     private ActorRef<EulerCommand> eulerRef;
 
-    private JobExecution(ActorContext<JobCommand> context, Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior, EulerHooks hooks) {
+    private JobExecution(ActorContext<JobCommand> context, Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior, EulerHooks hooks,
+            SourceNotificationStrategy sourceNotificationStrategy) {
         super(context);
         this.sourceBehavior = sourceBehavior;
         this.processorBehavior = processorBehavior;
         this.hooks = hooks;
-    }
-
-    private JobExecution(ActorContext<JobCommand> context, Behavior<SourceCommand> sourceBehavior, Behavior<ProcessorCommand> processorBehavior) {
-        this(context, sourceBehavior, processorBehavior, new EulerHooks());
+        this.sourceNotificationStrategy = sourceNotificationStrategy;
     }
 
     @Override
@@ -48,7 +51,7 @@ public class JobExecution extends AbstractBehavior<JobCommand> {
 
     private Behavior<JobCommand> onJob(Job msg) throws IOException {
         this.hooks.initialize();
-        this.eulerRef = getContext().spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior), "euler");
+        this.eulerRef = getContext().spawn(EulerJobProcessor.create(sourceBehavior, processorBehavior, sourceNotificationStrategy), "euler");
         eulerRef.tell(new JobToProcess(msg.uri, msg.ctx, msg.replyTo));
         return Behaviors.same();
     }

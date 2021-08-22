@@ -20,6 +20,8 @@ import com.github.euler.core.JobExecution;
 import com.github.euler.core.ProcessorCommand;
 import com.github.euler.core.SourceCommand;
 import com.github.euler.core.Task;
+import com.github.euler.core.source.DefaultSourceNotificationStrategy;
+import com.github.euler.core.source.SourceNotificationStrategy;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import com.typesafe.config.ConfigFactory;
@@ -138,11 +140,11 @@ public class EulerConfigConverter {
     }
 
     public Behavior<JobCommand> create(Config config, ConfigContext ctx) {
-        return create(config, ctx, (s, p, h) -> JobExecution.create(s, p, h));
+        return create(config, ctx, (s, p, h, sns) -> JobExecution.create(s, p, h, sns));
     }
 
     public Behavior<JobCommand> create(ConfigList config, ConfigContext ctx) {
-        return create(config, ctx, (s, p, h) -> JobExecution.create(s, p, h));
+        return create(config, ctx, (s, p, h, sns) -> JobExecution.create(s, p, h, sns));
     }
 
     public <R> R create(Config config, EulerCreator<R> func) {
@@ -176,7 +178,8 @@ public class EulerConfigConverter {
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
         Behavior<ProcessorCommand> processorBehavior = EulerProcessor.create(tasks.toArray(new Task[tasks.size()]));
         EulerHooks hooks = ctx.getRequired(EulerHooks.class);
-        return func.create(sourceBehavior, processorBehavior, hooks);
+        SourceNotificationStrategy sns = ctx.get(SourceNotificationStrategy.class, new DefaultSourceNotificationStrategy());
+        return func.create(sourceBehavior, processorBehavior, hooks, sns);
     }
 
     public Euler createEuler(Config config) {
@@ -197,7 +200,8 @@ public class EulerConfigConverter {
         List<Task> tasks = (List<Task>) ctx.getRequired(TasksConfigConverter.TASKS);
         Behavior<SourceCommand> sourceBehavior = (Behavior<SourceCommand>) ctx.getRequired(SourceConfigConverter.SOURCE);
         EulerHooks hooks = ctx.getRequired(EulerHooks.class);
-        return new Euler(sourceBehavior, hooks, tasks.toArray(new Task[tasks.size()]));
+        SourceNotificationStrategy sns = ctx.get(SourceNotificationStrategy.class, new DefaultSourceNotificationStrategy());
+        return new Euler(sourceBehavior, hooks, sns, tasks.toArray(new Task[tasks.size()]));
     }
 
     public List<EulerExtension> getExtensions() {

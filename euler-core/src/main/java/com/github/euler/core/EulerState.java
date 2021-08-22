@@ -6,7 +6,10 @@ public class EulerState {
 
     private ActorRef<JobCommand> replyTo;
     private boolean discoveryFinishedOrFailed = false;
-    private int items = 0;
+    private int pendingItems = 0;
+    private int totalProcessedItems = 0;
+    private int totalItems = 0;
+    private int totalEmbeddedItems = 0;
     private ProcessingContext ctx = ProcessingContext.EMPTY;
 
     public void onMessage(JobToProcess msg) {
@@ -18,8 +21,14 @@ public class EulerState {
         this.discoveryFinishedOrFailed = true;
     }
 
+    public void onMessage(JobEmbeddedItemFound msg) {
+        onMessage((JobItemFound) msg);
+        this.totalEmbeddedItems++;
+    }
+
     public void onMessage(JobItemFound msg) {
-        this.items++;
+        this.totalItems++;
+        this.pendingItems++;
     }
 
     public void onMessage(ScanFailed msg) {
@@ -27,11 +36,12 @@ public class EulerState {
     }
 
     public void onMessage(JobItemProcessed msg) {
-        this.items--;
+        this.pendingItems--;
+        this.totalProcessedItems++;
     }
 
     public boolean isProcessed() {
-        return this.items == 0 && this.discoveryFinishedOrFailed;
+        return this.pendingItems == 0 && this.discoveryFinishedOrFailed;
     }
 
     public ActorRef<JobCommand> getReplyTo() {
@@ -40,6 +50,26 @@ public class EulerState {
 
     public ProcessingContext getCtx() {
         return ctx;
+    }
+
+    public boolean isDiscoveryFinishedOrFailed() {
+        return discoveryFinishedOrFailed;
+    }
+
+    public int getPendingItems() {
+        return pendingItems;
+    }
+
+    public int getTotalItems() {
+        return totalItems;
+    }
+
+    public int getTotalEmbeddedItems() {
+        return totalEmbeddedItems;
+    }
+
+    public int getTotalProcessedItems() {
+        return totalProcessedItems;
     }
 
 }

@@ -3,6 +3,9 @@ package com.github.euler.core;
 import java.io.IOException;
 import java.net.URI;
 
+import com.github.euler.core.resume.AlwaysResumeStrategy;
+import com.github.euler.core.resume.ResumeStrategy;
+
 import akka.actor.typed.Behavior;
 import akka.actor.typed.PostStop;
 import akka.actor.typed.javadsl.ActorContext;
@@ -12,15 +15,21 @@ import akka.actor.typed.javadsl.ReceiveBuilder;
 
 public class PausableSourceExecution extends AbstractSourceExecution {
 
-    public static Behavior<SourceCommand> create(PausableSource source) {
-        return Behaviors.setup((context) -> new PausableSourceExecution(context, source));
+    public static Behavior<SourceCommand> create(PausableSource source, ResumeStrategy resumeStrategy) {
+        return Behaviors.setup((context) -> new PausableSourceExecution(context, source, resumeStrategy));
     }
 
-    private PausableSource source;
+    public static Behavior<SourceCommand> create(PausableSource source) {
+        return Behaviors.setup((context) -> new PausableSourceExecution(context, source, new AlwaysResumeStrategy()));
+    }
 
-    private PausableSourceExecution(ActorContext<SourceCommand> context, PausableSource source) {
+    private final PausableSource source;
+    private final ResumeStrategy resumeStrategy;
+
+    private PausableSourceExecution(ActorContext<SourceCommand> context, PausableSource source, ResumeStrategy resumeStrategy) {
         super(context);
         this.source = source;
+        this.resumeStrategy = resumeStrategy;
     }
 
     @Override
@@ -29,6 +38,7 @@ public class PausableSourceExecution extends AbstractSourceExecution {
         builder.onMessage(JobToScan.class, this::onJobToScan);
         builder.onMessage(ResumeScan.class, this::onResumeScan);
         builder.onSignal(PostStop.class, this::onPostStop);
+        builder.onMessage(ProcessingStatus.class, this::onProcessingStatus);
         return builder.build();
     }
 
@@ -63,7 +73,21 @@ public class PausableSourceExecution extends AbstractSourceExecution {
         return this;
     }
 
+    @Override
+    protected Behavior<SourceCommand> onProcessingStatus(ProcessingStatus msg) throws IOException {
+        if (resumeStrategy.onProcessingStatus(msg)) {
+            notifyResumeScan();
+        }
+        return this;
+    }
+
     protected void yield() {
+        if (resumeStrategy.shouldResumeScan()) {
+            notifyResumeScan();
+        }
+    }
+
+    protected void notifyResumeScan() {
         getContext().getSelf().tell(new ResumeScan());
     }
 

@@ -5,11 +5,13 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.github.euler.configuration.AbstractResumeStrategyConfigConverter;
 import com.github.euler.configuration.AbstractSourceConfigConverter;
 import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.core.PausableSourceExecution;
 import com.github.euler.core.SourceCommand;
+import com.github.euler.core.resume.ResumeStrategy;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigRenderOptions;
@@ -32,9 +34,11 @@ public class FileSourceConfigConverter extends AbstractSourceConfigConverter {
 
         int flags = getFlags(config.getStringList("regex-flags"));
         Pattern regex = Pattern.compile(config.getString("regex"), flags);
+
+        ResumeStrategy resumeStrategy = typeConfigConverter.convert(AbstractResumeStrategyConfigConverter.TYPE, config.getValue("resume-strategy"), configContext);
         builder.setRegex(regex);
 
-        return PausableSourceExecution.create(builder.build());
+        return PausableSourceExecution.create(builder.build(), resumeStrategy);
     }
 
     protected Config getConfig(Config config) {
