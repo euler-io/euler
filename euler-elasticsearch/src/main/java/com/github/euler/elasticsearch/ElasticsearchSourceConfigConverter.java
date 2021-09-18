@@ -26,9 +26,15 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
 
     @Override
     public Behavior<SourceCommand> convert(Config config, ConfigContext ctx, TypesConfigConverter typeConfigConverter) {
+        String query = null;
+        if (config.hasPath("query")) {
+            query = config.getConfig("query").root().render(ConfigRenderOptions.concise());
+        }
         config = getConfig(config);
         RestHighLevelClient client = getClient(config, ctx, typeConfigConverter);
-        String query = config.getConfig("query").root().render(ConfigRenderOptions.concise());
+        if (query == null) {
+            query = config.getConfig("query").root().render(ConfigRenderOptions.concise());
+        }
         int size = config.getInt("size");
         String scroll = config.getString("scroll-keep-alive");
         String[] sourceIncludes = config.getStringList("_source.includes").stream().toArray(s -> new String[s]);
