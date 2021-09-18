@@ -104,6 +104,7 @@ public class ElasticsearchMetadataSink implements MetadataBatchSink {
             LOGGER.info("Executing bulk request with {} actions and {}.", actions, size);
             return client.bulk(bulkRequest, RequestOptions.DEFAULT);
         } else {
+            LOGGER.info("Bulk request is empty. Sink cant be flushed.");
             return null;
         }
     }
