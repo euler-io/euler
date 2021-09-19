@@ -4,8 +4,10 @@ import java.net.URL;
 import java.util.List;
 
 import org.apache.tika.parser.ocr.TesseractOCRConfig;
+import org.apache.tika.parser.pdf.PDFParserConfig;
 
 import com.github.euler.configuration.ConfigContext;
+import com.github.euler.configuration.ConfigUtil;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
@@ -27,13 +29,12 @@ public class DefaultParseContextFactoryConfigConverter extends AbstractParseCont
         List<String> excludeMimetypeRegex = getList(config, "ocr.exclude-mime-type-regex");
 
         TesseractOCRConfig ocrConfig = new TesseractOCRConfig();
-        ocrConfig.setLanguage(config.getString("ocr.language"));
-        ocrConfig.setEnableImageProcessing(config.getBoolean("ocr.enable-image-processing") ? 1 : 0);
-        ocrConfig.setFilter(config.getString("ocr.filter"));
-        ocrConfig.setMinFileSizeToOcr(config.getLong("ocr.min-file-size-to-ocr"));
-        ocrConfig.setMaxFileSizeToOcr(config.getLong("ocr.max-file-size-to-ocr"));
+        ConfigUtil.set(ocrConfig, config.getConfig("tesseract"));
 
-        return new DefaultParseContextFactory(skipOcr, includeMimetypeRegex, excludeMimetypeRegex, ocrConfig);
+        PDFParserConfig pdfParserConfig = new PDFParserConfig();
+        ConfigUtil.set(pdfParserConfig, config.getConfig("pdf"));
+
+        return new DefaultParseContextFactory(skipOcr, includeMimetypeRegex, excludeMimetypeRegex, ocrConfig, pdfParserConfig);
     }
 
     protected Config getConfig(Config config) {

@@ -17,13 +17,20 @@ public class DefaultParseContextFactory implements ParseContextFactory {
     private final List<Pattern> includeMimetypePatterns;
     private final List<Pattern> excludeMimetypePatterns;
     private final TesseractOCRConfig ocrConfig;
+    private final PDFParserConfig pdfParserConfig;
 
-    public DefaultParseContextFactory(boolean skipOcr, List<String> includeMimetypeRegex, List<String> excludeMimetypeRegex, TesseractOCRConfig ocrConfig) {
+    public DefaultParseContextFactory(boolean skipOcr, List<String> includeMimetypeRegex, List<String> excludeMimetypeRegex, TesseractOCRConfig ocrConfig,
+            PDFParserConfig pdfParserConfig) {
         super();
         this.skipOcr = skipOcr;
         this.includeMimetypePatterns = compile(includeMimetypeRegex);
         this.excludeMimetypePatterns = compile(excludeMimetypeRegex);
         this.ocrConfig = ocrConfig;
+        this.pdfParserConfig = pdfParserConfig;
+    }
+
+    public DefaultParseContextFactory() {
+        this(true, List.of("a^"), List.of("^a"), new TesseractOCRConfig(), new PDFParserConfig());
     }
 
     private List<Pattern> compile(List<String> regex) {
@@ -32,19 +39,13 @@ public class DefaultParseContextFactory implements ParseContextFactory {
                 .collect(Collectors.toList());
     }
 
-    public DefaultParseContextFactory() {
-        this(true, List.of("a^"), List.of("^a"), new TesseractOCRConfig());
-    }
-
     @Override
     public ParseContext create(ProcessingContext ctx) {
         ParseContext parseContext = new ParseContext();
         if (!skipOcr) {
             String mimeType = ctx.metadata(CommonMetadata.MIME_TYPE, null);
             if (mimeType != null && (matches(mimeType, includeMimetypePatterns) && !matches(mimeType, excludeMimetypePatterns))) {
-                PDFParserConfig pdfConfig = new PDFParserConfig();
-                pdfConfig.setExtractInlineImages(true);
-                parseContext.set(PDFParserConfig.class, pdfConfig);
+                parseContext.set(PDFParserConfig.class, pdfParserConfig);
                 parseContext.set(TesseractOCRConfig.class, ocrConfig);
             }
         }
