@@ -55,10 +55,9 @@ public class FragmentBatch implements Batch {
         state.itemStored(id, msg);
 
         boolean parseError = msg.ctx.context(CommonContext.PARSE_ERROR, false);
-        URI uri = msg.ctx.context(CommonContext.PARSED_CONTENT_FILE, msg.itemURI);
-        boolean isEmpty = sf.isEmpty(uri, msg.ctx);
+        URI uri = msg.ctx.context(CommonContext.PARSED_CONTENT_FILE, null);
         boolean isDirectory = msg.ctx.metadata(CommonMetadata.IS_DIRECTORY, false);
-        if (isEmpty || isDirectory || parseError) {
+        if (uri == null || sf.isEmpty(uri, msg.ctx) || isDirectory || parseError) {
             state.itemParsed(id);
         } else {
             BatchFragmentListener fragmentListener = new BatchFragmentListener(id, listener);

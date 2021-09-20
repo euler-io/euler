@@ -3,9 +3,11 @@ package com.github.euler.configuration;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 
 public class ConfigUtil {
 
@@ -145,6 +147,14 @@ public class ConfigUtil {
                 .map(s -> s.substring(0, 1).toUpperCase() + s.substring(1))
                 .collect(Collectors.joining());
         return "set" + name;
+    }
+
+    public static List<String> getStringOrList(Config config, String path) {
+        try {
+            return List.of(config.getString(path));
+        } catch (ConfigException.WrongType e) {
+            return config.getStringList(path);
+        }
     }
 
 }

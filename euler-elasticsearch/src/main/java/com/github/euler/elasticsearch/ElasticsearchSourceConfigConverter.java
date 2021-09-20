@@ -1,6 +1,10 @@
 package com.github.euler.elasticsearch;
 
+import static com.github.euler.configuration.ConfigUtil.getStringOrList;
+
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.elasticsearch.client.RestHighLevelClient;
 
@@ -39,7 +43,11 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
         String scroll = config.getString("scroll-keep-alive");
         String[] sourceIncludes = config.getStringList("_source.includes").stream().toArray(s -> new String[s]);
         String[] sourceExcludes = config.getStringList("_source.excludes").stream().toArray(s -> new String[s]);
-        ElasticsearchSource source = new ElasticsearchSource(client, query, size, scroll, sourceIncludes, sourceExcludes);
+
+        Set<String> sourceMetadata = new HashSet<String>(getStringOrList(config, "source-metadata"));
+        Set<String> sourceContext = new HashSet<String>(getStringOrList(config, "source-context"));
+
+        ElasticsearchSource source = new ElasticsearchSource(client, query, size, scroll, sourceIncludes, sourceExcludes, sourceMetadata, sourceContext);
         ResumeStrategy resumeStrategy = typeConfigConverter.convert(AbstractResumeStrategyConfigConverter.TYPE, config.getValue("resume-strategy"), ctx);
         return PausableSourceExecution.create(source, resumeStrategy);
     }

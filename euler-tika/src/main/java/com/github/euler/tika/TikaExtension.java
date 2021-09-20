@@ -10,6 +10,7 @@ import com.github.euler.tika.embedded.DefaultEmbeddedNamingStrategyConfigConvert
 import com.github.euler.tika.embedded.MimetypeEmbeddedNamingStrategyConfigConverter;
 import com.github.euler.tika.embedded.RFC822EmbeddedNamingStrategyConfigConverter;
 import com.github.euler.tika.metadata.DefaultMetadataParserConfigConverter;
+import com.github.euler.tika.metadata.IgnoreMetadataParserConfigConverter;
 import com.github.euler.tika.metadata.MultiMetadataParserConfigConverter;
 import com.github.euler.tika.metadata.NameCaseConverterMetadataOperationConfigConverter;
 import com.github.euler.tika.metadata.NameReplaceMetadataOperationConfigConverter;
@@ -30,6 +31,7 @@ public class TikaExtension implements EulerExtension {
     @Override
     public List<TaskConfigConverter> taskConverters() {
         return List.of(
+                new LanguageDetectTaskConfigConverter(),
                 new StripHTMLTaskConfigConverter(),
                 new MimeTypeDetectTaskConfigConverter(),
                 new ParseTaskConfigConverter());
@@ -42,6 +44,7 @@ public class TikaExtension implements EulerExtension {
                 new ObjectMetadataParserConfigConverter(),
                 new MultiMetadataParserConfigConverter(),
                 new OperationsMetadataParserConfigConverter(),
+                new IgnoreMetadataParserConfigConverter(),
                 new NameReplaceMetadataOperationConfigConverter(),
                 new StringMetadataFieldParserConfigConverter(),
                 new NameCaseConverterMetadataOperationConfigConverter(),

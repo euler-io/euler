@@ -19,6 +19,8 @@ public class DefaultParseContextFactory implements ParseContextFactory {
     private final TesseractOCRConfig ocrConfig;
     private final PDFParserConfig pdfParserConfig;
 
+    private final TesseractOCRConfig skipOCRConfig;
+
     public DefaultParseContextFactory(boolean skipOcr, List<String> includeMimetypeRegex, List<String> excludeMimetypeRegex, TesseractOCRConfig ocrConfig,
             PDFParserConfig pdfParserConfig) {
         super();
@@ -27,6 +29,14 @@ public class DefaultParseContextFactory implements ParseContextFactory {
         this.excludeMimetypePatterns = compile(excludeMimetypeRegex);
         this.ocrConfig = ocrConfig;
         this.pdfParserConfig = pdfParserConfig;
+        this.skipOCRConfig = initSkipOCRConfig();
+    }
+
+    private TesseractOCRConfig initSkipOCRConfig() {
+        TesseractOCRConfig ocrConfig = new TesseractOCRConfig();
+        ocrConfig.setMaxFileSizeToOcr(0);
+        ocrConfig.setTesseractPath("/tmp");
+        return ocrConfig;
     }
 
     public DefaultParseContextFactory() {
@@ -48,6 +58,8 @@ public class DefaultParseContextFactory implements ParseContextFactory {
                 parseContext.set(PDFParserConfig.class, pdfParserConfig);
                 parseContext.set(TesseractOCRConfig.class, ocrConfig);
             }
+        } else {
+            parseContext.set(TesseractOCRConfig.class, skipOCRConfig);
         }
         return parseContext;
     }

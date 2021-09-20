@@ -9,15 +9,18 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RestHighLevelClient;
 
 import com.github.euler.core.ProcessingContext;
-import com.github.euler.elasticsearch.req.InsertRequestFactory;
+import com.github.euler.elasticsearch.req.ElasticSearchRequestFactory;
 import com.github.euler.tika.FlushConfig;
 import com.github.euler.tika.FragmentBatchSink;
 import com.github.euler.tika.SinkResponse;
 
 public class ElasticsearchFragmentSink extends ElasticsearchMetadataSink implements FragmentBatchSink {
 
-    public ElasticsearchFragmentSink(RestHighLevelClient client, String index, FlushConfig flushConfig) {
-        super(client, index, flushConfig, new InsertRequestFactory());
+    private final String fragmentType;
+
+    public ElasticsearchFragmentSink(RestHighLevelClient client, String index, FlushConfig flushConfig, ElasticSearchRequestFactory<?> requestFactory, String fragmentType) {
+        super(client, index, flushConfig, requestFactory);
+        this.fragmentType = fragmentType;
     }
 
     @Override
@@ -33,6 +36,9 @@ public class ElasticsearchFragmentSink extends ElasticsearchMetadataSink impleme
         data.put("content", fragment);
         data.put("size", fragment.length());
         data.put("fragment-index", fragIndex);
+        if (fragmentType != null) {
+            data.put("fragment_type", fragmentType);
+        }
 
         Map<String, Object> joinField = new HashMap<String, Object>(2);
         joinField.put("name", "fragment");

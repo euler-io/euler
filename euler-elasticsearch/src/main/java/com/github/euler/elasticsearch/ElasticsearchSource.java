@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.elasticsearch.action.search.SearchRequest;
@@ -44,11 +46,14 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
     private final String scrollKeepAlive;
     private final String[] sourceIncludes;
     private final String[] sourceExcludes;
+    private final Set<String> sourceMetadata;
+    private final Set<String> sourceContext;
 
     private URI uri;
     private SearchResponse response;
 
-    protected ElasticsearchSource(RestHighLevelClient client, String query, int size, String scrollKeepAlive, String[] sourceIncludes, String[] sourceExcludes) {
+    protected ElasticsearchSource(RestHighLevelClient client, String query, int size, String scrollKeepAlive, String[] sourceIncludes, String[] sourceExcludes,
+            Set<String> sourceMetadata, Set<String> sourceContext) {
         super();
         this.client = client;
         this.query = query;
@@ -56,10 +61,12 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
         this.scrollKeepAlive = scrollKeepAlive;
         this.sourceIncludes = sourceIncludes;
         this.sourceExcludes = sourceExcludes;
+        this.sourceMetadata = sourceMetadata;
+        this.sourceContext = sourceContext;
     }
 
     protected ElasticsearchSource(RestHighLevelClient client, String query, int size, String scrollKeepAlive) {
-        this(client, query, size, scrollKeepAlive, new String[]{"*"}, new String[0]);
+        this(client, query, size, scrollKeepAlive, new String[] { "*" }, new String[0], Set.of(), Set.of());
     }
 
     private QueryBuilder parseQuery(String jsonQuery) {
@@ -103,7 +110,11 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
 
     private ProcessingContext buildContext(SearchHit hit) {
         ProcessingContext.Builder builder = ProcessingContext.builder();
-        hit.getSourceAsMap().forEach((k, v) -> builder.context(k, v));
+
+        Map<String, Object> sourceAsMap = hit.getSourceAsMap();
+        this.sourceMetadata.forEach(m -> builder.metadata(m, sourceAsMap.get(m)));
+        this.sourceContext.forEach(m -> builder.context(m, sourceAsMap.get(m)));
+
         builder.context(CommonContext.INDEX, hit.getIndex());
         builder.context(CommonContext.ID, hit.getId());
         return builder.build();
