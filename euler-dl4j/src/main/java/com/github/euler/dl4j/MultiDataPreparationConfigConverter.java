@@ -16,7 +16,7 @@ public class MultiDataPreparationConfigConverter extends AbstractDataPreparation
 
     @Override
     public DataPreparation convert(Config config, ConfigContext configContext, TypesConfigConverter typeConfigConverter) {
-        List<DataPreparation> preparations = config.getObjectList("preparations").stream()
+        List<DataPreparation> preparations = config.getList("preparations").stream()
                 .map(c -> (DataPreparation) typeConfigConverter.convert(AbstractDataPreparationConfigConverter.TYPE, c, configContext))
                 .collect(Collectors.toList());
         return new MultiDataPreparation(preparations);
