@@ -27,7 +27,7 @@ public class CascadeClassifierTaskConfigConverter extends AbstractTaskConfigConv
         CascadeClassifier classifier = new CascadeClassifier(classifierPath);
         StreamFactory sf = typesConfigConverter.convert(StreamFactoryContextConfigConverter.STREAM_FACTORY, config.getValue("stream-factory"), ctx);
         MatOperation matOperation = typesConfigConverter.convert(AbstractMatOperationTypeConfigConverter.MAT_OPERATION, config.getValue("mat-operation"), ctx);
-        MatOfRectSerializer serializer = typesConfigConverter.convert(AbstractMatOfRectSerializerConfigConverter.MAT_OF_RECT_SERIALIZER, config.getValue("serializer"), ctx);
+        MatOfRectSerializer serializer = typesConfigConverter.convert(AbstractMatOfRectSerializerConfigConverter.TYPE, config.getValue("serializer"), ctx);
         return new ItemProcessorTask(name, new CascadeClassifierItemProcessor(classifierName, classifier, sf, matOperation, serializer));
     }
 

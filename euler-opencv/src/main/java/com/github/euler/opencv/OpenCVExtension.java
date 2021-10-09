@@ -18,12 +18,13 @@ public class OpenCVExtension implements EulerExtension {
                 new EqualizeHistOperationConfigConverter(),
                 new CombineOperationsConfigConverter(),
                 new BooleanMatOfRectSerializerConfigConverter(),
-                new ListOfRectsSerializerConfigConverter());
+                new ListOfRectsSerializerConfigConverter(),
+                new DarkNetLoaderConfigConverter());
     }
 
     @Override
     public List<TaskConfigConverter> taskConverters() {
-        return List.of(new CascadeClassifierTaskConfigConverter());
+        return List.of(new CascadeClassifierTaskConfigConverter(), new DnnNetTaskConfigConverter());
     }
 
     @Override

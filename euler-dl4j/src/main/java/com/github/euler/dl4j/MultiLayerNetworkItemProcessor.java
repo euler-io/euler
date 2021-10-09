@@ -15,7 +15,6 @@ import com.github.euler.core.Item;
 import com.github.euler.core.ItemProcessor;
 import com.github.euler.core.ProcessingContext;
 import com.github.euler.core.ProcessingContext.Action;
-import com.github.euler.dl4j.AbstractMatrixSerializer.Operator;
 import com.github.euler.dl4j.JavaRGBImageDataLoader.InterpolationType;
 
 public class MultiLayerNetworkItemProcessor implements ItemProcessor {
@@ -67,9 +66,10 @@ public class MultiLayerNetworkItemProcessor implements ItemProcessor {
                 new ImageChannelSelectionDataPreparation(size, size, 1, 2, 3));
         List<String> imgs = List.of(
                 "/home/dell/Pictures/test/Screenshot from 2020-09-01 16-01-14.png",
-                "/home/dell/Pictures/test/ef01d4f553f011074f85155487ab2962.jpg");
+                "/home/dell/Pictures/test/ef01d4f553f011074f85155487ab2962.jpg",
+                "/home/dell/Pictures/test/testocr.png");
 
-        MatrixSerializer<?> serializer = new LabelsMatrixSerializer(List.of("chat"), 0.5f, Operator.LTE);
+        MatrixSerializer<?> serializer = new FloatMatrixSerializer();
 
         MultiLayerNetworkItemProcessor itemProcessor = new MultiLayerNetworkItemProcessor(null, kerasModel, loader, dataPreparation, serializer, "");
         for (String img : imgs) {
