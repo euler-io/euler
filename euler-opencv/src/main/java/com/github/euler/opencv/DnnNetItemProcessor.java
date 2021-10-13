@@ -65,7 +65,6 @@ public class DnnNetItemProcessor implements ItemProcessor {
 
     private Map<String, MatOfRect> detect(Mat image, List<Mat> outputBlobs, List<String> outBlobNames) {
         Mat blob = Dnn.blobFromImage(image, 1f/255f);
-        System.out.println(blob);
         dnnNet.setInput(blob);
         dnnNet.forward(outputBlobs, outBlobNames);
         return buildMap(blob);

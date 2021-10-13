@@ -37,6 +37,7 @@
         <module>euler-sample</module>
         <module>euler-opencv</module>
         <module>euler-dl4j</module>
+        <module>euler-dlj</module>
         <module>euler-preview-tasks</module>
     </modules>
 
