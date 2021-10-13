@@ -33,6 +33,16 @@ public class EulerHooks implements Initializable, Closeable {
         this.closeables.add(c);
     }
 
+    public void registerCloseable(AutoCloseable c) {
+        this.closeables.add(() -> {
+            try {
+                c.close();
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+        });
+    }
+
     @Override
     public void initialize() throws IOException {
         for (Initializable i : initializables) {

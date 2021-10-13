@@ -8,6 +8,7 @@ import com.github.euler.configuration.AbstractTaskConfigConverter;
 import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TasksConfigConverter;
 import com.github.euler.configuration.TypesConfigConverter;
+import com.github.euler.core.EulerHooks;
 import com.github.euler.core.Task;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -34,6 +35,9 @@ public class ObjectDetectionTaskConfigConverter extends AbstractTaskConfigConver
             StreamFactory sf = ctx.getRequired(StreamFactory.class);
             ZooModelLoader<Image, DetectedObjects> modelLoader = typesConfigConverter.convert(AbstractZooModelLoaderConfigConverter.TYPE, config.getValue("model"), ctx);
             ZooModel<Image, DetectedObjects> model = modelLoader.load();
+            EulerHooks hooks = ctx.getRequired(EulerHooks.class);
+            hooks.registerCloseable(() -> model.close());
+
             DetectedObjectsSerializer serializer = typesConfigConverter.convert(AbstractDetectedObjectsSerializerConfigConverter.TYPE, config.getValue("serializer"), ctx);
             String field = config.getString("field");
             return new ObjectDetectionTask(name, sf, model, serializer, field);
