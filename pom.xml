@@ -39,6 +39,7 @@
         <module>euler-dl4j</module>
         <module>euler-dlj</module>
         <module>euler-preview-tasks</module>
+        <module>euler-video</module>
     </modules>
 
     <scm>

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.github.euler-io</groupId>
-    <artifactId>euler-dlj</artifactId>
+    <artifactId>euler-video</artifactId>
     <version>0.12.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -17,28 +17,13 @@
 
     <name>Euler - OpenCV</name>
     <url>https://github.com/euler-io/euler</url>
-    <description>Euler - File Processing API - OpenCV module.</description>
+    <description>Euler - File Processing API - Video module.</description>
 
     <dependencies>
         <dependency>
-            <groupId>ai.djl</groupId>
-            <artifactId>api</artifactId>
-            <version>0.13.0</version>
-        </dependency>
-        <dependency>
-            <groupId>ai.djl</groupId>
-            <artifactId>model-zoo</artifactId>
-            <version>0.13.0</version>
-        </dependency>
-        <dependency>
-            <groupId>ai.djl.pytorch</groupId>
-            <artifactId>pytorch-model-zoo</artifactId>
-            <version>0.13.0</version>
-        </dependency>
-        <dependency>
-            <groupId>ai.djl.pytorch</groupId>
-            <artifactId>pytorch-native-auto</artifactId>
-            <version>1.9.0</version>
+            <groupId>com.github.kokorin.jaffree</groupId>
+            <artifactId>jaffree</artifactId>
+            <version>2021.10.19</version>
         </dependency>
         <dependency>
             <groupId>com.github.euler-io</groupId>
@@ -56,6 +41,12 @@
             <groupId>com.github.euler-io</groupId>
             <artifactId>euler-common</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.euler-io</groupId>
+            <artifactId>euler-file</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
