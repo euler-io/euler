@@ -50,10 +50,10 @@ public class FfmpegVideoPreviewItemProcessor implements ItemProcessor {
         URI outURI = storageStrategy.createFile(item.itemURI, "_preview.mp4");
         try {
             generatePreview(item.itemURI, outURI, item.ctx);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             LOGGER.warn("An error ocurred while creating video preview for " + item.itemURI, e);
         }
-        return null;
+        return ProcessingContext.EMPTY;
     }
 
     private void generatePreview(URI inURI, URI outURI, ProcessingContext ctx) throws IOException {
@@ -132,8 +132,8 @@ public class FfmpegVideoPreviewItemProcessor implements ItemProcessor {
     public static void main(String[] args) throws Exception {
         URLInputOutputFactory ioFactory = new URLInputOutputFactory();
         FfmpegVideoPreviewItemProcessor itemProcessor = new FfmpegVideoPreviewItemProcessor(ioFactory, ioFactory, null, 320, 240);
-        URI in = new URI("file:///media/dell/storage/VID_20160812_140911511.mp4");
-        URI out = new URI("file:///media/dell/storage/VID_20160812_140911511_preview.mp4");
+        URI in = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado.avi");
+        URI out = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado_preview.mp4");
         itemProcessor.generatePreview(in, out, ProcessingContext.EMPTY);
 
     }

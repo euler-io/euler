@@ -11,7 +11,8 @@ public class VideoExtension implements EulerExtension {
     @Override
     public List<TaskConfigConverter> taskConverters() {
         return List.of(
-                new FfmpegVideoPreviewTaskConfigConverter());
+                new FfmpegVideoPreviewTaskConfigConverter(),
+                new FastFFmpegVideoThumbnailTaskConfigConverter());
     }
 
     @Override
