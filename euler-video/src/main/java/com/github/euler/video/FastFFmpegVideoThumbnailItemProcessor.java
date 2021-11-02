@@ -29,6 +29,7 @@ public class FastFFmpegVideoThumbnailItemProcessor implements ItemProcessor {
     private final int width;
     private final int height;
     private final float position;
+    private final String field;
     private final String[] additionalArgs;
 
     public FastFFmpegVideoThumbnailItemProcessor(InputFactory inputFactory,
@@ -37,6 +38,7 @@ public class FastFFmpegVideoThumbnailItemProcessor implements ItemProcessor {
             int width,
             int height,
             float position,
+            String field,
             String... additionalArgs) {
         super();
         this.inputFactory = inputFactory;
@@ -45,6 +47,7 @@ public class FastFFmpegVideoThumbnailItemProcessor implements ItemProcessor {
         this.width = width;
         this.height = height;
         this.position = position;
+        this.field = field;
         this.additionalArgs = additionalArgs;
 
         if (position < 0f || position > 1f) {
@@ -60,7 +63,9 @@ public class FastFFmpegVideoThumbnailItemProcessor implements ItemProcessor {
         } catch (Throwable e) {
             LOGGER.warn("An error ocurred while creating video preview for " + item.itemURI, e);
         }
-        return ProcessingContext.EMPTY;
+        return ProcessingContext.builder()
+                .metadata(field, outURI.toString())
+                .build();
     }
 
     private void generatePreview(URI inURI, URI outURI, ProcessingContext ctx) throws IOException {
@@ -103,7 +108,7 @@ public class FastFFmpegVideoThumbnailItemProcessor implements ItemProcessor {
 
     public static void main(String[] args) throws Exception {
         URLInputOutputFactory ioFactory = new URLInputOutputFactory();
-        FastFFmpegVideoThumbnailItemProcessor itemProcessor = new FastFFmpegVideoThumbnailItemProcessor(ioFactory, ioFactory, null, 320, 240, .5f);
+        FastFFmpegVideoThumbnailItemProcessor itemProcessor = new FastFFmpegVideoThumbnailItemProcessor(ioFactory, ioFactory, null, 320, 240, .5f, "video-thumbnail");
         URI in = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado.avi");
         URI out = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado.png");
         itemProcessor.generatePreview(in, out, ProcessingContext.EMPTY);

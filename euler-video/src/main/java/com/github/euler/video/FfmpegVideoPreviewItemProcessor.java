@@ -32,16 +32,23 @@ public class FfmpegVideoPreviewItemProcessor implements ItemProcessor {
     private final StorageStrategy storageStrategy;
     private final int width;
     private final int height;
+    private final String field;
     private final String[] additionalArgs;
 
-    public FfmpegVideoPreviewItemProcessor(InputFactory inputFactory, OutputFactory outputFactory, StorageStrategy storageStrategy, int width,
-            int height, String... additionalArgs) {
+    public FfmpegVideoPreviewItemProcessor(InputFactory inputFactory,
+            OutputFactory outputFactory,
+            StorageStrategy storageStrategy,
+            int width,
+            int height,
+            String field,
+            String... additionalArgs) {
         super();
         this.inputFactory = inputFactory;
         this.outputFactory = outputFactory;
         this.storageStrategy = storageStrategy;
         this.width = width;
         this.height = height;
+        this.field = field;
         this.additionalArgs = additionalArgs;
     }
 
@@ -53,11 +60,13 @@ public class FfmpegVideoPreviewItemProcessor implements ItemProcessor {
         } catch (Throwable e) {
             LOGGER.warn("An error ocurred while creating video preview for " + item.itemURI, e);
         }
-        return ProcessingContext.EMPTY;
+        return ProcessingContext.builder()
+                .metadata(field, outURI.toString())
+                .build();
     }
 
     private void generatePreview(URI inURI, URI outURI, ProcessingContext ctx) throws IOException {
-        Float frameCount = countFrames(inputFactory.createFFprobe(inURI, ctx));
+        Float frameCount = getDuration(inputFactory.createFFprobe(inURI, ctx));
         int frameTarget = (int) frameCount.intValue() / 10;
         File prepFile = Files.createTempFile("ffmpeg_preview", ".mp4").toFile();
         try {
@@ -117,7 +126,7 @@ public class FfmpegVideoPreviewItemProcessor implements ItemProcessor {
         ffmpeg.execute();
     }
 
-    private Float countFrames(com.github.kokorin.jaffree.ffprobe.Input in) throws IOException {
+    private Float getDuration(com.github.kokorin.jaffree.ffprobe.Input in) throws IOException {
         FFprobeResult result = FFprobe.atPath()
                 .setShowStreams(true)
                 .setLogLevel(LogLevel.QUIET)
@@ -131,7 +140,7 @@ public class FfmpegVideoPreviewItemProcessor implements ItemProcessor {
 
     public static void main(String[] args) throws Exception {
         URLInputOutputFactory ioFactory = new URLInputOutputFactory();
-        FfmpegVideoPreviewItemProcessor itemProcessor = new FfmpegVideoPreviewItemProcessor(ioFactory, ioFactory, null, 320, 240);
+        FfmpegVideoPreviewItemProcessor itemProcessor = new FfmpegVideoPreviewItemProcessor(ioFactory, ioFactory, null, 320, 240, "video-preview");
         URI in = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado.avi");
         URI out = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado_preview.mp4");
         itemProcessor.generatePreview(in, out, ProcessingContext.EMPTY);

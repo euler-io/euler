@@ -28,6 +28,7 @@ public class FfmpegVideoPreviewTaskConfigConverter extends AbstractTaskConfigCon
         StorageStrategy storageStrategy = typesConfigConverter.convert(AbstractStorageStrategyConfigConverter.TYPE, config.getValue("storage-strategy"), ctx);
         int width = config.getInt("width");
         int height = config.getInt("height");
+        String field = config.getString("field");
         String[] additionalArgs = config.getStringList("args").stream().toArray(s -> new String[s]);
         return new FfmpegVideoPreviewTask(getName(config, tasksConfigConverter),
                 inputFactory,
@@ -35,6 +36,7 @@ public class FfmpegVideoPreviewTaskConfigConverter extends AbstractTaskConfigCon
                 storageStrategy,
                 width,
                 height,
+                field,
                 additionalArgs);
     }
 

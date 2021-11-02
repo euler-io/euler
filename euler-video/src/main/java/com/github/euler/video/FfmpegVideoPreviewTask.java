@@ -11,16 +11,24 @@ public class FfmpegVideoPreviewTask extends AbstractTask {
     private final StorageStrategy storageStrategy;
     private final int width;
     private final int height;
+    private final String field;
     private final String[] additionalArgs;
 
-    public FfmpegVideoPreviewTask(String name, InputFactory inputFactory, OutputFactory outputFactory, StorageStrategy storageStrategy, int width,
-            int height, String... additionalArgs) {
+    public FfmpegVideoPreviewTask(String name,
+            InputFactory inputFactory,
+            OutputFactory outputFactory,
+            StorageStrategy storageStrategy,
+            int width,
+            int height,
+            String field,
+            String[] additionalArgs) {
         super(name);
         this.inputFactory = inputFactory;
         this.outputFactory = outputFactory;
         this.storageStrategy = storageStrategy;
         this.width = width;
         this.height = height;
+        this.field = field;
         this.additionalArgs = additionalArgs;
     }
 
@@ -31,6 +39,7 @@ public class FfmpegVideoPreviewTask extends AbstractTask {
                 storageStrategy,
                 width,
                 height,
+                field,
                 additionalArgs);
     }
 

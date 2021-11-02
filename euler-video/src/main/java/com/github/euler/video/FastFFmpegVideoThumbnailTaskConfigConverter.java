@@ -29,6 +29,7 @@ public class FastFFmpegVideoThumbnailTaskConfigConverter extends AbstractTaskCon
         int width = config.getInt("width");
         int height = config.getInt("height");
         float position = config.getNumber("position").floatValue();
+        String field = config.getString("field");
         String[] additionalArgs = config.getStringList("args").stream().toArray(s -> new String[s]);
         return new FastFFmpegVideoThumbnailTask(getName(config, tasksConfigConverter),
                 inputFactory,
@@ -37,6 +38,7 @@ public class FastFFmpegVideoThumbnailTaskConfigConverter extends AbstractTaskCon
                 width,
                 height,
                 position,
+                field,
                 additionalArgs);
     }
 

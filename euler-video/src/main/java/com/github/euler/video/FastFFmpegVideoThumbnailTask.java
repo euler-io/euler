@@ -12,6 +12,7 @@ public class FastFFmpegVideoThumbnailTask extends AbstractTask {
     private final int width;
     private final int height;
     private final float position;
+    private final String field;
     private final String[] additionalArgs;
 
     public FastFFmpegVideoThumbnailTask(String name,
@@ -21,6 +22,7 @@ public class FastFFmpegVideoThumbnailTask extends AbstractTask {
             int width,
             int height,
             float position,
+            String field,
             String... additionalArgs) {
         super(name);
         this.inputFactory = inputFactory;
@@ -29,6 +31,7 @@ public class FastFFmpegVideoThumbnailTask extends AbstractTask {
         this.width = width;
         this.height = height;
         this.position = position;
+        this.field = field;
         this.additionalArgs = additionalArgs;
     }
 
@@ -40,6 +43,7 @@ public class FastFFmpegVideoThumbnailTask extends AbstractTask {
                 width,
                 height,
                 position,
+                field,
                 additionalArgs);
     }
 
