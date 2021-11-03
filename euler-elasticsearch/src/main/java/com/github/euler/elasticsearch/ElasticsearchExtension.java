@@ -35,7 +35,8 @@ public class ElasticsearchExtension implements EulerExtension {
     @Override
     public List<ContextConfigConverter> pathConverters() {
         return Arrays.asList(new ElasticsearchClientConfigConverter(),
-                new CreateIndexInitializableConfigConverter());
+                new CreateIndexInitializableConfigConverter(),
+                new UpdateIndexMappingInitializableConfigConverter());
     }
 
     @Override
