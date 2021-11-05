@@ -12,14 +12,17 @@ public class VideoExtension implements EulerExtension {
     public List<TaskConfigConverter> taskConverters() {
         return List.of(
                 new FfmpegVideoPreviewTaskConfigConverter(),
-                new FastFFmpegVideoThumbnailTaskConfigConverter());
+                new FastFFmpegVideoThumbnailTaskConfigConverter(),
+                new FfmpegVideoEncodeTaskConfigConverter());
     }
 
     @Override
     public List<TypeConfigConverter<?>> typeConverters() {
         return List.of(
                 new UrlInputFactoryConfigConverter(),
-                new UrlOutputFactoryConfigConverter());
+                new UrlOutputFactoryConfigConverter(),
+                new CustomArgsInputFactoryConfigConverter(),
+                new CustomArgsOutputFactoryConfigConverter());
     }
 
 }
