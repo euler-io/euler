@@ -28,7 +28,7 @@ public class CustomArgsOutputFactoryConfigConverter extends AbstractOutputFactor
     }
 
     protected Config getDefaultConfig() {
-        URL resource = FastFFmpegVideoThumbnailTaskConfigConverter.class.getClassLoader().getResource("customargsoutput.conf");
+        URL resource = getClass().getClassLoader().getResource("customargsoutput.conf");
         return ConfigFactory.parseURL(resource);
     }
 
