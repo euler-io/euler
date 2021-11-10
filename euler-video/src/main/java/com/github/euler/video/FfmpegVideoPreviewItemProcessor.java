@@ -54,15 +54,16 @@ public class FfmpegVideoPreviewItemProcessor implements ItemProcessor {
 
     @Override
     public ProcessingContext process(Item item) throws IOException {
-        URI outURI = storageStrategy.createFile(item.itemURI, "_preview.mp4");
         try {
+            URI outURI = storageStrategy.createFile(item.itemURI, "_preview.mp4");
             generatePreview(item.itemURI, outURI, item.ctx);
+            return ProcessingContext.builder()
+                    .metadata(field, outURI.toString())
+                    .build();
         } catch (Throwable e) {
             LOGGER.warn("An error ocurred while creating video preview for " + item.itemURI, e);
+            return ProcessingContext.EMPTY;
         }
-        return ProcessingContext.builder()
-                .metadata(field, outURI.toString())
-                .build();
     }
 
     private void generatePreview(URI inURI, URI outURI, ProcessingContext ctx) throws IOException {
