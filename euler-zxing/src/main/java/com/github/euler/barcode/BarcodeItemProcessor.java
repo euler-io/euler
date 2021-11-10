@@ -16,6 +16,7 @@ import com.github.euler.common.StreamFactory;
 import com.github.euler.core.Item;
 import com.github.euler.core.ItemProcessor;
 import com.github.euler.core.ProcessingContext;
+import com.github.euler.core.ProcessingContext.Action;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.BinaryBitmap;
 import com.google.zxing.DecodeHintType;
@@ -67,6 +68,7 @@ public class BarcodeItemProcessor implements ItemProcessor {
             List<Result> results = processImage(bim);
             return ProcessingContext.builder()
                     .metadata(field, serializer.serialize(results))
+                    .setAction(Action.MERGE)
                     .build();
         } catch (Exception e) {
             return ProcessingContext.EMPTY;
