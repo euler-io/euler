@@ -3,7 +3,9 @@ package com.github.euler.configuration;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.typesafe.config.Config;
@@ -154,6 +156,20 @@ public class ConfigUtil {
             return List.of(config.getString(path));
         } catch (ConfigException.WrongType e) {
             return config.getStringList(path);
+        }
+    }
+
+    public static <T extends Enum<T>> Set<T> getEnumSet(Class<T> enumClass, Config config, String path) {
+        try {
+            String value = config.getString(path);
+            if ("ALL".equalsIgnoreCase(value)) {
+                return EnumSet.allOf(enumClass);
+            } else {
+                T e = config.getEnum(enumClass, path);
+                return EnumSet.of(e);
+            }
+        } catch (ConfigException.WrongType e) {
+            return EnumSet.copyOf(config.getEnumList(enumClass, path));
         }
     }
 
