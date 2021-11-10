@@ -23,6 +23,7 @@ public class BarcodeTaskConfigConverter extends AbstractTaskConfigConverter {
 
     @Override
     public Task convert(Config config, ConfigContext ctx, TypesConfigConverter typesConfigConverter, TasksConfigConverter tasksConfigConverter) {
+        config = getConfig(config);
         StreamFactory sf = ctx.getRequired(StreamFactory.class);
         String field = config.getString("field");
         BarcodeResultSerializer serializer = typesConfigConverter.convert(AbstractBarcodeResultSerializerConfigConverter.TYPE, config.getValue("serializer"), ctx);
