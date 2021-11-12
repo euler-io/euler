@@ -62,30 +62,4 @@ public class MultiLayerNetworkItemProcessor implements ItemProcessor {
         return matrixSerializer.serialize(output);
     }
 
-    public static void main(String[] args) throws Exception {
-        MultiLayerNetwork kerasModel = KerasModelImport.importKerasSequentialModelAndWeights("/home/dell/Documents/whatssapp_screenshot.h5", false);
-
-        int size = 64;
-        JavaRGBImageDataLoader loader = new JavaRGBImageDataLoader(size, size, InterpolationType.NEAREST);
-        DataPreparation dataPreparation = new MultiDataPreparation(
-                new ImageScalerDataPreparation(new ImagePreProcessingScaler(0, 1)),
-                new PermuteNHWCDataPreparation(),
-                new ImageChannelSelectionDataPreparation(size, size, 1, 2, 3));
-        List<String> imgs = List.of(
-                "/home/dell/Pictures/test/Screenshot from 2020-09-01 16-01-14.png",
-                "/home/dell/Pictures/test/ef01d4f553f011074f85155487ab2962.jpg",
-                "/home/dell/Pictures/test/testocr.png");
-
-        MatrixSerializer<?> serializer = new FloatMatrixSerializer();
-
-        MultiLayerNetworkItemProcessor itemProcessor = new MultiLayerNetworkItemProcessor(null, kerasModel, loader, dataPreparation, serializer, "");
-        for (String img : imgs) {
-            try (InputStream in = new FileInputStream(img)) {
-                Object result = itemProcessor.apply(in);
-                System.out.println(result);
-            }
-        }
-
-    }
-
 }

@@ -139,13 +139,4 @@ public class FfmpegVideoPreviewItemProcessor implements ItemProcessor {
         return result.getFormat().getDuration();
     }
 
-    public static void main(String[] args) throws Exception {
-        URLInputOutputFactory ioFactory = new URLInputOutputFactory();
-        FfmpegVideoPreviewItemProcessor itemProcessor = new FfmpegVideoPreviewItemProcessor(ioFactory, ioFactory, null, 320, 240, "video-preview");
-        URI in = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado.avi");
-        URI out = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado_preview.mp4");
-        itemProcessor.generatePreview(in, out, ProcessingContext.EMPTY);
-
-    }
-
 }

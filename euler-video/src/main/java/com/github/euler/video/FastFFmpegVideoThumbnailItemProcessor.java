@@ -107,12 +107,4 @@ public class FastFFmpegVideoThumbnailItemProcessor implements ItemProcessor {
                 + width + "/iw\\," + height + "/ih))/2:(" + height + "-ih*min(" + width + "/iw\\," + height + "/ih))/2, unsharp=5:5:0.5:5:5:0.5";
     }
 
-    public static void main(String[] args) throws Exception {
-        URLInputOutputFactory ioFactory = new URLInputOutputFactory();
-        FastFFmpegVideoThumbnailItemProcessor itemProcessor = new FastFFmpegVideoThumbnailItemProcessor(ioFactory, ioFactory, null, 320, 240, .5f, "video-thumbnail");
-        URI in = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado.avi");
-        URI out = new URI("file:///media/dell/storage/AquaTeen_O_Espirito_Cibernetico_do_Natal_Passado.png");
-        itemProcessor.generatePreview(in, out, ProcessingContext.EMPTY);
-    }
-
 }
