@@ -41,6 +41,7 @@
         <module>euler-preview-tasks</module>
         <module>euler-video</module>
         <module>euler-zxing</module>
+        <module>euler-vosk</module>
     </modules>
 
     <scm>
