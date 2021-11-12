@@ -3,6 +3,9 @@ package com.github.euler.dlj;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.euler.common.StreamFactory;
 import com.github.euler.core.Item;
 import com.github.euler.core.ItemProcessor;
@@ -17,6 +20,8 @@ import ai.djl.repository.zoo.ZooModel;
 import ai.djl.translate.TranslateException;
 
 public class ObjectDetectionItemProcessor implements ItemProcessor {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final StreamFactory sf;
     private final ZooModel<Image, DetectedObjects> model;
@@ -45,7 +50,8 @@ public class ObjectDetectionItemProcessor implements ItemProcessor {
                     .setAction(Action.MERGE)
                     .build();
         } catch (TranslateException e) {
-            throw new RuntimeException(e);
+            LOGGER.warn("An error ocurred while detecting objects for " + item.itemURI, e);
+            return ProcessingContext.EMPTY;
         }
     }
 

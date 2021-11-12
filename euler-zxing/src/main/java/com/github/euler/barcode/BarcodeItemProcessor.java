@@ -12,6 +12,9 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.github.euler.common.StreamFactory;
 import com.github.euler.core.Item;
 import com.github.euler.core.ItemProcessor;
@@ -38,6 +41,8 @@ import com.google.zxing.multi.MultipleBarcodeReader;
  *
  */
 public class BarcodeItemProcessor implements ItemProcessor {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final StreamFactory sf;
     private final String field;
@@ -71,6 +76,7 @@ public class BarcodeItemProcessor implements ItemProcessor {
                     .setAction(Action.MERGE)
                     .build();
         } catch (Exception e) {
+            LOGGER.warn("An error ocurred while detecting barcodes for " + item.itemURI, e);
             return ProcessingContext.EMPTY;
         }
     }

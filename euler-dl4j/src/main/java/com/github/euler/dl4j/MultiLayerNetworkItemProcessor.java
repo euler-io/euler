@@ -9,6 +9,8 @@ import org.deeplearning4j.nn.modelimport.keras.KerasModelImport;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.euler.common.StreamFactory;
 import com.github.euler.core.Item;
@@ -18,6 +20,8 @@ import com.github.euler.core.ProcessingContext.Action;
 import com.github.euler.dl4j.JavaRGBImageDataLoader.InterpolationType;
 
 public class MultiLayerNetworkItemProcessor implements ItemProcessor {
+
+    private final Logger LOGGER = LoggerFactory.getLogger(getClass());
 
     private final StreamFactory sf;
     private final MultiLayerNetwork model;
@@ -45,6 +49,9 @@ public class MultiLayerNetworkItemProcessor implements ItemProcessor {
                     .metadata(field, classification)
                     .setAction(Action.MERGE)
                     .build();
+        } catch (Exception e) {
+            LOGGER.warn("An error ocurred while creating video preview for " + item.itemURI, e);
+            return ProcessingContext.EMPTY;
         }
     }
 
