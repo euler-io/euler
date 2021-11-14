@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.euler.common.StorageStrategy;
+import com.github.euler.core.FieldType;
 import com.github.euler.core.Item;
 import com.github.euler.core.ItemProcessor;
 import com.github.euler.core.ProcessingContext;
@@ -24,18 +25,21 @@ public class FfmpegVideoEncodeItemProcessor implements ItemProcessor {
     private final OutputFactory outputFactory;
     private final StorageStrategy storageStrategy;
     private final String field;
+    private final FieldType fieldType;
     private final String[] additionalArgs;
 
     public FfmpegVideoEncodeItemProcessor(InputFactory inputFactory,
             OutputFactory outputFactory,
             StorageStrategy storageStrategy,
             String field,
+            FieldType fieldType,
             String... additionalArgs) {
         super();
         this.inputFactory = inputFactory;
         this.outputFactory = outputFactory;
         this.storageStrategy = storageStrategy;
         this.field = field;
+        this.fieldType = fieldType;
         this.additionalArgs = additionalArgs;
     }
 
@@ -45,7 +49,7 @@ public class FfmpegVideoEncodeItemProcessor implements ItemProcessor {
             URI outURI = storageStrategy.createFile(item.itemURI);
             encode(item.itemURI, outURI, item.ctx);
             return ProcessingContext.builder()
-                    .metadata(field, outURI.toString())
+                    .put(fieldType, field, outURI)
                     .build();
         } catch (Throwable e) {
             LOGGER.warn("An error ocurred while creating video preview for " + item.itemURI, e);

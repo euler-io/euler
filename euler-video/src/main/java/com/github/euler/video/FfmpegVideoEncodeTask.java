@@ -6,6 +6,7 @@ import com.github.euler.common.CommonMetadata;
 import com.github.euler.common.IncludeExcludePattern;
 import com.github.euler.common.StorageStrategy;
 import com.github.euler.core.AbstractTask;
+import com.github.euler.core.FieldType;
 import com.github.euler.core.ItemProcessor;
 import com.github.euler.core.ProcessingContext;
 
@@ -15,6 +16,7 @@ public class FfmpegVideoEncodeTask extends AbstractTask {
     private final OutputFactory outputFactory;
     private final StorageStrategy storageStrategy;
     private final String field;
+    private final FieldType fieldType;
     private final IncludeExcludePattern mimeTypePattern;
     private final String[] additionalArgs;
 
@@ -23,6 +25,7 @@ public class FfmpegVideoEncodeTask extends AbstractTask {
             OutputFactory outputFactory,
             StorageStrategy storageStrategy,
             String field,
+            FieldType fieldType,
             IncludeExcludePattern mimeTypePattern,
             String... additionalArgs) {
         super(name);
@@ -30,6 +33,7 @@ public class FfmpegVideoEncodeTask extends AbstractTask {
         this.outputFactory = outputFactory;
         this.storageStrategy = storageStrategy;
         this.field = field;
+        this.fieldType = fieldType;
         this.mimeTypePattern = mimeTypePattern;
         this.additionalArgs = additionalArgs;
     }
@@ -40,6 +44,7 @@ public class FfmpegVideoEncodeTask extends AbstractTask {
                 outputFactory,
                 storageStrategy,
                 field,
+                fieldType,
                 additionalArgs);
     }
 

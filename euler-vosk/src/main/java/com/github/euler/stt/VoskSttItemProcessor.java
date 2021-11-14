@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.euler.common.CommonContext;
 import com.github.euler.common.StorageStrategy;
 import com.github.euler.common.StreamFactory;
+import com.github.euler.core.FieldType;
 import com.github.euler.core.Item;
 import com.github.euler.core.ItemProcessor;
 import com.github.euler.core.ProcessingContext;
@@ -33,19 +34,29 @@ public class VoskSttItemProcessor implements ItemProcessor {
     private final StreamFactory sf;
     private final StorageStrategy storageStrategy;
     private final Recognizer recognizer;
+    private final String inputField;
+    private final FieldType inputFieldType;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public VoskSttItemProcessor(StreamFactory sf, StorageStrategy storageStrategy, Recognizer recognizer) {
+    public VoskSttItemProcessor(StreamFactory sf, StorageStrategy storageStrategy, Recognizer recognizer, String inputField, FieldType inputFieldType) {
         super();
         this.sf = sf;
         this.storageStrategy = storageStrategy;
         this.recognizer = recognizer;
+        this.inputField = inputField;
+        this.inputFieldType = inputFieldType;
     }
 
     @Override
     public ProcessingContext process(Item item) throws IOException {
-        URI outURI = storageStrategy.createFile(item.itemURI, ".txt");
+        URI inURI;
+        if (inputField != null) {
+            inURI = item.ctx.get(inputFieldType, inputField, item.itemURI);
+        } else {
+            inURI = item.itemURI;
+        }
+        URI outURI = storageStrategy.createFile(inURI, ".txt");
         try (InputStream in = sf.openInputStream(item.itemURI, item.ctx); OutputStream out = sf.openOutputStream(outURI, item.ctx)) {
             processAudio(in, out);
             return ProcessingContext.builder()

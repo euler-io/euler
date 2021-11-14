@@ -9,6 +9,7 @@ import com.github.euler.configuration.AbstractTaskConfigConverter;
 import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TasksConfigConverter;
 import com.github.euler.configuration.TypesConfigConverter;
+import com.github.euler.core.FieldType;
 import com.github.euler.core.Task;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -28,6 +29,7 @@ public class FfmpegVideoEncodeTaskConfigConverter extends AbstractTaskConfigConv
         OutputFactory outputFactory = typesConfigConverter.convert(AbstractOutputFactoryConfigConverter.TYPE, config.getValue("output-factory"), ctx);
         StorageStrategy storageStrategy = typesConfigConverter.convert(AbstractStorageStrategyConfigConverter.TYPE, config.getValue("storage-strategy"), ctx);
         String field = config.getString("field");
+        FieldType fieldType = config.getEnum(FieldType.class, "field-type");
         IncludeExcludePattern mimePattern = IncludeExcludePattern.fromConfig(config.getConfig("mime-type"));
         String[] additionalArgs = config.getStringList("args").stream().toArray(s -> new String[s]);
         return new FfmpegVideoEncodeTask(getName(config, tasksConfigConverter),
@@ -35,6 +37,7 @@ public class FfmpegVideoEncodeTaskConfigConverter extends AbstractTaskConfigConv
                 outputFactory,
                 storageStrategy,
                 field,
+                fieldType,
                 mimePattern,
                 additionalArgs);
     }

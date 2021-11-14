@@ -12,6 +12,7 @@ import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TasksConfigConverter;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.core.EulerHooks;
+import com.github.euler.core.FieldType;
 import com.github.euler.core.Task;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
@@ -34,10 +35,15 @@ public class VoskSttTaskConfigConverter extends AbstractTaskConfigConverter {
         EulerHooks hooks = ctx.getRequired(EulerHooks.class);
         hooks.registerCloseable(recognizer);
 
+        String inputField = config.hasPath("input-field") ? config.getString("input-field") : null;
+        FieldType inputFieldType = config.getEnum(FieldType.class, "input-field-type");
+
         return new VoskSttTask(getName(config, tasksConfigConverter),
                 sf,
                 storageStrategy,
-                recognizer);
+                recognizer,
+                inputField,
+                inputFieldType);
     }
 
     protected Config getConfig(Config config) {

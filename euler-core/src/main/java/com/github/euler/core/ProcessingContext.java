@@ -23,6 +23,26 @@ public class ProcessingContext {
         this.action = action;
     }
 
+    public Object get(FieldType fieldType, String key) {
+        switch (fieldType) {
+        case CONTEXT:
+            return context(key);
+        case METADATA:
+            return metadata(key);
+        }
+        throw new IllegalArgumentException("Unknown field type " + fieldType);
+    }
+
+    public <T> T get(FieldType fieldType, String key, T defaultValue) {
+        switch (fieldType) {
+        case CONTEXT:
+            return context(key, defaultValue);
+        case METADATA:
+            return metadata(key, defaultValue);
+        }
+        throw new IllegalArgumentException("Unknown field type " + fieldType);
+    }
+
     public Object metadata(String key) {
         return this.metadata.get(key);
     }
@@ -173,6 +193,18 @@ public class ProcessingContext {
 
         public Builder context(String key, Object value) {
             this.context.put(key, value);
+            return this;
+        }
+
+        public Builder put(FieldType fieldType, String key, Object value) {
+            switch (fieldType) {
+            case CONTEXT:
+                context(key, value);
+                break;
+            case METADATA:
+                metadata(key, value);
+                break;
+            }
             return this;
         }
 
