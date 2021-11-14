@@ -97,8 +97,11 @@ public class FragmentBatch implements Batch {
 
     protected void parse(URI uri, ProcessingContext ctx, FragmentHandler fragmentHandler) throws IOException, SAXException, TikaException {
         ContentHandler handler = new BodyContentHandler(new FragmentParserContentHandler(fragmentSize, fragmentOverlap, fragmentHandler));
+        String charset = ctx.context(CommonContext.CHARSET, "UTF-8");
         try (InputStream in = sf.openInputStream(uri, ctx)) {
-            parser.parse(in, handler, new Metadata(), new ParseContext());
+            Metadata metadata = new Metadata();
+            metadata.add(Metadata.CONTENT_ENCODING, charset);
+            parser.parse(in, handler, metadata, new ParseContext());
         }
     }
 

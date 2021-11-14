@@ -9,4 +9,5 @@ public interface CommonContext {
     static final String ID = CommonContext.class.getName() + ".ID";
     static final String EXTRACTION_DEPTH = CommonContext.class.getName() + ".EXTRACTION_DEPTH";
     static final String PARSE_ERROR = CommonContext.class.getName() + ".PARSE_ERROR";
+    static final String CHARSET = CommonContext.class.getName() + ".CHARSET";
 }
