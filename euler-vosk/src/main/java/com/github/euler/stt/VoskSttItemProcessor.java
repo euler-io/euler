@@ -62,6 +62,7 @@ public class VoskSttItemProcessor implements ItemProcessor {
             processAudio(in, out);
             return ProcessingContext.builder()
                     .context(CommonContext.PARSED_CONTENT_FILE, outURI)
+                    .context(CommonContext.CHARSET, "UTF-8")
                     .build();
         } catch (UnsupportedAudioFileException e) {
             LOGGER.warn("An error ocurred while detecting speech for " + item.itemURI, e);
