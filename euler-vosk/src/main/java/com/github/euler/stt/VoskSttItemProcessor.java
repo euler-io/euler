@@ -1,5 +1,6 @@
 package com.github.euler.stt;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,7 +70,7 @@ public class VoskSttItemProcessor implements ItemProcessor {
     }
 
     public void processAudio(InputStream in, OutputStream out) throws IOException, UnsupportedAudioFileException {
-        InputStream ais = AudioSystem.getAudioInputStream(in);
+        InputStream ais = AudioSystem.getAudioInputStream(new BufferedInputStream(in));
         PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(out, "utf-8")));
         int nbytes;
         byte[] b = new byte[4096];
