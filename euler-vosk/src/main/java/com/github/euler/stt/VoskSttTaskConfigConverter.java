@@ -1,5 +1,6 @@
 package com.github.euler.stt;
 
+import java.io.IOException;
 import java.net.URL;
 
 import org.vosk.Recognizer;
@@ -30,8 +31,14 @@ public class VoskSttTaskConfigConverter extends AbstractTaskConfigConverter {
         config = getConfig(config);
         StreamFactory sf = ctx.getRequired(StreamFactory.class);
         StorageStrategy storageStrategy = typesConfigConverter.convert(AbstractStorageStrategyConfigConverter.TYPE, config.getValue("storage-strategy"), ctx);
-        Recognizer recognizer = typesConfigConverter.convert(AbstractVoskRecognizerLoaderConfigConverter.TYPE, config.getValue("recognizer"), ctx);
 
+        VoskRecognizerLoader recognizerLoader = typesConfigConverter.convert(AbstractVoskRecognizerLoaderConfigConverter.TYPE, config.getValue("recognizer"), ctx);
+        Recognizer recognizer;
+        try {
+            recognizer = recognizerLoader.load();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         EulerHooks hooks = ctx.getRequired(EulerHooks.class);
         hooks.registerCloseable(recognizer);
 
