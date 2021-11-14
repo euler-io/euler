@@ -58,7 +58,7 @@ public class VoskSttItemProcessor implements ItemProcessor {
             inURI = item.itemURI;
         }
         URI outURI = storageStrategy.createFile(inURI, ".txt");
-        try (InputStream in = sf.openInputStream(item.itemURI, item.ctx); OutputStream out = sf.openOutputStream(outURI, item.ctx)) {
+        try (InputStream in = sf.openInputStream(inURI, item.ctx); OutputStream out = sf.openOutputStream(outURI, item.ctx)) {
             processAudio(in, out);
             return ProcessingContext.builder()
                     .context(CommonContext.PARSED_CONTENT_FILE, outURI)
