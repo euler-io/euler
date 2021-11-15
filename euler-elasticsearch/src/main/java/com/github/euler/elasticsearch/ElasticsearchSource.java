@@ -95,7 +95,11 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
         for (SearchHit hit : hits) {
             notify(hit, listener);
         }
-        return hits.length == 0;
+        return hits.length == 0 || !isScrollable();
+    }
+
+    private boolean isScrollable() {
+        return this.scrollKeepAlive != null && !this.scrollKeepAlive.isBlank();
     }
 
     private void notify(SearchHit hit, SourceListener listener) {
@@ -131,7 +135,9 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
 
     private SearchResponse doScroll(SearchResponse lastResponse) throws IOException {
         SearchScrollRequest req = new SearchScrollRequest(lastResponse.getScrollId());
-        req.scroll(this.scrollKeepAlive);
+        if (isScrollable()) {
+            req.scroll(this.scrollKeepAlive);
+        }
         return client.scroll(req, RequestOptions.DEFAULT);
     }
 
@@ -142,7 +148,9 @@ public class ElasticsearchSource extends AbstractPausableSource implements Depre
         searchSourceBuilder.size(this.size);
         searchSourceBuilder.query(this.parseQuery(this.query));
         searchSourceBuilder.fetchSource(sourceIncludes, sourceExcludes);
-        req.scroll(this.scrollKeepAlive);
+        if (isScrollable()) {
+            req.scroll(this.scrollKeepAlive);
+        }
         req.source(searchSourceBuilder);
         return client.search(req, RequestOptions.DEFAULT);
     }

@@ -40,7 +40,7 @@ public class ElasticsearchSourceConfigConverter extends AbstractSourceConfigConv
             query = config.getConfig("query").root().render(ConfigRenderOptions.concise());
         }
         int size = config.getInt("size");
-        String scroll = config.getString("scroll-keep-alive");
+        String scroll = config.hasPath("scroll-keep-alive") ? config.getString("scroll-keep-alive") : null;
         String[] sourceIncludes = config.getStringList("_source.includes").stream().toArray(s -> new String[s]);
         String[] sourceExcludes = config.getStringList("_source.excludes").stream().toArray(s -> new String[s]);
 
