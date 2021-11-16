@@ -7,6 +7,7 @@ import com.github.euler.configuration.ConfigContext;
 import com.github.euler.configuration.TasksConfigConverter;
 import com.github.euler.configuration.TypesConfigConverter;
 import com.github.euler.core.ProcessingContext;
+import com.github.euler.core.ProcessingContext.Action;
 import com.github.euler.core.ProcessingContext.Builder;
 import com.github.euler.core.Task;
 import com.typesafe.config.Config;
@@ -27,6 +28,7 @@ public class ContextTaskConfigConverter extends AbstractTaskConfigConverter {
         Builder builder = ProcessingContext.builder();
         config.getConfig("metadata").root().unwrapped().forEach((k, v) -> builder.metadata(k, v));
         config.getConfig("context").root().unwrapped().forEach((k, v) -> builder.context(k, v));
+        builder.setAction(config.getEnum(Action.class, "action"));
         ProcessingContext context = builder.build();
         return new ContextTask(getName(config, tasksConfigConverter), context);
     }

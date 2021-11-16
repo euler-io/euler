@@ -15,7 +15,7 @@
         <version>0.12.3-SNAPSHOT</version>
     </parent>
 
-    <name>Euler - OpenCV</name>
+    <name>Euler - Video (ffmpeg)</name>
     <url>https://github.com/euler-io/euler</url>
     <description>Euler - File Processing API - Video module.</description>
 
